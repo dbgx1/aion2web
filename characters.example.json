@@ -1,0 +1,17 @@
+{
+  "characters": [
+    {
+      "characterName": "角色名称",
+      "characterId": "3804171976",
+      "serverId": "1001",
+      "serverName": "永恒之塔",
+      "legionName": "黎明远征军",
+      "level": 65,
+      "className": "剑星",
+      "faction": "天族",
+      "metadata": {
+        "source": "local-client"
+      }
+    }
+  ]
+}

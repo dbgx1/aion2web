@@ -1,0 +1,16 @@
+{
+  "serverId": "1001",
+  "characterId": "3804171976",
+  "messages": [
+    {
+      "sourceMessageId": "game-message-0001",
+      "agentId": "local-client-01",
+      "direction": "incoming",
+      "messageType": "text",
+      "senderName": "角色名称",
+      "content": "你好",
+      "status": "received",
+      "sentAt": 1777600000000
+    }
+  ]
+}
