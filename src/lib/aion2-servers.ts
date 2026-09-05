@@ -44,3 +44,9 @@ const SERVER_NAMES: ReadonlyMap<string, string> = new Map(
 export function aion2ServerName(serverId: string) {
   return SERVER_NAMES.get(serverId) || ''
 }
+
+const SERVER_RACES: ReadonlyMap<string, number> = new Map(AION2_SERVERS.map(server => [server.serverId, server.raceId]))
+
+export function aion2ServerRaceId(serverId: string) {
+  return SERVER_RACES.get(serverId) || 0
+}

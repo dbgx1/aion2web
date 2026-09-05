@@ -16,6 +16,10 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/ai": "^0.52.1",
+    "@tanstack/ai-client": "^0.30.0",
+    "@tanstack/ai-openrouter": "^0.19.7",
+    "@tanstack/ai-react": "^0.23.0",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-router": "latest",
     "@tanstack/react-router-devtools": "latest",
@@ -24,7 +28,8 @@
     "mqtt": "^5.15.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.26.0",

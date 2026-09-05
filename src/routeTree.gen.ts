@@ -10,15 +10,78 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PortalRouteImport } from './routes/_portal'
+import { Route as PortalAiPersonaRouteImport } from './routes/_portal/ai-persona'
+import { Route as PortalCharactersRouteImport } from './routes/_portal/characters'
+import { Route as PortalClientsRouteImport } from './routes/_portal/clients'
+import { Route as PortalConsoleRouteImport } from './routes/_portal/console'
+import { Route as PortalDocsRouteImport } from './routes/_portal/docs'
+import { Route as PortalMessagesRouteImport } from './routes/_portal/messages'
+import { Route as PortalSettingsRouteImport } from './routes/_portal/settings'
+import { Route as PortalUsageRouteImport } from './routes/_portal/usage'
 import { Route as ApiAuthRouteImport } from './routes/api/auth'
 import { Route as ApiCharactersRouteImport } from './routes/api/characters'
+import { Route as ApiClientLocksRouteImport } from './routes/api/client-locks'
 import { Route as ApiMessagesRouteImport } from './routes/api/messages'
+import { Route as ApiAdminCloudflareUsageRouteImport } from './routes/api/admin/cloudflare-usage'
+import { Route as ApiAiChatRouteImport } from './routes/api/ai/chat'
+import { Route as ApiAiPersonaRouteImport } from './routes/api/ai/persona'
+import { Route as ApiAuthRegisterRouteImport } from './routes/api/auth/register'
+import { Route as ApiCharactersProfileRouteImport } from './routes/api/characters/profile'
 import { Route as ApiCharactersUploadRouteImport } from './routes/api/characters/upload'
+import { Route as ApiPresenceRequestsRouteImport } from './routes/api/presence/requests'
+import { Route as ApiPresenceResultsRouteImport } from './routes/api/presence/results'
+import { Route as ApiPresenceStatusRouteImport } from './routes/api/presence/status'
+import { Route as ApiServersServerIdCharactersRouteImport } from './routes/api/servers/$serverId/characters'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PortalRoute = PortalRouteImport.update({
+  id: '/_portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalAiPersonaRoute = PortalAiPersonaRouteImport.update({
+  id: '/ai-persona',
+  path: '/ai-persona',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalCharactersRoute = PortalCharactersRouteImport.update({
+  id: '/characters',
+  path: '/characters',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalClientsRoute = PortalClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalConsoleRoute = PortalConsoleRouteImport.update({
+  id: '/console',
+  path: '/console',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalDocsRoute = PortalDocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalMessagesRoute = PortalMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalSettingsRoute = PortalSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalUsageRoute = PortalUsageRouteImport.update({
+  id: '/usage',
+  path: '/usage',
+  getParentRoute: () => PortalRoute,
 } as any)
 const ApiAuthRoute = ApiAuthRouteImport.update({
   id: '/api/auth',
@@ -30,68 +93,238 @@ const ApiCharactersRoute = ApiCharactersRouteImport.update({
   path: '/api/characters',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiClientLocksRoute = ApiClientLocksRouteImport.update({
+  id: '/api/client-locks',
+  path: '/api/client-locks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMessagesRoute = ApiMessagesRouteImport.update({
   id: '/api/messages',
   path: '/api/messages',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminCloudflareUsageRoute = ApiAdminCloudflareUsageRouteImport.update({
+  id: '/api/admin/cloudflare-usage',
+  path: '/api/admin/cloudflare-usage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiChatRoute = ApiAiChatRouteImport.update({
+  id: '/api/ai/chat',
+  path: '/api/ai/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiPersonaRoute = ApiAiPersonaRouteImport.update({
+  id: '/api/ai/persona',
+  path: '/api/ai/persona',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthRegisterRoute = ApiAuthRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => ApiAuthRoute,
+} as any)
+const ApiCharactersProfileRoute = ApiCharactersProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => ApiCharactersRoute,
 } as any)
 const ApiCharactersUploadRoute = ApiCharactersUploadRouteImport.update({
   id: '/upload',
   path: '/upload',
   getParentRoute: () => ApiCharactersRoute,
 } as any)
+const ApiPresenceRequestsRoute = ApiPresenceRequestsRouteImport.update({
+  id: '/api/presence/requests',
+  path: '/api/presence/requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPresenceResultsRoute = ApiPresenceResultsRouteImport.update({
+  id: '/api/presence/results',
+  path: '/api/presence/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPresenceStatusRoute = ApiPresenceStatusRouteImport.update({
+  id: '/api/presence/status',
+  path: '/api/presence/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiServersServerIdCharactersRoute =
+  ApiServersServerIdCharactersRouteImport.update({
+    id: '/api/servers/$serverId/characters',
+    path: '/api/servers/$serverId/characters',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/api/auth': typeof ApiAuthRoute
+  '/ai-persona': typeof PortalAiPersonaRoute
+  '/characters': typeof PortalCharactersRoute
+  '/clients': typeof PortalClientsRoute
+  '/console': typeof PortalConsoleRoute
+  '/docs': typeof PortalDocsRoute
+  '/messages': typeof PortalMessagesRoute
+  '/settings': typeof PortalSettingsRoute
+  '/usage': typeof PortalUsageRoute
+  '/api/auth': typeof ApiAuthRouteWithChildren
   '/api/characters': typeof ApiCharactersRouteWithChildren
+  '/api/client-locks': typeof ApiClientLocksRoute
   '/api/messages': typeof ApiMessagesRoute
+  '/api/admin/cloudflare-usage': typeof ApiAdminCloudflareUsageRoute
+  '/api/ai/chat': typeof ApiAiChatRoute
+  '/api/ai/persona': typeof ApiAiPersonaRoute
+  '/api/auth/register': typeof ApiAuthRegisterRoute
+  '/api/characters/profile': typeof ApiCharactersProfileRoute
   '/api/characters/upload': typeof ApiCharactersUploadRoute
+  '/api/presence/requests': typeof ApiPresenceRequestsRoute
+  '/api/presence/results': typeof ApiPresenceResultsRoute
+  '/api/presence/status': typeof ApiPresenceStatusRoute
+  '/api/servers/$serverId/characters': typeof ApiServersServerIdCharactersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/api/auth': typeof ApiAuthRoute
+  '/ai-persona': typeof PortalAiPersonaRoute
+  '/characters': typeof PortalCharactersRoute
+  '/clients': typeof PortalClientsRoute
+  '/console': typeof PortalConsoleRoute
+  '/docs': typeof PortalDocsRoute
+  '/messages': typeof PortalMessagesRoute
+  '/settings': typeof PortalSettingsRoute
+  '/usage': typeof PortalUsageRoute
+  '/api/auth': typeof ApiAuthRouteWithChildren
   '/api/characters': typeof ApiCharactersRouteWithChildren
+  '/api/client-locks': typeof ApiClientLocksRoute
   '/api/messages': typeof ApiMessagesRoute
+  '/api/admin/cloudflare-usage': typeof ApiAdminCloudflareUsageRoute
+  '/api/ai/chat': typeof ApiAiChatRoute
+  '/api/ai/persona': typeof ApiAiPersonaRoute
+  '/api/auth/register': typeof ApiAuthRegisterRoute
+  '/api/characters/profile': typeof ApiCharactersProfileRoute
   '/api/characters/upload': typeof ApiCharactersUploadRoute
+  '/api/presence/requests': typeof ApiPresenceRequestsRoute
+  '/api/presence/results': typeof ApiPresenceResultsRoute
+  '/api/presence/status': typeof ApiPresenceStatusRoute
+  '/api/servers/$serverId/characters': typeof ApiServersServerIdCharactersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/api/auth': typeof ApiAuthRoute
+  '/_portal': typeof PortalRouteWithChildren
+  '/_portal/ai-persona': typeof PortalAiPersonaRoute
+  '/_portal/characters': typeof PortalCharactersRoute
+  '/_portal/clients': typeof PortalClientsRoute
+  '/_portal/console': typeof PortalConsoleRoute
+  '/_portal/docs': typeof PortalDocsRoute
+  '/_portal/messages': typeof PortalMessagesRoute
+  '/_portal/settings': typeof PortalSettingsRoute
+  '/_portal/usage': typeof PortalUsageRoute
+  '/api/auth': typeof ApiAuthRouteWithChildren
   '/api/characters': typeof ApiCharactersRouteWithChildren
+  '/api/client-locks': typeof ApiClientLocksRoute
   '/api/messages': typeof ApiMessagesRoute
+  '/api/admin/cloudflare-usage': typeof ApiAdminCloudflareUsageRoute
+  '/api/ai/chat': typeof ApiAiChatRoute
+  '/api/ai/persona': typeof ApiAiPersonaRoute
+  '/api/auth/register': typeof ApiAuthRegisterRoute
+  '/api/characters/profile': typeof ApiCharactersProfileRoute
   '/api/characters/upload': typeof ApiCharactersUploadRoute
+  '/api/presence/requests': typeof ApiPresenceRequestsRoute
+  '/api/presence/results': typeof ApiPresenceResultsRoute
+  '/api/presence/status': typeof ApiPresenceStatusRoute
+  '/api/servers/$serverId/characters': typeof ApiServersServerIdCharactersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/ai-persona'
+    | '/characters'
+    | '/clients'
+    | '/console'
+    | '/docs'
+    | '/messages'
+    | '/settings'
+    | '/usage'
     | '/api/auth'
     | '/api/characters'
+    | '/api/client-locks'
     | '/api/messages'
+    | '/api/admin/cloudflare-usage'
+    | '/api/ai/chat'
+    | '/api/ai/persona'
+    | '/api/auth/register'
+    | '/api/characters/profile'
     | '/api/characters/upload'
+    | '/api/presence/requests'
+    | '/api/presence/results'
+    | '/api/presence/status'
+    | '/api/servers/$serverId/characters'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/ai-persona'
+    | '/characters'
+    | '/clients'
+    | '/console'
+    | '/docs'
+    | '/messages'
+    | '/settings'
+    | '/usage'
     | '/api/auth'
     | '/api/characters'
+    | '/api/client-locks'
     | '/api/messages'
+    | '/api/admin/cloudflare-usage'
+    | '/api/ai/chat'
+    | '/api/ai/persona'
+    | '/api/auth/register'
+    | '/api/characters/profile'
     | '/api/characters/upload'
+    | '/api/presence/requests'
+    | '/api/presence/results'
+    | '/api/presence/status'
+    | '/api/servers/$serverId/characters'
   id:
     | '__root__'
     | '/'
+    | '/_portal'
+    | '/_portal/ai-persona'
+    | '/_portal/characters'
+    | '/_portal/clients'
+    | '/_portal/console'
+    | '/_portal/docs'
+    | '/_portal/messages'
+    | '/_portal/settings'
+    | '/_portal/usage'
     | '/api/auth'
     | '/api/characters'
+    | '/api/client-locks'
     | '/api/messages'
+    | '/api/admin/cloudflare-usage'
+    | '/api/ai/chat'
+    | '/api/ai/persona'
+    | '/api/auth/register'
+    | '/api/characters/profile'
     | '/api/characters/upload'
+    | '/api/presence/requests'
+    | '/api/presence/results'
+    | '/api/presence/status'
+    | '/api/servers/$serverId/characters'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ApiAuthRoute: typeof ApiAuthRoute
+  PortalRoute: typeof PortalRouteWithChildren
+  ApiAuthRoute: typeof ApiAuthRouteWithChildren
   ApiCharactersRoute: typeof ApiCharactersRouteWithChildren
+  ApiClientLocksRoute: typeof ApiClientLocksRoute
   ApiMessagesRoute: typeof ApiMessagesRoute
+  ApiAdminCloudflareUsageRoute: typeof ApiAdminCloudflareUsageRoute
+  ApiAiChatRoute: typeof ApiAiChatRoute
+  ApiAiPersonaRoute: typeof ApiAiPersonaRoute
+  ApiPresenceRequestsRoute: typeof ApiPresenceRequestsRoute
+  ApiPresenceResultsRoute: typeof ApiPresenceResultsRoute
+  ApiPresenceStatusRoute: typeof ApiPresenceStatusRoute
+  ApiServersServerIdCharactersRoute: typeof ApiServersServerIdCharactersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -102,6 +335,69 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_portal': {
+      id: '/_portal'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_portal/ai-persona': {
+      id: '/_portal/ai-persona'
+      path: '/ai-persona'
+      fullPath: '/ai-persona'
+      preLoaderRoute: typeof PortalAiPersonaRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/characters': {
+      id: '/_portal/characters'
+      path: '/characters'
+      fullPath: '/characters'
+      preLoaderRoute: typeof PortalCharactersRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/clients': {
+      id: '/_portal/clients'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof PortalClientsRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/console': {
+      id: '/_portal/console'
+      path: '/console'
+      fullPath: '/console'
+      preLoaderRoute: typeof PortalConsoleRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/docs': {
+      id: '/_portal/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof PortalDocsRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/messages': {
+      id: '/_portal/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof PortalMessagesRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/settings': {
+      id: '/_portal/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof PortalSettingsRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/usage': {
+      id: '/_portal/usage'
+      path: '/usage'
+      fullPath: '/usage'
+      preLoaderRoute: typeof PortalUsageRouteImport
+      parentRoute: typeof PortalRoute
     }
     '/api/auth': {
       id: '/api/auth'
@@ -117,12 +413,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCharactersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/client-locks': {
+      id: '/api/client-locks'
+      path: '/api/client-locks'
+      fullPath: '/api/client-locks'
+      preLoaderRoute: typeof ApiClientLocksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/messages': {
       id: '/api/messages'
       path: '/api/messages'
       fullPath: '/api/messages'
       preLoaderRoute: typeof ApiMessagesRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/cloudflare-usage': {
+      id: '/api/admin/cloudflare-usage'
+      path: '/api/admin/cloudflare-usage'
+      fullPath: '/api/admin/cloudflare-usage'
+      preLoaderRoute: typeof ApiAdminCloudflareUsageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/chat': {
+      id: '/api/ai/chat'
+      path: '/api/ai/chat'
+      fullPath: '/api/ai/chat'
+      preLoaderRoute: typeof ApiAiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/persona': {
+      id: '/api/ai/persona'
+      path: '/api/ai/persona'
+      fullPath: '/api/ai/persona'
+      preLoaderRoute: typeof ApiAiPersonaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/register': {
+      id: '/api/auth/register'
+      path: '/register'
+      fullPath: '/api/auth/register'
+      preLoaderRoute: typeof ApiAuthRegisterRouteImport
+      parentRoute: typeof ApiAuthRoute
+    }
+    '/api/characters/profile': {
+      id: '/api/characters/profile'
+      path: '/profile'
+      fullPath: '/api/characters/profile'
+      preLoaderRoute: typeof ApiCharactersProfileRouteImport
+      parentRoute: typeof ApiCharactersRoute
     }
     '/api/characters/upload': {
       id: '/api/characters/upload'
@@ -131,14 +469,80 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCharactersUploadRouteImport
       parentRoute: typeof ApiCharactersRoute
     }
+    '/api/presence/requests': {
+      id: '/api/presence/requests'
+      path: '/api/presence/requests'
+      fullPath: '/api/presence/requests'
+      preLoaderRoute: typeof ApiPresenceRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/presence/results': {
+      id: '/api/presence/results'
+      path: '/api/presence/results'
+      fullPath: '/api/presence/results'
+      preLoaderRoute: typeof ApiPresenceResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/presence/status': {
+      id: '/api/presence/status'
+      path: '/api/presence/status'
+      fullPath: '/api/presence/status'
+      preLoaderRoute: typeof ApiPresenceStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/servers/$serverId/characters': {
+      id: '/api/servers/$serverId/characters'
+      path: '/api/servers/$serverId/characters'
+      fullPath: '/api/servers/$serverId/characters'
+      preLoaderRoute: typeof ApiServersServerIdCharactersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface PortalRouteChildren {
+  PortalAiPersonaRoute: typeof PortalAiPersonaRoute
+  PortalCharactersRoute: typeof PortalCharactersRoute
+  PortalClientsRoute: typeof PortalClientsRoute
+  PortalConsoleRoute: typeof PortalConsoleRoute
+  PortalDocsRoute: typeof PortalDocsRoute
+  PortalMessagesRoute: typeof PortalMessagesRoute
+  PortalSettingsRoute: typeof PortalSettingsRoute
+  PortalUsageRoute: typeof PortalUsageRoute
+}
+
+const PortalRouteChildren: PortalRouteChildren = {
+  PortalAiPersonaRoute: PortalAiPersonaRoute,
+  PortalCharactersRoute: PortalCharactersRoute,
+  PortalClientsRoute: PortalClientsRoute,
+  PortalConsoleRoute: PortalConsoleRoute,
+  PortalDocsRoute: PortalDocsRoute,
+  PortalMessagesRoute: PortalMessagesRoute,
+  PortalSettingsRoute: PortalSettingsRoute,
+  PortalUsageRoute: PortalUsageRoute,
+}
+
+const PortalRouteWithChildren =
+  PortalRoute._addFileChildren(PortalRouteChildren)
+
+interface ApiAuthRouteChildren {
+  ApiAuthRegisterRoute: typeof ApiAuthRegisterRoute
+}
+
+const ApiAuthRouteChildren: ApiAuthRouteChildren = {
+  ApiAuthRegisterRoute: ApiAuthRegisterRoute,
+}
+
+const ApiAuthRouteWithChildren =
+  ApiAuthRoute._addFileChildren(ApiAuthRouteChildren)
+
 interface ApiCharactersRouteChildren {
+  ApiCharactersProfileRoute: typeof ApiCharactersProfileRoute
   ApiCharactersUploadRoute: typeof ApiCharactersUploadRoute
 }
 
 const ApiCharactersRouteChildren: ApiCharactersRouteChildren = {
+  ApiCharactersProfileRoute: ApiCharactersProfileRoute,
   ApiCharactersUploadRoute: ApiCharactersUploadRoute,
 }
 
@@ -148,9 +552,18 @@ const ApiCharactersRouteWithChildren = ApiCharactersRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ApiAuthRoute: ApiAuthRoute,
+  PortalRoute: PortalRouteWithChildren,
+  ApiAuthRoute: ApiAuthRouteWithChildren,
   ApiCharactersRoute: ApiCharactersRouteWithChildren,
+  ApiClientLocksRoute: ApiClientLocksRoute,
   ApiMessagesRoute: ApiMessagesRoute,
+  ApiAdminCloudflareUsageRoute: ApiAdminCloudflareUsageRoute,
+  ApiAiChatRoute: ApiAiChatRoute,
+  ApiAiPersonaRoute: ApiAiPersonaRoute,
+  ApiPresenceRequestsRoute: ApiPresenceRequestsRoute,
+  ApiPresenceResultsRoute: ApiPresenceResultsRoute,
+  ApiPresenceStatusRoute: ApiPresenceStatusRoute,
+  ApiServersServerIdCharactersRoute: ApiServersServerIdCharactersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

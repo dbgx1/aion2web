@@ -4,8 +4,11 @@
   "compatibility_date": "2026-09-01",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
+  "vars": {
+    "CLOUDFLARE_ACCOUNT_ID": "eb1e201a3afb3d17f33285240edd595e"
+  },
   "secrets": {
-    "required": ["UPLOAD_API_TOKEN"]
+    "required": ["UPLOAD_API_TOKEN", "OPENROUTER_API_KEY"]
   },
   "d1_databases": [
     {
@@ -17,6 +20,6 @@
   ],
   "observability": {
     "enabled": true,
-    "head_sampling_rate": 1
+    "head_sampling_rate": 0.1
   }
 }

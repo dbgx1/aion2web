@@ -10,6 +10,7 @@ export type GameCharacter = {
   avatarColor: string
   avatarUrl: string
   faction: string
+  lastSeenAt: number
 }
 
 export type CharacterDirectoryServer = {

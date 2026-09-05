@@ -3,12 +3,15 @@ export type StoredChatMessage = {
   sourceMessageId: string
   requestId: string
   agentId: string
+  gameMessageId?: string
   direction: 'incoming' | 'outgoing' | 'system'
   messageType: string
   senderName: string
   content: string
   status: 'pending' | 'sent' | 'delivered' | 'received' | 'failed'
   errorMessage: string
+  operatorUserKey: string
+  operatorUsername: string
   sentAt: number
   createdAt: number
 }

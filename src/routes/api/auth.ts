@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 import {
   createAdminSession,
-  isAdminRequest,
+  currentAdminPrincipal,
   sessionCookie,
-  verifyAdminToken,
+  verifyAdminCredentials,
 } from '#/server/admin-auth.server'
 import { jsonError } from '#/server/api-auth.server'
 
@@ -11,8 +11,9 @@ export const Route = createFileRoute('/api/auth')({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        if (!await isAdminRequest(request)) return jsonError('未登录', 401)
-        return Response.json({ ok: true, authenticated: true }, {
+        const principal = await currentAdminPrincipal(request)
+        if (!principal) return jsonError('未登录', 401)
+        return Response.json({ ok: true, authenticated: true, user: principal }, {
           headers: { 'Cache-Control': 'no-store' },
         })
       },
@@ -23,11 +24,14 @@ export const Route = createFileRoute('/api/auth')({
         } catch {
           return jsonError('请求体必须是合法 JSON', 400)
         }
-        const token = typeof body === 'object' && body !== null && 'token' in body
-          && typeof body.token === 'string' ? body.token : ''
-        if (!await verifyAdminToken(token)) return jsonError('登录令牌无效', 401)
-        const session = await createAdminSession()
-        return Response.json({ ok: true, authenticated: true }, {
+        const username = typeof body === 'object' && body !== null && 'username' in body
+          && typeof body.username === 'string' ? body.username : ''
+        const password = typeof body === 'object' && body !== null && 'password' in body
+          && typeof body.password === 'string' ? body.password : ''
+        const principal = await verifyAdminCredentials(username, password)
+        if (!principal) return jsonError('账号或密码错误', 401)
+        const session = await createAdminSession(principal)
+        return Response.json({ ok: true, authenticated: true, user: principal }, {
           headers: {
             'Cache-Control': 'no-store',
             'Set-Cookie': sessionCookie(request, session),

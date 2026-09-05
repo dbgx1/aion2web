@@ -1,7 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { MqttClient } from 'mqtt'
+import { isPrivateChatPayload } from '#/lib/chat-channel'
+import { ClientOfflineMonitor } from '#/lib/client-offline'
+import { GameChatGuard } from '#/lib/game-chat-block'
+import { MessageInbox } from '#/lib/message-inbox'
+import { queryPresenceMqtt, presenceQuerySchema, type QueryPresence } from '#/lib/presence-mqtt'
 
-const AGENT_TTL_MS = 15_000
+const AGENT_TTL_MS = 45_000
+const SELECTED_AGENT_STORAGE_KEY = 'aion2-selected-agent-id'
 
 export type ConnectionState = 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'error'
 
@@ -51,7 +57,7 @@ function topicBase(settings: ConnectionSettings) {
   return `${settings.prefix.trim()}/${settings.room.trim()}`
 }
 
-function normalizeAgent(value: unknown): OnlineAgent | null {
+function normalizeAgent(value: unknown, retained = false): OnlineAgent | null {
   if (!isRecord(value) || value.type !== 'agent_status') return null
 
   const agentId = textValue(value.agentId)
@@ -59,7 +65,10 @@ function normalizeAgent(value: unknown): OnlineAgent | null {
 
   const time = textValue(value.time || value.startedAt)
   const timestamp = Date.parse(time)
-  if (Number.isFinite(timestamp) && Date.now() - timestamp > AGENT_TTL_MS) return null
+  // Live packets prove liveness when received, regardless of the client PC's
+  // clock. Only retained broker snapshots need a wall-clock age check.
+  if (retained && value.status !== 'offline'
+    && (!Number.isFinite(timestamp) || Math.abs(Date.now() - timestamp) > AGENT_TTL_MS)) return null
   const state = isRecord(value.state) ? value.state : {}
 
   return {
@@ -80,12 +89,16 @@ function messageFromPayload(value: unknown, fallbackAgentId = ''): ConsoleMessag
   const payload = isRecord(value.payload) ? value.payload : value
   const data = isRecord(payload.jsonData) ? payload.jsonData : {}
   const chatMeta = isRecord(value.chat_meta) ? value.chat_meta : {}
-  const type = textValue(value.type) || 'message'
+  const rawType = textValue(value.type)
+  const method = textValue(value.method)
+  const type = rawType === 'MESSAGE' && method === 'GAME' && textValue(data.content)
+    ? 'chat_message'
+    : rawType || 'message'
   const agentId = textValue(value.agentId) || fallbackAgentId
   const sender = textValue(chatMeta.sender || data.userName || data.alias) || 'unknown'
   const receiver = textValue(chatMeta.receiver || data.receiverUserName)
   const roomType = textValue(chatMeta.roomType) || 'MESSAGE'
-  const isPrivate = chatMeta.kind === 'private' || isRecord(data.gameRoomKeyInfo) && data.gameRoomKeyInfo.type === 'ONE_ON_ONE'
+  const isPrivate = isPrivateChatPayload(value)
   const controlLabels: Record<string, string> = {
     control_sent: '已发出',
     control_ack: '客户端已收到',
@@ -143,36 +156,97 @@ function saveSettings(settings: ConnectionSettings) {
   localStorage.setItem('aion2-prefix', settings.prefix.trim())
 }
 
+function loadSelectedAgentId() {
+  if (typeof window === 'undefined') return ''
+  return localStorage.getItem(SELECTED_AGENT_STORAGE_KEY) || ''
+}
+
+function saveSelectedAgentId(agentId: string) {
+  if (typeof window === 'undefined') return
+  if (agentId) localStorage.setItem(SELECTED_AGENT_STORAGE_KEY, agentId)
+  else localStorage.removeItem(SELECTED_AGENT_STORAGE_KEY)
+}
+
 export function useAionConsole() {
+  const [inbox] = useState(() => new MessageInbox())
+  const inboxState = useSyncExternalStore(inbox.subscribe, inbox.snapshot, inbox.snapshot)
+  const [chatGuard] = useState(() => new GameChatGuard())
+  const chatBlocks = useSyncExternalStore(chatGuard.subscribe, chatGuard.snapshot, chatGuard.serverSnapshot)
   const [settings, setSettings] = useState(defaultConnectionSettings)
   const [connectionState, setConnectionState] = useState<ConnectionState>('idle')
   const [connectionMessage, setConnectionMessage] = useState('等待连接')
   const [agents, setAgents] = useState<OnlineAgent[]>([])
   const [messages, setMessages] = useState<ConsoleMessage[]>([])
-  const [selectedAgentId, setSelectedAgentId] = useState('')
+  const [selectedAgentId, setSelectedAgentIdState] = useState(loadSelectedAgentId)
   const clientRef = useRef<MqttClient | null>(null)
+  const connectionGeneration = useRef(0)
+  const connecting = useRef(false)
   const settingsRef = useRef(defaultConnectionSettings)
   const agentsRef = useRef(new Map<string, OnlineAgent>())
   const messageIdsRef = useRef(new Set<string>())
+  const offlineMonitor = useRef(new ClientOfflineMonitor(AGENT_TTL_MS))
+  const offlineReports = useRef(new Map<string, number>())
+  const offlineReporting = useRef(false)
+  const offlineReportRetryAt = useRef(0)
+  const offlineReportFailures = useRef(0)
+
+  const flushOfflineReports = useCallback(async () => {
+    if (offlineReporting.current || !navigator.onLine || !clientRef.current?.connected
+      || document.visibilityState !== 'visible' || Date.now() < offlineReportRetryAt.current) return
+    offlineReporting.current = true
+    try {
+      for (const [agentId, offlineAt] of offlineReports.current) {
+        if (Date.now() - offlineAt > 60_000) {
+          offlineReports.current.delete(agentId)
+          continue
+        }
+        try {
+          const response = await fetch('/api/client-locks', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'offline', agentId, offlineAt }),
+            signal: AbortSignal.timeout(10_000),
+          })
+          const rejected = response.status >= 400 && response.status < 500 && response.status !== 408 && response.status !== 429
+          if (!response.ok && !rejected) throw new Error('离线状态上报失败')
+          if (offlineReports.current.get(agentId) === offlineAt) offlineReports.current.delete(agentId)
+          offlineReportFailures.current = 0
+          offlineReportRetryAt.current = 0
+        } catch {
+          offlineReportRetryAt.current = Date.now() + Math.min(60_000, 5_000 * 2 ** Math.min(offlineReportFailures.current++, 4))
+          break
+        }
+      }
+    } finally {
+      offlineReporting.current = false
+    }
+  }, [])
 
   const syncAgents = useCallback(() => {
+    chatGuard.prune()
     const now = Date.now()
-    for (const [agentId, agent] of agentsRef.current) {
-      if (now - agent.lastSeenAt > AGENT_TTL_MS) agentsRef.current.delete(agentId)
+    const monitoring = Boolean(clientRef.current?.connected && navigator.onLine && document.visibilityState === 'visible')
+    for (const agentId of offlineMonitor.current.sweep(monitoring, now)) {
+      offlineReports.current.set(agentId, now)
+      agentsRef.current.delete(agentId)
     }
+    void flushOfflineReports()
     const nextAgents = [...agentsRef.current.values()].sort((a, b) =>
       (a.host || a.agentId).localeCompare(b.host || b.agentId),
     )
     setAgents(nextAgents)
-    setSelectedAgentId((current) => {
-      if (current && agentsRef.current.has(current)) return current
-      return ''
-    })
-  }, [])
+    // Presence is temporary; selection is user intent. A delayed heartbeat or
+    // suspended browser must not erase it, so a returning client can recover.
+  }, [flushOfflineReports, chatGuard])
 
   const addMessage = useCallback((value: unknown, fallbackAgentId = '') => {
+    // Restriction enforcement precedes React rendering and timeline deduplication.
+    chatGuard.accept(fallbackAgentId || (isRecord(value) ? textValue(value.agentId) : ''), value)
     const message = messageFromPayload(value, fallbackAgentId)
-    if (!message || messageIdsRef.current.has(message.id)) return
+    if (!message) return
+    // Capture replies synchronously, including bursts larger than the event log
+    // that arrive before React can render once.
+    inbox.accept(message)
+    if (messageIdsRef.current.has(message.id)) return
     messageIdsRef.current.add(message.id)
     setMessages((current) => {
       const next = [message, ...current]
@@ -180,7 +254,7 @@ export function useAionConsole() {
       for (const item of removed) messageIdsRef.current.delete(item.id)
       return next.slice(0, 500)
     })
-  }, [])
+  }, [chatGuard, inbox])
 
   const publishDiscover = useCallback(() => {
     const client = clientRef.current
@@ -199,19 +273,27 @@ export function useAionConsole() {
   }, [])
 
   const disconnect = useCallback(() => {
+    ++connectionGeneration.current
+    connecting.current = false
     const client = clientRef.current
     clientRef.current = null
     client?.end(true)
+    offlineMonitor.current = new ClientOfflineMonitor(AGENT_TTL_MS)
+    offlineReports.current.clear()
     agentsRef.current.clear()
     setAgents([])
-    setSelectedAgentId('')
+    saveSelectedAgentId('')
+    setSelectedAgentIdState('')
     setConnectionState('idle')
     setConnectionMessage('已断开')
   }, [])
 
   const connect = useCallback(async (nextSettings?: ConnectionSettings) => {
-    if (clientRef.current) return
+    if (clientRef.current || connecting.current) return
+    connecting.current = true
+    const generation = ++connectionGeneration.current
     const activeSettings = nextSettings || settingsRef.current
+    chatGuard.setScope(JSON.stringify([activeSettings.mqttUrl.trim(), activeSettings.prefix.trim(), activeSettings.room.trim()]))
     settingsRef.current = activeSettings
     setSettings(activeSettings)
     saveSettings(activeSettings)
@@ -220,6 +302,7 @@ export function useAionConsole() {
 
     try {
       const mqttModule = await import('mqtt')
+      if (generation !== connectionGeneration.current) return
       const connectMqtt = typeof mqttModule.connect === 'function'
         ? mqttModule.connect
         : mqttModule.default.connect
@@ -231,23 +314,35 @@ export function useAionConsole() {
         clean: true,
         keepalive: 30,
         reconnectPeriod: 1500,
+        // Commands must not be silently queued for later execution after reconnect.
+        queueQoSZero: false,
       })
       clientRef.current = client
 
       client.on('connect', () => {
+        if (clientRef.current !== client) return
         const base = topicBase(activeSettings)
-        client.subscribe([`${base}/agents/+/status`, `${base}/events/+/chat`])
+        client.subscribe([`${base}/agents/+/status`, `${base}/events/+/chat`], (error) => {
+          if (clientRef.current !== client) return
+          if (error) {
+            setConnectionState('error')
+            setConnectionMessage(`订阅客户端消息失败：${error.message}`)
+            return
+          }
+          publishDiscover()
+        })
         setConnectionState('connected')
         setConnectionMessage(`已连接 · ${activeSettings.room}`)
-        publishDiscover()
       })
 
       client.on('reconnect', () => {
+        if (clientRef.current !== client) return
         setConnectionState('reconnecting')
         setConnectionMessage('信令重连中…')
       })
 
       client.on('error', (error) => {
+        if (clientRef.current !== client) return
         setConnectionState('error')
         setConnectionMessage(`连接错误：${error.message}`)
       })
@@ -259,7 +354,8 @@ export function useAionConsole() {
         }
       })
 
-      client.on('message', (topic, buffer) => {
+      client.on('message', (topic, buffer, packet) => {
+        if (clientRef.current !== client) return
         let payload: unknown
         try {
           payload = JSON.parse(new TextDecoder().decode(buffer))
@@ -267,10 +363,31 @@ export function useAionConsole() {
           return
         }
 
-        const agent = normalizeAgent(payload)
+        const agent = normalizeAgent(payload, packet?.retain === true)
         if (agent) {
-          if (agent.status === 'offline') agentsRef.current.delete(agent.agentId)
-          else agentsRef.current.set(agent.agentId, agent)
+          // Status records are only authoritative on the matching status topic.
+          // requestStatus responses on chat topics do not replace discovery data.
+          if (topic !== `${topicBase(activeSettings)}/agents/${agent.agentId}/status`) return
+          if (agent.status === 'offline') {
+            // A will contains its creation time, not the actual disconnect time.
+            // Treat it as a hint; the liveness grace period confirms the outage.
+            // This also avoids an old retained will undoing a fresh connection.
+            if (!isRecord(payload) || payload.will !== true) {
+              const offlineAt = Date.parse(agent.time)
+              const current = agentsRef.current.get(agent.agentId)
+              if (!packet?.retain && Number.isFinite(offlineAt)
+                && Math.abs(Date.now() - offlineAt) <= AGENT_TTL_MS
+                && (!current || offlineAt >= Date.parse(current.time))) {
+                agentsRef.current.delete(agent.agentId)
+                offlineMonitor.current.forget(agent.agentId)
+                offlineReports.current.set(agent.agentId, offlineAt)
+              }
+            }
+          } else {
+            agentsRef.current.set(agent.agentId, agent)
+            offlineMonitor.current.observe(agent.agentId, agent.lastSeenAt)
+            offlineReports.current.delete(agent.agentId)
+          }
           syncAgents()
           return
         }
@@ -282,11 +399,14 @@ export function useAionConsole() {
         }
       })
     } catch (error) {
+      if (generation !== connectionGeneration.current) return
       const message = error instanceof Error ? error.message : '未知错误'
       setConnectionState('error')
       setConnectionMessage(`无法加载 MQTT：${message}`)
+    } finally {
+      if (generation === connectionGeneration.current) connecting.current = false
     }
-  }, [addMessage, publishDiscover, syncAgents])
+  }, [addMessage, publishDiscover, syncAgents, chatGuard])
 
   const reconnect = useCallback((nextSettings: ConnectionSettings) => {
     disconnect()
@@ -294,6 +414,7 @@ export function useAionConsole() {
   }, [connect, disconnect])
 
   const sendCommand = useCallback((agentId: string, command: Record<string, unknown>) => {
+    if (command.type === 'sendWhisper' && chatGuard.get(agentId)) return false
     const client = clientRef.current
     if (!client?.connected || !agentId) return false
 
@@ -320,29 +441,72 @@ export function useAionConsole() {
       payload: message,
     })
     return true
-  }, [addMessage])
+  }, [addMessage, chatGuard])
+
+  const queryPresence = useCallback<QueryPresence>(async (characters, onResults, signal) => {
+    const client = clientRef.current
+    if (!client?.connected) throw new Error('MQTT 未连接')
+    const response = await fetch('/api/presence/requests', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ characters }), signal,
+    })
+    const body = await response.json() as { query?: unknown; error?: string }
+    if (!response.ok) throw new Error(body.error || '登记查询失败')
+    const query = presenceQuerySchema.parse(body.query)
+    try {
+      await queryPresenceMqtt(client, query, onResults, signal)
+    } finally {
+      void fetch('/api/presence/requests', {
+        method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId: query.requestId }), keepalive: true,
+      }).catch(() => {})
+    }
+  }, [])
 
   const clearMessages = useCallback(() => {
     messageIdsRef.current.clear()
     setMessages([])
   }, [])
 
+  const setSelectedAgentId = useCallback((agentId: string) => {
+    saveSelectedAgentId(agentId)
+    setSelectedAgentIdState(agentId)
+  }, [])
+
   useEffect(() => {
+    const onStorage = (event: StorageEvent) => { if (event.key === chatGuard.storageKey) chatGuard.reload() }
+    window.addEventListener('storage', onStorage)
     const initialSettings = loadSettings()
     settingsRef.current = initialSettings
     setSettings(initialSettings)
     void connect(initialSettings)
     const timer = window.setInterval(syncAgents, 3000)
+    const wake = () => {
+      syncAgents()
+      if (navigator.onLine && document.visibilityState === 'visible') publishDiscover()
+    }
+    window.addEventListener('online', wake)
+    document.addEventListener('visibilitychange', wake)
 
     return () => {
+      window.removeEventListener('storage', onStorage)
+      window.removeEventListener('online', wake)
+      document.removeEventListener('visibilitychange', wake)
+      ++connectionGeneration.current
+      connecting.current = false
       window.clearInterval(timer)
       const client = clientRef.current
       clientRef.current = null
       client?.end(true)
     }
-  }, [connect, syncAgents])
+  }, [connect, syncAgents, chatGuard, publishDiscover])
 
   return {
+    inboxMessages: inboxState.messages,
+    readMessageIds: inboxState.readMessageIds,
+    markMessagesRead: inbox.markRead,
+    chatGuard,
+    chatBlocks,
     settings,
     connectionState,
     connectionMessage,
@@ -355,6 +519,7 @@ export function useAionConsole() {
     reconnect,
     publishDiscover,
     sendCommand,
+    queryPresence,
     clearMessages,
   }
 }

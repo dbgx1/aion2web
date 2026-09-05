@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { parseCharacterUpload } from '#/lib/character-upload'
 import { jsonError, verifyBearerToken } from '#/server/api-auth.server'
+import { isAdminRequest } from '#/server/admin-auth.server'
 import { upsertCharacters, uploadToken } from '#/server/characters.server'
 
 const MAX_BODY_BYTES = 1_000_000
@@ -10,7 +11,8 @@ export const Route = createFileRoute('/api/characters/upload')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        if (!await verifyBearerToken(request, uploadToken())) {
+        const authorized = await isAdminRequest(request) || await verifyBearerToken(request, uploadToken())
+        if (!authorized) {
           return jsonError('上传令牌无效', 401)
         }
 

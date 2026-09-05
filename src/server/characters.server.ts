@@ -44,12 +44,16 @@ export async function upsertCharacters(characters: CharacterUpload[]) {
 }
 
 export type CharacterListQuery = {
+  raceId?: number
   serverId: string
   legionName: string
   withoutLegion: boolean
   search: string
   cursor: number
   limit: number
+  includeTotal?: boolean
+  characterId?: string
+  characterName?: string
 }
 
 type CharacterRow = {
@@ -67,8 +71,21 @@ type CharacterRow = {
 }
 
 export async function listCharacters(query: CharacterListQuery) {
-  const filters = ['id > ?']
-  const bindings: unknown[] = [query.cursor]
+  const filters: string[] = []
+  const bindings: unknown[] = []
+  if (query.raceId) {
+    // Race follows the existing server directory, rather than free-form uploaded faction labels.
+    const serverIds = AION2_SERVERS.filter(server => server.raceId === query.raceId).map(server => server.serverId)
+    filters.push(serverIds.length ? `server_id IN (${serverIds.map(() => '?').join(', ')})` : '0 = 1')
+    bindings.push(...serverIds)
+  }
+  if (query.characterId) {
+    filters.push('character_id = ?')
+    bindings.push(query.characterId)
+  } else if (query.characterName) {
+    filters.push('character_name = ?')
+    bindings.push(query.characterName)
+  }
   if (query.serverId) {
     filters.push('server_id = ?')
     bindings.push(query.serverId)
@@ -84,14 +101,24 @@ export async function listCharacters(query: CharacterListQuery) {
     bindings.push(query.search, query.search)
   }
 
+  const includeTotal = query.includeTotal !== false
+  const whereClause = filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : ''
+  const totalRow = includeTotal
+    ? await env.DB.prepare(`
+      SELECT COUNT(*) AS total_count
+      FROM game_characters
+      ${whereClause}
+    `).bind(...bindings).first<{ total_count: number }>()
+    : null
+
   const result = await env.DB.prepare(`
     SELECT id, character_name, character_id, server_id, server_name,
       legion_name, level, class_name, faction, avatar_url, last_seen_at
     FROM game_characters
-    WHERE ${filters.join(' AND ')}
+    WHERE id > ?${filters.length > 0 ? ` AND ${filters.join(' AND ')}` : ''}
     ORDER BY id
     LIMIT ?
-  `).bind(...bindings, query.limit + 1).all<CharacterRow>()
+  `).bind(query.cursor, ...bindings, query.limit + 1).all<CharacterRow>()
 
   const hasMore = result.results.length > query.limit
   const rows = result.results.slice(0, query.limit)
@@ -110,6 +137,8 @@ export async function listCharacters(query: CharacterListQuery) {
       lastSeenAt: row.last_seen_at,
     })),
     nextCursor: hasMore ? rows.at(-1)?.id ?? null : null,
+    hasMore,
+    totalCount: includeTotal ? Number(totalRow?.total_count || 0) : null,
   }
 }
 

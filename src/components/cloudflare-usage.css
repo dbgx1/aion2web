@@ -1,0 +1,53 @@
+.usage-page { display: grid; gap: 22px; width: 100%; max-width: 1500px; margin: 0 auto; color: var(--ink, #233e42); }
+.usage-heading, .usage-actions, .usage-period, .usage-section-heading, .usage-card-status { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.usage-heading { align-items: flex-start; flex-wrap: wrap; }
+.usage-heading h2 { margin: 8px 0; font-size: 28px; }
+.usage-heading p { margin: 0; color: #61767a; }
+.usage-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; letter-spacing: 1.4px; color: #25847f; font-weight: 700; }
+.usage-actions { flex-wrap: wrap; font-size: 13px; }
+.usage-actions a, .usage-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 8px 13px; border: 1px solid #d4e1e0; border-radius: 5px; background: #fff; text-decoration: none; color: #286f6b; }
+.usage-actions button:disabled { opacity: .6; cursor: wait; }
+.usage-actions button:focus-visible, .usage-page a:focus-visible, .usage-page summary:focus-visible { outline: 2px solid #16897e; outline-offset: 3px; }
+.usage-period { font-size: 12px; color: #647579; flex-wrap: wrap; }
+.usage-period > div { display: grid; gap: 5px; }
+.usage-period b { color: #344c50; font-size: 14px; }
+.usage-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.usage-card { padding: 22px; background: #fff; border: 1px solid #dce5e3; border-radius: 7px; min-width: 0; }
+.usage-card-label { font-size: 13px; font-weight: 600; min-height: 34px; }
+.usage-value { display: block; font-size: clamp(23px, 2.3vw, 34px); letter-spacing: -.7px; font-variant-numeric: tabular-nums; margin: 8px 0; overflow-wrap: anywhere; }
+.usage-muted, .usage-card small { color: #65797c; font-size: 12px; }
+.usage-card small { display: block; margin-top: 12px; }
+.usage-meter { height: 7px; border-radius: 8px; background: #edf2f1; margin: 22px 0 12px; overflow: hidden; }
+.usage-meter > span { display: block; height: 100%; background: #229b8b; border-radius: inherit; }
+.usage-card-status { font-size: 11px; gap: 5px; color: #257c6d; }
+.usage-warning .usage-meter > span { background: #d99726; }
+.usage-warning .usage-card-status { color: #946500; }
+.usage-exceeded .usage-meter > span { background: #d7654e; }
+.usage-exceeded .usage-card-status, .usage-over { color: #ba4431; }
+.usage-unknown .usage-card-status { color: #728285; }
+.usage-notice { padding: 18px 22px; border: 1px solid #d4e1de; border-radius: 6px; background: #f7fbfa; font-size: 13px; line-height: 1.8; }
+.usage-notice.usage-exceeded { border-color: #edc7bd; background: #fff6f2; color: #9c4434; }
+.usage-notice h3 { margin: 0 0 8px; font-size: 15px; }
+.usage-notice p { margin: 5px 0; }
+.usage-notice details { margin-top: 10px; }
+.usage-notice summary { cursor: pointer; color: #277c72; font-weight: 600; }
+.usage-notice code { overflow-wrap: anywhere; }
+.usage-history { min-width: 0; background: #fff; border: 1px solid #dce5e3; border-radius: 7px; overflow: hidden; }
+.usage-section-heading { padding: 20px 22px; flex-wrap: wrap; }
+.usage-section-heading h3 { margin: 0; font-size: 16px; }
+.usage-section-heading > span { font-size: 12px; color: #718183; }
+.usage-table-wrap { overflow-x: auto; }
+.usage-history table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+.usage-history th, .usage-history td { padding: 14px 22px; border-top: 1px solid #e8eeed; text-align: right; font-variant-numeric: tabular-nums; }
+.usage-history tr > :first-child { text-align: left; }
+.usage-history thead { background: #f6f9f8; color: #60777b; font-size: 12px; }
+.usage-history tbody th { font-weight: 500; }
+.usage-history tbody small { color: #218b7e; }
+.usage-history .usage-over { font-weight: 700; }
+.usage-notes { font-size: 12px; line-height: 1.9; color: #687d80; }
+.usage-notes h3 { margin: 0; font-size: 14px; color: #445f63; }
+.usage-notes p { margin: 7px 0; }
+.usage-notes a { margin-right: 22px; }
+.usage-page a { color: #237f75; }
+@media (max-width: 1200px) { .usage-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .usage-cards { grid-template-columns: 1fr; } .usage-page { gap: 16px; } .usage-card { padding: 18px; } .usage-history th, .usage-history td { padding: 12px 14px; } }

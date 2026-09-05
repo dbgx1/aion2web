@@ -5,10 +5,12 @@ async function sha256(value: string) {
 }
 
 export async function verifyBearerToken(request: Request, expectedToken: string) {
+  if (!expectedToken?.trim()) return false
   const authorization = request.headers.get('authorization') || ''
   const providedToken = authorization.startsWith('Bearer ')
     ? authorization.slice('Bearer '.length).trim()
     : ''
+  if (!providedToken) return false
   const [providedHash, expectedHash] = await Promise.all([
     sha256(providedToken),
     sha256(expectedToken),

@@ -1,1 +1,9 @@
 UPLOAD_API_TOKEN=replace-with-a-random-secret
+PRESENCE_SERVICE_ID=aion2web
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin
+OPENROUTER_API_KEY=replace-with-your-openrouter-key
+TANSTACK_AI_MODEL=deepseek/deepseek-chat
+# Optional: account-scoped Account Analytics Read token for the admin usage page.
+# Leave empty to show the setup state. Never use a VITE_ variable for this token.
+CLOUDFLARE_USAGE_API_TOKEN=
