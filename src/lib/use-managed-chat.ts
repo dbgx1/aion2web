@@ -85,11 +85,11 @@ export function useManagedChat(props: Props) {
         error ? reject(error) : resolve()
       }
       const cancel = () => finish(new Error('托管已暂停；如消息已发出，请核对记录'))
-      const timer = setTimeout(() => finish(new Error('发送结果未确认，自动发送已暂停')), 45000)
+      const timer = setTimeout(() => finish(new Error('发送结果未确认')), 45000)
       receipts.current.set(requestId, finish); signal.addEventListener('abort', cancel, { once: true })
       const sent = latest.current.sendCommand(config.agentId, { type: 'sendWhisper', requestId, serverKey: character.serverKey,
         characterId: character.characterId, targetName: character.name, content })
-      if (!sent) finish(new Error('客户端未连接或聊天已封禁'))
+      if (!sent) finish(new Error('客户端未连接或发送命令被拒绝'))
     }),
   })
   const runner = runnerRef.current

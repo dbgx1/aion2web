@@ -29,6 +29,13 @@ export const Route = createFileRoute('/api/ai/chat')({
 
         const params = await chatParamsFromRequest(request)
         const managed = isRecord(params.forwardedProps) && params.forwardedProps.surface === 'managed'
+        // Older open tabs still request a summary after queueing. Requiring
+        // another tool there could turn a completed action into a second send.
+        const isChatAction = (name: string) => ['send_private_chat', 'send_group_chat'].includes(name)
+        const actionRequested = params.messages.some(message => message.role === 'assistant' && (
+          ('toolCalls' in message && message.toolCalls?.some(call => isChatAction(call.function.name))) ||
+          ('parts' in message && message.parts.some(part => part.type === 'tool-call' && isChatAction(part.name)))
+        ))
         if (managed) {
           const { listClientLocks } = await import('#/server/client-locks.server')
           const scope = params.forwardedProps as Record<string, unknown>
@@ -60,6 +67,9 @@ export const Route = createFileRoute('/api/ai/chat')({
           ...(managed ? { agentLoopStrategy: maxIterations(5) } : {}),
           modelOptions: {
             maxCompletionTokens: 1800,
+            // Managed turns must perform an action, not end with a text-only
+            // promise. Keep normal interactive chat free to answer in text.
+            ...(managed && !actionRequested ? { toolChoice: 'required' as const } : {}),
           },
           abortController,
         })
@@ -92,6 +102,9 @@ function consoleAiContextPrompt(value: unknown) {
 function consoleAiToolsForContext(value: unknown) {
   const surface = isRecord(value) ? value.surface : ''
   if (surface === 'managed') {
+    // One bounded recovery request after a successful but actionless turn.
+    // Preserve the fixed recipient scope; never turn plain text into a send.
+    if (isRecord(value) && value.requireChatAction === true) return [sendPrivateChatDef, sendGroupChatDef]
     const single = isRecord(value) && isRecord(value.task) && value.task.scope === 'single'
     return single ? managedAiToolDefs.filter(tool => tool.name !== 'query_managed_online') : managedAiToolDefs
   }

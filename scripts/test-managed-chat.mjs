@@ -6,7 +6,7 @@ const characters = ['1','2','3'].map(characterId=>({characterId,serverKey:'1001'
 const config = {agentId:'A1',agentName:'A1',room:'r',acquiredAt:1,scope:'all',label:'all',instruction:'chat',intervalMs:15000,proactiveMs:180000}
 let now=1000000, sends=[], turns=[], guard=null, runOverride, sendOverride
 const runner = new ManagedChatRunner({now:()=>now, changed:()=>{}, guard:()=>guard, verify:async()=>{},
-  send:async(c,who,content,signal)=>{signal.throwIfAborted();if(sendOverride)return sendOverride();sends.push([who.characterId,content])},
+  send:async(c,who,content,signal)=>{signal.throwIfAborted();if(sendOverride)return sendOverride(c,who,content,signal);sends.push([who.characterId,content])},
   run:async turn=>{turns.push(turn);if(runOverride)return runOverride(turn);await Promise.all([turn.send('reply'),turn.send('duplicate')])},
 })
 await runner.start(config,async()=>characters)
@@ -39,18 +39,33 @@ await release();await inflight;assert.equal(sends.length,0)
 runOverride=undefined;now+=15000;await runner.tick();assert.equal(sends.length,1)
 assert.equal(turns.at(-1).reason,'reply')
 
-// A failed send remains paused even if the AI SDK catches its tool exception.
-runner.stop();sends=[];sendOverride=()=>{throw new Error('result unknown')}
+// A non-ban send failure retries the exact text even if the AI SDK catches its tool exception.
+runner.stop();sends=[];const attempts=[]
+sendOverride=(c,who,content)=>{attempts.push([who.characterId,content]);if(attempts.length===1)throw new Error('[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol')}
 runOverride=async turn=>{try{await turn.send('uncertain')}catch{} }
 await runner.start(config,async()=>characters);now+=5000;await runner.tick()
-assert.equal(runner.snapshot.status,'paused');now+=500000;await runner.tick();assert.equal(sends.length,0)
-sendOverride=undefined;runOverride=()=>{throw new Error('429')};runner.resume();now+=5000;await runner.tick()
+assert.equal(runner.snapshot.status,'waiting');assert.equal(runner.snapshot.retryAt,now+60000)
+const generated=turns.length
+now+=59000;await runner.tick();assert.equal(attempts.length,1)
+now+=1000;await runner.tick();assert.deepEqual(attempts,[['1','uncertain'],['1','uncertain']])
+assert.equal(turns.length,generated,'transport retry reuses the saved text without another AI turn')
+assert.equal(runner.snapshot.sent,1);assert.equal(runner.snapshot.status,'running')
+sendOverride=undefined;runOverride=()=>{throw new Error('429')};now+=15000;await runner.tick()
 assert.equal(runner.snapshot.retryAt,now+60000);const count=turns.length
 now+=59000;await runner.tick();assert.equal(turns.length,count)
 now+=1000;await runner.tick();assert.equal(runner.snapshot.retryAt,now+120000)
 
+// A confirmed game-chat ban pauses and never schedules the rejected text.
+runner.stop();guard=null;attempts.length=0
+sendOverride=(c,who,content)=>{attempts.push([who.characterId,content]);guard={message:'游戏聊天已被封禁（错误码 2011200）',permanent:true};throw new Error('客户端发送失败')}
+runOverride=async turn=>{try{await turn.send('blocked')}catch{} }
+await runner.start(config,async()=>characters);now+=5000;await runner.tick()
+assert.equal(runner.snapshot.status,'paused');assert.equal(runner.snapshot.retryAt,0)
+now+=500000;await runner.tick();assert.equal(attempts.length,1)
+guard=null
+
 // Group tool enqueues the fixed scope once; all members including current get sent.
-runner.stop();sends=[];runOverride=async turn=>{assert.equal(turn.queueGroup('group',['a','b']),3);assert.equal(turn.queueGroup('duplicate'),0)}
+runner.stop();sends=[];sendOverride=undefined;runOverride=async turn=>{assert.equal(turn.queueGroup('group',['a','b']),3);assert.equal(turn.queueGroup('duplicate'),0)}
 await runner.start(config,async()=>characters);now+=5000;await runner.tick()
 for(let i=0;i<3;i++){now+=15000;await runner.tick()}
 assert.deepEqual(sends.map(([id])=>id).sort(),['1','2','3'])
@@ -68,4 +83,4 @@ runner.stop()
 let loaded;const starting=runner.start(config,()=>new Promise(resolve=>loaded=resolve))
 await new Promise(resolve=>setImmediate(resolve));runner.stop();loaded(characters);await starting
 assert.equal(runner.snapshot.status,'idle')
-console.log('PASS: continuous rounds, isolated histories, reply priority, duplicate tool suppression, stale answer suppression, pause/resume, network recovery, ban, uncertain receipts, rate-limit backoff, bounded group queue, cancelled loading')
+console.log('PASS: continuous rounds, isolated histories, reply priority, duplicate tool suppression, stale answer suppression, pause/resume, network recovery, confirmed-ban pause, exact-text resend, rate-limit backoff, bounded group queue, cancelled loading')

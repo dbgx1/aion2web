@@ -32,6 +32,10 @@ type Dependencies = {
 }
 export const managedKey = (character: Pick<GameCharacter, 'serverKey' | 'characterId'>) => JSON.stringify([character.serverKey, character.characterId])
 
+export class ManagedPresenceUnavailableError extends Error {
+  constructor() { super('角色在线状态已过期或已离线，等待重新查询'); this.name = 'ManagedPresenceUnavailableError' }
+}
+
 /** One scheduler owns all recipients; no timer or AI instance per character. */
 export class ManagedChatRunner {
   snapshot: ManagedSnapshot = { status: 'idle', total: 0, sent: 0, turns: 0, current: '', notice: '', retryAt: 0 }
@@ -44,6 +48,7 @@ export class ManagedChatRunner {
   private seen = new Set<string>()
   private revision = new Map<string, number>()
   private drafts = new Map<string, string>()
+  private retrying = new Set<string>()
   private controller?: AbortController
   private presenceController?: AbortController
   private activeTurn?: { key: string; reason: string; published: boolean; controller: AbortController }
@@ -96,7 +101,7 @@ export class ManagedChatRunner {
     this.presenceController?.abort(); this.presenceController = undefined; this.activeTurn = undefined
     this.incomingAt.clear(); this.presenceFailures = 0
     this.recipients.clear(); this.order = []; this.cursor = 0; this.due.clear(); this.pending.clear()
-    this.history.clear(); this.seen.clear(); this.revision.clear(); this.drafts.clear(); this.groupQueued = false
+    this.history.clear(); this.seen.clear(); this.revision.clear(); this.drafts.clear(); this.retrying.clear(); this.groupQueued = false
     this.failures = 0; this.nextAt = 0
     this.presence = undefined; this.nextPresenceAt = 0
     this.emit({ status: 'idle', config: undefined, total: 0, sent: 0, turns: 0, current: '', notice: '', retryAt: 0, online: undefined, queried: undefined })
@@ -194,7 +199,7 @@ export class ManagedChatRunner {
     const generation = this.generation, revision = this.revision.get(chosen) || 0
     const controller = new AbortController(); this.controller = controller; this.busy = true
     const activeTurn = { key: chosen, reason, published: false, controller }; this.activeTurn = activeTurn
-    let published = false, sendClaimed = false
+    let published = false, sendClaimed = false, sendFailure: Error | undefined
     const valid = () => {
       controller.signal.throwIfAborted()
       if (generation !== this.generation) throw new Error('托管任务已改变')
@@ -215,13 +220,25 @@ export class ManagedChatRunner {
       valid()
       if ((this.revision.get(chosen) || 0) !== revision) return false
       const freshReply = reason === 'reply' && this.now() - (this.incomingAt.get(chosen) ?? -Infinity) <= 180000
-      if (this.presence && !freshReply && !this.presence.online(chosen, this.now())) throw new Error('角色在线状态已过期或已离线，等待重新查询')
-      // Once handed to transport, an uncertain result must never auto-retry.
+      if (this.presence && !freshReply && !this.presence.online(chosen, this.now())) {
+        // This recipient became ineligible while the model was generating.
+        // Preserve it even if the SDK consumes the tool exception.
+        sendFailure = new ManagedPresenceUnavailableError()
+        throw sendFailure
+      }
+      const outgoing = content.trim().slice(0, 2000)
+      // The user explicitly accepts the duplicate risk of uncertain receipts:
+      // keep the exact text and retry it unless the game-chat guard confirms a ban.
       published = true; activeTurn.published = true
-      try { await this.deps.send(config, recipient, content.trim().slice(0, 2000), controller.signal) }
+      try { await this.deps.send(config, recipient, outgoing, controller.signal) }
       catch (error) {
-        if (generation === this.generation) this.pause(`${error instanceof Error ? error.message : '发送失败'}；请核对聊天记录后恢复`)
-        throw error
+        sendFailure = error instanceof Error ? error : new Error('发送失败')
+        const block = this.deps.guard(config)
+        if (!block || !/封禁/.test(block.message)) {
+          this.drafts.set(chosen, outgoing)
+          this.retrying.add(chosen)
+        }
+        throw sendFailure
       }
       valid()
       this.nextAt = this.now() + config.intervalMs
@@ -232,7 +249,7 @@ export class ManagedChatRunner {
     try {
       await this.deps.verify(config, controller.signal); valid()
       // A queued broadcast must never stand in for an answer to a new question.
-      if (reason === 'reply') this.drafts.delete(chosen)
+      if (reason === 'reply' && !this.retrying.has(chosen)) this.drafts.delete(chosen)
       const draft = this.drafts.get(chosen)
       if (draft) await send(draft)
       else await this.deps.run({ recipient, config, reason, signal: controller.signal, history: this.history.get(chosen) || [], send,
@@ -246,9 +263,13 @@ export class ManagedChatRunner {
           return this.order.length
         },
       })
+      // Some AI SDK adapters consume tool exceptions. Preserve the transport
+      // failure so a swallowed exception still enters the retry path.
+      if (sendFailure) throw sendFailure
       valid()
       if ((this.revision.get(chosen) || 0) === revision) this.pending.delete(chosen)
       if (draft || published) this.drafts.delete(chosen)
+      this.retrying.delete(chosen)
       this.due.set(chosen, this.drafts.has(chosen) ? 0 : this.now() + config.proactiveMs)
       if (!published) this.nextAt = this.now() + config.intervalMs
       this.failures = 0
@@ -256,12 +277,28 @@ export class ManagedChatRunner {
     } catch (error) {
       if (generation !== this.generation || controller.signal.aborted) return
       const message = error instanceof Error ? error.message : 'AI 请求失败'
-      if (published || /占用|封禁|未登录|权限/.test(message)) this.pause(`${message}；请核对聊天记录后恢复`)
+      const block = this.deps.guard(config)
+      if (block?.permanent || (!published && /占用|未登录|权限/.test(message))) {
+        if (block && /封禁/.test(block.message)) {
+          this.drafts.delete(chosen)
+          this.retrying.delete(chosen)
+        }
+        this.pause(`${block?.message ?? message}；请核对后恢复`)
+      }
+      else if (!published && error instanceof ManagedPresenceUnavailableError) {
+        // Presence expiry is local to this role, not a provider/transport
+        // failure. Keep actual incoming replies queued, but never manufacture
+        // a reply from an unsuccessful proactive turn or back off all roles.
+        this.due.set(chosen, 0)
+        this.nextAt = this.now()
+        if (!this.presenceFailures) this.nextPresenceAt = this.now()
+        this.emit({ status: 'running', retryAt: 0, notice: '当前角色在线状态已变化，等待重新查询；继续处理其他在线角色' })
+      }
       else {
         this.nextAt = this.now() + Math.min(900000, 60000 * 2 ** Math.min(this.failures++, 4))
         // Keep this recipient queued through backoff, rather than skipping it.
         this.pending.set(chosen, this.nextAt)
-        this.emit({ status: 'waiting', notice: `请求失败，将退避后重试：${message}`, retryAt: this.nextAt })
+        this.emit({ status: 'waiting', notice: `${published ? '发送' : '请求'}失败，将退避后自动重试：${message}`, retryAt: this.nextAt })
       }
     } finally {
       this.busy = false

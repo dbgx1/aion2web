@@ -1,7 +1,7 @@
 import { database } from '#/server/characters.server'
 import type { ChatMessageUpload } from '#/lib/chat-storage'
 import type { AdminPrincipal } from '#/server/admin-users.server'
-import { isPrivateChatPayload } from '#/lib/chat-channel'
+import { isPrivateChatPayload, privateChatPeerFromPayload } from '#/lib/chat-channel'
 import { gameMessageIdFromRaw } from '#/lib/chat-timeline'
 
 type MessageRow = {
@@ -79,10 +79,28 @@ export async function storeMessages(input: {
 }) {
   let messages = input.messages.filter((message) => message.messageType !== 'chat_message' || isPrivateChatPayload(message.raw))
   if (messages.length === 0) return { inserted: 0, ignored: input.messages.length }
-  const character = await findCharacter(input.serverId, input.characterId)
-  if (!character) return null
-
   const now = Date.now()
+  let character = await findCharacter(input.serverId, input.characterId)
+  if (!character) {
+    const peer = messages.flatMap(message => {
+      if (message.messageType !== 'chat_message') return []
+      const peer = privateChatPeerFromPayload(message.raw)
+      return peer && peer.direction === message.direction && peer.serverId === input.serverId
+        && peer.characterId === input.characterId ? [peer] : []
+    })[0]
+    if (!peer) return null
+    // A real private-chat peer may not have been encountered by the directory
+    // crawler yet. Preserve richer records if an import wins this insert race.
+    await database().prepare(`
+      INSERT INTO game_characters (
+        character_name, character_id, server_id, first_seen_at, last_seen_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(server_id, character_id) DO NOTHING
+    `).bind(peer.characterName, peer.characterId, peer.serverId, now, now, now).run()
+    character = await findCharacter(input.serverId, input.characterId)
+    if (!character) throw new Error('无法保存私聊角色信息')
+  }
+
   const newest = [...messages].sort((left, right) => right.sentAt - left.sentAt)[0]
   const conversationId = await ensureConversation(character.id, input.operator, newest?.agentId || '', now)
   // Avoid even attempting duplicate inserts (and their index/sequence work).

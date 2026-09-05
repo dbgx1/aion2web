@@ -96,6 +96,82 @@ test('message replay performs no application-row writes and keeps account-scoped
   } finally {db.close()}
 })
 
+test('private game events save missing peers without creating the sender or overwriting directory data', async () => {
+  const db = new DatabaseSync(':memory:')
+  try {
+    db.exec(readFileSync(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'))
+    db.exec(readFileSync(new URL('../migrations/0005_account_scoped_chat_history.sql', import.meta.url), 'utf8'))
+    const database = { prepare: sql => ({ bind: (...bindings) => ({
+      first: async () => db.prepare(sql).get(...bindings),
+      all: async () => ({ results: db.prepare(sql).all(...bindings) }),
+      run: async () => ({ meta: { changes: db.prepare(sql).run(...bindings).changes } }),
+    }) }), batch: async statements => Promise.all(statements.map(statement => statement.run())) }
+    const service = load('../src/server/messages.server.ts', {
+      '#/lib/chat-channel': channel, '#/lib/chat-timeline': timeline,
+      '#/server/characters.server': { database: () => database },
+    })
+    const peerId = '281756451687619142'
+    const senderId = '281756451687404891'
+    const message = {
+      sourceMessageId: 'missing-peer-echo', messageType: 'chat_message', direction: 'outgoing',
+      content: 'existing message', status: 'sent', sentAt: 1000,
+      raw: { direction: 'S->C', payload: { jsonData: {
+        gameRoomKeyInfo: { type: 'ONE_ON_ONE' }, isFromGame: true,
+        playNcCharId: senderId, userName: 'Local player', serverId: '1001',
+        receiverCharacterId: peerId, receiverServerId: '1002', receiverUserName: 'Private peer',
+      } } },
+    }
+    const input = { serverId: '1002', characterId: peerId, operator: { userKey: 'owner-a', username: 'A' }, messages: [message] }
+    for (const invalid of [
+      { ...input, characterId: senderId },
+      { ...input, serverId: '1001' },
+      { ...input, messages: [{ ...message, direction: 'incoming' }] },
+      { ...input, messages: [{ ...message, messageType: 'control_sent' }] },
+      { ...input, messages: [{ ...message, raw: { chat_meta: { kind: 'private' } } }] },
+      ...[{ receiverUserName: '' }, { receiverCharacterId: Number(peerId) }].map(change => ({
+        ...input, messages: [{ ...message, raw: { payload: { jsonData: { ...message.raw.payload.jsonData, ...change } } } }],
+      })),
+    ]) assert.equal(await service.storeMessages(invalid), null)
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM game_characters').get().n, 0)
+
+    // Exercise the same batch API contract used by the live browser's retry.
+    const route = load('../src/routes/api/messages.ts', {
+      '@tanstack/react-router': { createFileRoute: () => value => value },
+      '#/server/admin-auth.server': { currentAdminPrincipal: async () => input.operator },
+      '#/server/api-auth.server': { jsonError: (error, status) => Response.json({ error }, { status }) },
+      '#/server/messages.server': service,
+    }).Route
+    const response = await route.server.handlers.POST({ request: new Request('https://example.test/api/messages', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conversations: [input] }),
+    }) })
+    const ack = await response.json()
+    assert.equal(response.status, 200)
+    assert.equal(ack.failed, 0)
+    assert.equal(ack.conversations[0].inserted, 1)
+    const peer = db.prepare('SELECT * FROM game_characters').get()
+    assert.equal(peer.character_id, peerId)
+    assert.equal(peer.server_id, '1002')
+    assert.equal(peer.character_name, 'Private peer')
+    assert.equal(peer.level, 0)
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM game_characters').get().n, 1)
+    db.prepare('UPDATE game_characters SET level=80, legion_name=?, metadata_json=? WHERE id=?').run('Existing legion', '{"rich":true}', peer.id)
+    assert.equal((await service.storeMessages(input)).inserted, 0)
+    const preserved = db.prepare('SELECT * FROM game_characters').get()
+    assert.equal(preserved.level, 80)
+    assert.equal(preserved.legion_name, 'Existing legion')
+    assert.equal(preserved.metadata_json, '{"rich":true}')
+    const other = await service.storeMessages({ ...input, operator: { userKey: 'owner-b', username: 'B' } })
+    assert.equal(other.inserted, 1, 'History remains account scoped')
+
+    const incoming = { ...message, sourceMessageId: 'incoming', direction: 'incoming', raw: {
+      payload: { jsonData: { ...message.raw.payload.jsonData, isFromGame: false, serverId: '1001' } },
+    } }
+    assert.equal((await service.storeMessages({ ...input, serverId: '1001', characterId: senderId, messages: [incoming] })).inserted, 1)
+    assert.equal(db.prepare('SELECT character_name FROM game_characters WHERE character_id=?').get(senderId).character_name, 'Local player')
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM game_characters').get().n, 2)
+  } finally { db.close() }
+})
+
 test('real history SQL correlates across pages within the account/character/client, and API retains GUID only', async () => {
   const db = new DatabaseSync(':memory:')
   try {

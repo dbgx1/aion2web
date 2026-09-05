@@ -37,3 +37,51 @@ queryOverride=undefined
 await runner.start(config,async()=>characters);guard={permanent:true,message:'封禁'};now+=5000;await runner.tick()
 assert.equal(runner.snapshot.status,'paused')
 console.log('PASS: automatic discovery, batches, fresh cache, offline exclusion, rejoin, pre-send freshness, backoff, cancellation and ban')
+
+// A status may expire (or turn offline) after selection but before publishing.
+// This must not become a global AI failure, even when the SDK eats the error.
+let raceNow=1000000, raceMode='expire', holdScan=false, failScan=false, finishScan, raceSends=[], raceRuns=[], scanCount=0
+const raceRoles=characters.slice(0,2)
+const raceResult=(role,status='online',checkedAt=raceNow)=>({serverId:role.serverKey,characterId:role.characterId,status,checkedAt})
+const race=new ManagedChatRunner({now:()=>raceNow,changed:()=>{},guard:()=>null,verify:async()=>{},
+ queryOnline:async roles=>{scanCount++;if(failScan)throw new Error('query unavailable');if(holdScan)return new Promise(resolve=>{finishScan=()=>resolve(roles.map(role=>raceResult(role)))});return roles.map(role=>raceResult(role))},
+ run:async turn=>{
+  raceRuns.push([turn.recipient.characterId,turn.reason])
+  if(raceMode==='expire')raceNow+=2
+  if(raceMode==='offline')race.recordPresence([turn.recipient],[raceResult(turn.recipient,'offline')])
+  try { await turn.send('fixture-only') } catch {} // SDK tool exception consumption
+ },
+ send:async(_config,role)=>raceSends.push(role.characterId),
+})
+const raceStart=async(roles=raceRoles)=>{await race.start({...config,intervalMs:0},async()=>roles);raceNow+=5000;raceSends=[];raceRuns=[]}
+await raceStart()
+race.recordPresence(raceRoles,[raceResult(raceRoles[0],'online',raceNow-179999),raceResult(raceRoles[1])])
+await race.tick()
+assert.equal(race.snapshot.retryAt,0,'Presence expiry does not impose the 60-second provider backoff')
+assert.equal(race.snapshot.status,'running');assert.equal(race.snapshot.turns,0);assert.equal(raceSends.length,0)
+holdScan=true;raceMode='send'
+const raceScan=race.tick();await new Promise(resolve=>setImmediate(resolve))
+await race.tick()
+assert.deepEqual(raceSends,['1'],'Other fresh roles can send while the expired role is being rechecked')
+finishScan();await raceScan;holdScan=false
+await race.tick()
+assert.deepEqual(raceSends,['1','0'],'Expired role rejoins after confirmed fresh online status')
+assert.deepEqual(raceRuns.at(-1),['0','proactive'],'Deferral does not fabricate a received private message')
+
+await raceStart();raceMode='offline'
+race.recordPresence(raceRoles,raceRoles.map(role=>raceResult(role)))
+await race.tick();raceMode='send';const scansBeforeOffline=scanCount
+await race.tick()
+assert.deepEqual(raceSends,['1'],'Fresh offline update blocks only the affected role')
+assert.equal(race.snapshot.retryAt,0)
+assert.equal(scanCount,scansBeforeOffline,'A confirmed offline role is not immediately queried again')
+
+// Local deferral must not bypass an actual presence-service failure backoff.
+await raceStart(characters.slice(0,3));raceMode='expire';failScan=true
+race.recordPresence(raceRoles,[raceResult(raceRoles[0],'online',raceNow-179999),raceResult(raceRoles[1])])
+await race.tick();const failedScans=scanCount // query for the third, unknown role fails
+await race.tick();raceMode='send';await race.tick()
+assert.equal(scanCount,failedScans,'Existing query backoff is retained after one role expires')
+assert.deepEqual(raceSends,['1'])
+race.stop()
+console.log('PASS: in-flight expiry/offline defers only the affected role; swallowed errors preserved; other roles continue; recheck/rejoin; proactive identity; real query backoff retained')
