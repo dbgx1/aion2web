@@ -1,0 +1,19 @@
+2026-09-10 10:33:44,251 WARNING connection attempt failed broker=127.0.0.1:61008; retry enabled
+2026-09-10 10:33:47,254 INFO connected agent=7IEAK94Z-55584 broker=127.0.0.1:61008 build=2026-09-05.heartbeat-recovery
+2026-09-10 10:33:47,259 WARNING disconnected reason=Unspecified error; automatic reconnect enabled
+2026-09-10 10:33:48,261 INFO connected agent=7IEAK94Z-55584 broker=127.0.0.1:61008 build=2026-09-05.heartbeat-recovery
+2026-09-10 10:33:50,271 WARNING disconnected reason=Keep alive timeout; automatic reconnect enabled
+2026-09-10 10:33:50,272 WARNING disconnected reason=Keep alive timeout; automatic reconnect enabled
+2026-09-10 10:33:51,275 INFO connected agent=7IEAK94Z-55584 broker=127.0.0.1:61008 build=2026-09-05.heartbeat-recovery
+2026-09-10 10:33:51,350 WARNING disconnected reason=Normal disconnection; automatic reconnect enabled
+2026-09-12 14:24:04,494 INFO connected agent=7IEAK94Z-ec21ed78796f broker=127.0.0.1:61468 build=2026-09-12.private-mqtt.1
+2026-09-12 14:24:04,994 WARNING disconnected reason=Normal disconnection; automatic reconnect enabled
+2026-09-12 14:24:07,035 WARNING connection attempt failed broker=127.0.0.1:61474; retry enabled
+2026-09-12 14:24:10,039 INFO connected agent=7IEAK94Z-ec21ed78796f broker=127.0.0.1:61474 build=2026-09-12.private-mqtt.1
+2026-09-12 14:24:10,053 WARNING disconnected reason=Unspecified error; automatic reconnect enabled
+2026-09-12 14:24:11,055 INFO connected agent=7IEAK94Z-ec21ed78796f broker=127.0.0.1:61474 build=2026-09-12.private-mqtt.1
+2026-09-12 14:24:13,080 WARNING disconnected reason=Keep alive timeout; automatic reconnect enabled
+2026-09-12 14:24:13,080 WARNING disconnected reason=Keep alive timeout; automatic reconnect enabled
+2026-09-12 14:24:14,082 INFO connected agent=7IEAK94Z-ec21ed78796f broker=127.0.0.1:61474 build=2026-09-12.private-mqtt.1
+2026-09-12 14:24:14,208 WARNING disconnected reason=Normal disconnection; automatic reconnect enabled
+2026-09-12 14:24:14,209 INFO connected agent=7IEAK94Z-ec21ed78796f broker=127.0.0.1:61474 build=2026-09-12.private-mqtt.1

@@ -1,0 +1,19 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.19.0
+2 info using node@v24.20.0
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:E:\project\aion2web\.npmrc
+5 silly config load:file:C:\Users\Administrator\.npmrc
+6 silly config load:file:C:\Users\Administrator\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm exec wrangler deploy
+8 verbose argv "exec" "--" "wrangler" "deploy"
+9 verbose logfile logs-max:10 dir:E:\project\aion2web\.npm-cache\_logs\2026-09-21T07_07_13_560Z-
+10 verbose logfile E:\project\aion2web\.npm-cache\_logs\2026-09-21T07_07_13_560Z-debug-0.log
+11 silly logfile start cleaning logs, removing 1 files
+12 silly logfile done cleaning log files
+13 verbose cwd E:\project\aion2web
+14 verbose os Windows_NT 10.0.19045
+15 verbose node v24.20.0
+16 verbose npm  v11.19.0
+17 verbose exit 0
+18 info ok

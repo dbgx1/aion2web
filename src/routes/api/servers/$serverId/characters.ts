@@ -1,6 +1,7 @@
+import { canAccessServer } from '#/server/server-access.server'
 import { createFileRoute } from '@tanstack/react-router'
 import { AION2_SERVERS, aion2ServerName } from '#/lib/aion2-servers'
-import { isAdminRequest } from '#/server/admin-auth.server'
+import { currentAdminPrincipal } from '#/server/admin-auth.server'
 import { jsonError, verifyBearerToken } from '#/server/api-auth.server'
 import { listCharacters, uploadToken } from '#/server/characters.server'
 
@@ -18,12 +19,14 @@ export const Route = createFileRoute('/api/servers/$serverId/characters')({
   server: {
     handlers: {
       GET: async ({ request, params }) => {
-        const authorized = await isAdminRequest(request) || await verifyBearerToken(request, uploadToken())
+        const principal = await currentAdminPrincipal(request)
+        const authorized = principal || await verifyBearerToken(request, uploadToken())
         if (!authorized) return jsonError('未登录或访问令牌无效', 401)
 
         const serverId = params.serverId.trim().slice(0, 100)
         if (!serverId) return jsonError('serverId 不能为空', 400)
 
+        if (principal && !await canAccessServer(principal, serverId)) return jsonError('无权访问该区服', 403)
         const url = new URL(request.url)
         const limit = integerParam(url.searchParams.get('limit'), 200, 1, 500)
         const cursor = integerParam(url.searchParams.get('cursor'), 0, 0, Number.MAX_SAFE_INTEGER)
@@ -54,7 +57,7 @@ export const Route = createFileRoute('/api/servers/$serverId/characters')({
           },
           totalCount: result.totalCount,
         }, {
-          headers: { 'Cache-Control': 'private, max-age=30' },
+          headers: { 'Cache-Control': 'no-store' },
         })
       },
     },

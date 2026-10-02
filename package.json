@@ -8,8 +8,11 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "generate-routes": "tsr generate",
-    "build": "vite build",
+    "build": "npm run docs:export && vite build",
+    "docs:export": "node scripts/export-api-docs.mjs",
     "preview": "vite preview",
+    "test:ai": "node scripts/test-ai-suite.mjs",
+    "test:reception": "node scripts/test-reception.mjs && node scripts/test-reception-client.mjs && node scripts/test-reception-ui.mjs",
     "deploy": "npm run build && node scripts/prepare-deploy.mjs && wrangler deploy",
     "upload:characters": "node scripts/upload-characters.mjs",
     "upload:messages": "node scripts/upload-messages.mjs"

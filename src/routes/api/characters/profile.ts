@@ -1,9 +1,10 @@
+import { canAccessServer } from '#/server/server-access.server'
 import { createFileRoute } from '@tanstack/react-router'
-import { AION2_SERVERS } from '#/lib/aion2-servers'
-import { isAdminRequest } from '#/server/admin-auth.server'
-import { jsonError } from '#/server/api-auth.server'
+import { currentAdminPrincipal } from '#/server/admin-auth.server'
+import { jsonError, verifyBearerToken } from '#/server/api-auth.server'
+import { uploadToken } from '#/server/characters.server'
+import { fetchOfficialCharacterJson, officialCharacterSource, OfficialCharacterError } from '#/server/official-character.server'
 
-const OFFICIAL_ORIGIN = 'https://tw.ncsoft.com'
 const PROFILE_IMAGE_ORIGIN = 'https://profileimg.plaync.com'
 
 type OfficialSearchItem = {
@@ -44,82 +45,53 @@ function stringList(value: unknown) {
   return Array.isArray(value) ? value.flatMap((item) => typeof item === 'string' ? [item] : []) : []
 }
 
-async function fetchOfficialData(path: string, params: Record<string, string>) {
-  const url = new URL(path, OFFICIAL_ORIGIN)
-  url.search = new URLSearchParams(params).toString()
-  try {
-    const response = await fetch(url, {
-      headers: {
-        Accept: 'application/json',
-        Referer: `${OFFICIAL_ORIGIN}/aion2/characters/index`,
-        'User-Agent': 'Mozilla/5.0 (compatible; AION2-Control-Portal/1.0)',
-      },
-      signal: AbortSignal.timeout(8_000),
-    })
-    if (!response.ok) return {}
-    return record(await response.json())
-  } catch {
-    return {}
-  }
-}
-
 export const Route = createFileRoute('/api/characters/profile')({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        if (!await isAdminRequest(request)) return jsonError('未登录', 401)
+        const principal = await currentAdminPrincipal(request)
+        if (!principal && !await verifyBearerToken(request, uploadToken())) return jsonError('未登录或访问令牌无效', 401)
 
         const url = new URL(request.url)
-        const characterName = (url.searchParams.get('characterName') || '').trim().slice(0, 100)
-        const serverId = (url.searchParams.get('serverId') || '').trim().slice(0, 20)
-        if (!characterName || !serverId) return jsonError('缺少角色名或区服 ID', 400)
+        const characterName = (url.searchParams.get('characterName') || '').trim()
+        const serverId = (url.searchParams.get('serverId') || '').trim()
+        if (!characterName || characterName.length > 100 || !/^[12]\d{3}$/.test(serverId)) return jsonError('角色名或区服 ID 无效', 400)
 
-        const server = AION2_SERVERS.find((item) => item.serverId === serverId)
-        if (!server) return jsonError('暂不支持该区服的官网查询', 400)
+        if (principal && !await canAccessServer(principal, serverId)) return jsonError('无权访问该区服', 403)
+        const source = officialCharacterSource(serverId, (url.searchParams.get('region') || '').trim())
+        if (!source) return jsonError('不支持该地区或区服；region 可选 TW、GLOBAL', 400)
 
-        const officialUrl = new URL('/aion2/api/search/character', OFFICIAL_ORIGIN)
+        const officialUrl = new URL(source.searchUrl)
         officialUrl.search = new URLSearchParams({
+          ...source.searchParams,
           keyword: characterName,
-          race: String(server.raceId),
           serverId,
           sort: 'desc',
           page: '1',
           size: '40',
         }).toString()
 
-        let response: Response
+        let body: Record<string, unknown>
         try {
-          response = await fetch(officialUrl, {
-            headers: {
-              Accept: 'application/json',
-              'User-Agent': 'Mozilla/5.0 (compatible; AION2-Control-Portal/1.0)',
-            },
-            signal: AbortSignal.timeout(8_000),
-          })
-        } catch {
-          return jsonError('连接 NCSoft 角色查询服务失败', 502)
-        }
-        if (!response.ok) return jsonError(`NCSoft 角色查询失败 (${response.status})`, 502)
-
-        let body: { list?: OfficialSearchItem[] }
-        try {
-          body = await response.json() as { list?: OfficialSearchItem[] }
-        } catch {
-          return jsonError('NCSoft 返回了无法解析的数据', 502)
+          body = await fetchOfficialCharacterJson(officialUrl, source.referer)
+        } catch (cause) {
+          return jsonError(cause instanceof Error ? cause.message : 'NCSoft 查询失败', cause instanceof OfficialCharacterError ? cause.status : 502)
         }
 
-        const matches = Array.isArray(body.list) ? body.list : []
+        if (!Array.isArray(body.list)) return jsonError('NCSoft 搜索响应格式无效', 502)
+        const matches: OfficialSearchItem[] = body.list.map(record)
         const item = matches.find((candidate) => (
           plainCharacterName(candidate.name) === characterName
           && String(number(candidate.serverId)) === serverId
         ))
         if (!item) {
           return Response.json({ ok: true, found: false }, {
-            headers: { 'Cache-Control': 'private, max-age=60' },
+            headers: { 'Cache-Control': 'no-store' },
           })
         }
 
         const officialCharacterId = text(item.characterId)
+        if (!officialCharacterId) return jsonError('NCSoft 未返回有效角色标识', 502)
         const imagePath = text(item.profileImageUrl)
         let decodedCharacterId = officialCharacterId
         try {
@@ -128,15 +100,28 @@ export const Route = createFileRoute('/api/characters/profile')({
           // The search API normally returns a percent-encoded trailing padding character.
         }
         const detailParams = {
-          lang: 'zh',
+          ...source.detailParams,
           characterId: decodedCharacterId,
           serverId,
         }
-        const [detail, equipmentData] = await Promise.all([
-          fetchOfficialData('/aion2/api/character/info', detailParams),
-          fetchOfficialData('/aion2/api/character/equipment', detailParams),
+        const detailUrl = new URL(source.infoPath, source.origin)
+        const equipmentUrl = new URL(source.equipmentPath, source.origin)
+        detailUrl.search = equipmentUrl.search = new URLSearchParams(detailParams).toString()
+        const [detailResult, equipmentResult] = await Promise.allSettled([
+          fetchOfficialCharacterJson(detailUrl, source.referer),
+          fetchOfficialCharacterJson(equipmentUrl, source.referer),
         ])
+        if (detailResult.status === 'rejected') {
+          const cause = detailResult.reason
+          return jsonError('NCSoft 角色详情查询失败', cause instanceof OfficialCharacterError ? cause.status : 502)
+        }
+        const detail = detailResult.value
+        const equipmentData = equipmentResult.status === 'fulfilled' ? equipmentResult.value : {}
         const detailProfile = record(detail.profile)
+        if (String(detailProfile.serverId) !== serverId || plainCharacterName(detailProfile.characterName) !== characterName) {
+          return jsonError('NCSoft 角色详情与请求不匹配', 502)
+        }
+        const partial = !Array.isArray(record(equipmentData.equipment).equipmentList) || !Array.isArray(record(equipmentData.skill).skillList)
         const statRows = records(record(detail.stat).statList)
         const titleData = record(detail.title)
         const equipment = record(equipmentData.equipment)
@@ -146,6 +131,11 @@ export const Route = createFileRoute('/api/characters/profile')({
         return Response.json({
           ok: true,
           found: true,
+          source: 'ncsoft',
+          region: source.region,
+          subRegion: source.subRegion,
+          partial,
+          warnings: partial ? ['装备或技能资料暂不可用；空列表不代表角色没有装备或技能'] : [],
           profile: {
             characterId: officialCharacterId,
             name: plainCharacterName(item.name),
@@ -153,10 +143,12 @@ export const Route = createFileRoute('/api/characters/profile')({
             pcId: number(item.pcId),
             level: number(detailProfile.characterLevel) || number(item.level),
             serverId: String(number(item.serverId)),
-            serverName: text(item.serverName) || server.serverName,
+            serverName: text(item.serverName) || source.serverName,
             profileImageUrl: detailedImage || (imagePath ? new URL(imagePath, PROFILE_IMAGE_ORIGIN).toString() : ''),
-            region: text(detailProfile.regionName) || text(item.region),
-            profileUrl: `${OFFICIAL_ORIGIN}/aion2/characters/${serverId}/${officialCharacterId}`,
+            region: text(detailProfile.regionName) || text(item.region) || source.subRegion || source.region,
+            profileUrl: source.region === 'TW'
+              ? `${source.origin}/aion2/characters/${serverId}/${officialCharacterId}`
+              : `https://shugo.gg/character?${new URLSearchParams({ id: decodedCharacterId, server: serverId, region: 'GLOBAL', name: characterName })}`,
             className: text(detailProfile.className),
             combatPower: number(detailProfile.combatPower),
             genderName: text(detailProfile.genderName),
@@ -226,7 +218,7 @@ export const Route = createFileRoute('/api/characters/profile')({
             })),
           },
         }, {
-          headers: { 'Cache-Control': 'private, max-age=300' },
+          headers: { 'Cache-Control': 'no-store' },
         })
       },
     },

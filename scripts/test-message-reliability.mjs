@@ -16,7 +16,7 @@ window.loadMqtt=()=>new Promise(resolve=>window.imports.push(()=>resolve({connec
   const handlers=new Map()
   const client={connected:true,url,options,ended:false,
     on:(type,fn)=>{handlers.set(type,fn)},emit:(type,...args)=>handlers.get(type)?.(...args),
-    end:()=>{client.ended=true;client.connected=false},publish:()=>{},subscribe:(topics,callback)=>{callback?.()}}
+    end:()=>{client.ended=true;client.connected=false},publish:()=>{},unsubscribe:()=>{},subscribe:(topics,options,callback)=>{callback(null,topics.map(topic=>({topic,qos:1})))}}
   window.clients.push(client);return client
 }})))
 function MqttFixture(){const api=useAionConsole();useEffect(()=>{window.api=api});return <div>{api.connectionState}</div>}
@@ -31,7 +31,7 @@ const bundle = await build({ stdin: {contents:source+fixture,resolveDir:root+'sr
   format:'iife',platform:'browser',jsx:'automatic',alias:{'#':root+'src'},define:{'process.env.NODE_ENV':'"production"'},logLevel:'silent' })
 const server=createServer((request,response)=>{
   if(request.url==='/bundle.js'){response.setHeader('Content-Type','application/javascript');response.end(bundle.outputFiles[0].text);return}
-  if(request.url.startsWith('/api/')){response.setHeader('Content-Type','application/json');response.end('{"ok":true}');return}
+  if(request.url.startsWith('/api/')){response.setHeader('Content-Type','application/json');response.end(JSON.stringify(request.url==='/api/mqtt/connection'?{url:'wss://od43e177.ala.cn-shenzhen.emqxsl.cn:8084/mqtt',username:'fixture',password:'fixture'}:{ok:true}));return}
   response.setHeader('Content-Type','text/html');response.end('<div id="root"></div><script src="/bundle.js"></script>')
 })
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve))
@@ -50,6 +50,15 @@ try{
   await page.waitForFunction(()=>window.clients.length===1)
   await page.evaluate(()=>{window.clients[0].emit('connect');window.api.setSelectedAgentId('A1')})
   const status=(agentId)=>({type:'agent_status',agentId,status:'online',time:new Date().toISOString(),host:agentId})
+  for (const [fields, expected] of [
+    [{ characterName: '角色甲' }, '角色甲'],
+    [{ state: { userName: '角色乙' } }, '角色乙'],
+    [{ characterName: '' }, ''],
+    [{}, ''],
+  ]) {
+    await page.evaluate(payload=>window.clients[0].emit('message','aion2-chat-bridge/aion2-local/agents/name-test/status',new TextEncoder().encode(JSON.stringify(payload))), {...status('name-test'), ...fields})
+    assert.equal(await page.evaluate(()=>window.api.agents.find(agent=>agent.agentId==='name-test')?.characterName), expected, 'Character name updates and clears without stale identity')
+  }
   await page.evaluate(payload=>window.clients[0].emit('message','aion2-chat-bridge/aion2-local/agents/'+payload.agentId+'/status',new TextEncoder().encode(JSON.stringify(payload))),status('A2'))
   assert.equal(await page.evaluate(()=>window.api.selectedAgentId),'A1','First discovery reply must not clear remembered A1')
   await page.evaluate(payload=>window.clients[0].emit('message','aion2-chat-bridge/aion2-local/agents/'+payload.agentId+'/status',new TextEncoder().encode(JSON.stringify(payload))),status('A1'))
@@ -85,11 +94,9 @@ try{
   assert.equal(await page.evaluate(()=>window.clients[0].options.queueQoSZero),false)
   let offlineReports=0
   await page.route('**/api/client-locks',route=>{offlineReports++;return route.fulfill({status:503,json:{error:'unavailable'}})})
-  const failedReport=page.waitForResponse(response=>response.url().endsWith('/api/client-locks'))
   await page.evaluate(()=>window.clients[0].emit('message','aion2-chat-bridge/aion2-local/agents/offline-test/status',new TextEncoder().encode(JSON.stringify({type:'agent_status',agentId:'offline-test',status:'offline',time:new Date().toISOString()}))))
-  await failedReport
   for(let i=0;i<10;i++) await page.evaluate(payload=>window.clients[0].emit('message','aion2-chat-bridge/aion2-local/agents/'+payload.agentId+'/status',new TextEncoder().encode(JSON.stringify(payload))),status('A2'))
-  assert.equal(offlineReports,1,'Other agents\' heartbeats must not immediately retry a failed offline report')
+  assert.equal(offlineReports,0,'Offline status and heartbeats no longer call occupancy API')
   await page.unroute('**/api/client-locks')
   await page.evaluate(()=>{window.api.reconnect({room:'new',mqttUrl:'wss://example.test',prefix:'new'});window.imports[2]()})
   await page.waitForFunction(()=>window.clients.length===2)

@@ -1,0 +1,9 @@
+{
+  "file": "E:\\project\\aion2web\\artifacts\\aion2-client-20260911-character-name-v2.zip",
+  "bytes": 29176608,
+  "sha256": "5d0c72fb01cfbb41c194329290d5f6aba7342d2b85686ca6cb07fc41eaf45933",
+  "files": 539,
+  "unchangedRuntimeVerified": true,
+  "addonMatchesSource": true,
+  "testExecutable": "E:\\project\\aion2web\\artifacts\\client-release\\character-name-20260911-v2\\aion2-client\\aion2-client.exe"
+}

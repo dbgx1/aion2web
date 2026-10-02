@@ -1,0 +1,300 @@
+import { memoryStorage } from "./storage.js";
+import { ByokBlockedError, byokHeaderName, isProviderId, maskKey } from "@tanstack/ai/byok";
+//#region src/byok/client.ts
+var EMPTY_BYOK_SNAPSHOT = {
+	status: {},
+	locked: false,
+	prompt: null,
+	storageError: null
+};
+function requireProviderId(value) {
+	if (!isProviderId(value)) throw new Error(`Invalid BYOK provider id: ${value}`);
+	return value;
+}
+function errorMessage(error, fallback) {
+	return error instanceof Error && error.message.length > 0 ? error.message : fallback;
+}
+function isByokCeremonyCancel(error) {
+	if (typeof DOMException !== "undefined" && error instanceof DOMException && error.name === "NotAllowedError") return true;
+	if (error instanceof Error) {
+		if (error.name === "NotAllowedError") return true;
+		const message = error.message.toLowerCase();
+		return message.includes("cancelled") || message.includes("not allowed");
+	}
+	return false;
+}
+function sanitizeKeyring(value) {
+	if (typeof value !== "object" || value === null) return {};
+	const keys = {};
+	for (const [provider, key] of Object.entries(value)) if (isProviderId(provider) && typeof key === "string" && key.length > 0) keys[provider] = key;
+	return keys;
+}
+var ByokClient = class {
+	storage;
+	#keys = {};
+	#statuses = {};
+	#locked;
+	#prompt = null;
+	#coverageAll = false;
+	#coverage = {};
+	#listeners = /* @__PURE__ */ new Set();
+	#snapshot;
+	#storageError = null;
+	#ready;
+	constructor(options = {}) {
+		this.storage = options.storage ?? memoryStorage();
+		this.#locked = Boolean(this.storage.unlockable);
+		this.#snapshot = this.#buildSnapshot();
+		this.#ready = this.#hydrate();
+	}
+	/** Resolves when constructor hydration (peek/load) finishes. */
+	ready = () => this.#ready;
+	subscribe = (listener) => {
+		this.#listeners.add(listener);
+		return () => {
+			this.#listeners.delete(listener);
+		};
+	};
+	getSnapshot = () => this.#snapshot;
+	#buildSnapshot() {
+		return {
+			status: { ...this.#statuses },
+			locked: this.#locked,
+			prompt: this.#prompt,
+			storageError: this.#storageError
+		};
+	}
+	keys() {
+		return { ...this.#keys };
+	}
+	request(provider, reason) {
+		this.#prompt = {
+			provider: requireProviderId(provider),
+			reason
+		};
+		this.#emit();
+	}
+	/**
+	* `true` — the server can fill any slug from env.
+	* `false` — no env coverage.
+	* A record merges per-id flags and clears the all/none boolean.
+	*/
+	setServerCoverage(flags) {
+		if (typeof flags === "boolean") {
+			this.#coverageAll = flags;
+			this.#coverage = {};
+			return;
+		}
+		this.#coverageAll = false;
+		this.#coverage = {
+			...this.#coverage,
+			...flags
+		};
+	}
+	#hasCoverage(provider) {
+		return this.#coverageAll || this.#coverage[provider] === true;
+	}
+	headers(provider) {
+		const headers = {};
+		if (provider) {
+			requireProviderId(provider);
+			const key = this.#keys[provider];
+			if (key) headers[byokHeaderName(provider)] = key;
+			return headers;
+		}
+		for (const [id, key] of Object.entries(this.#keys)) if (key) headers[byokHeaderName(id)] = key;
+		return headers;
+	}
+	async prepare(provider) {
+		await this.#ready;
+		if (this.storage.unlockable && this.#locked) await this.unlock();
+		if (!provider) return;
+		requireProviderId(provider);
+		if (this.#keys[provider]) return;
+		if (this.#hasCoverage(provider)) return;
+		this.request(provider, "missing");
+		throw new ByokBlockedError(provider, "missing");
+	}
+	async update(providerOrKey, key) {
+		await this.#ready;
+		let provider;
+		let nextKey;
+		if (key === void 0) {
+			if (!this.#prompt) throw new Error("byok.update(key) cannot run when prompt is null");
+			provider = this.#prompt.provider;
+			nextKey = providerOrKey;
+		} else {
+			provider = requireProviderId(providerOrKey);
+			nextKey = key;
+		}
+		nextKey = nextKey.trim();
+		if (nextKey.length === 0) throw new Error("BYOK key must be non-empty");
+		if (this.storage.unlockable && this.#locked) await this.unlock();
+		const previousKeys = this.#keys;
+		const previousStatuses = { ...this.#statuses };
+		const previousLocked = this.#locked;
+		const previousPrompt = this.#prompt;
+		const previousStorageError = this.#storageError;
+		const next = {
+			...this.#keys,
+			[provider]: nextKey
+		};
+		try {
+			await this.storage.save(next);
+		} catch (error) {
+			this.#keys = previousKeys;
+			this.#statuses = previousStatuses;
+			this.#locked = previousLocked;
+			this.#prompt = previousPrompt;
+			this.#storageError = previousStorageError;
+			this.#statuses[provider] = {
+				state: "error",
+				masked: maskKey(nextKey),
+				message: errorMessage(error, `Failed to persist ${provider} key`)
+			};
+			this.#emit();
+			throw error;
+		}
+		this.#keys = next;
+		this.#statuses[provider] = {
+			state: "set",
+			masked: maskKey(nextKey)
+		};
+		this.#locked = false;
+		this.#prompt = null;
+		this.#storageError = null;
+		this.#emit();
+	}
+	async clear(provider) {
+		await this.#ready;
+		if (provider) {
+			requireProviderId(provider);
+			if (this.storage.unlockable && this.#locked) await this.unlock();
+			const previousKeys = this.#keys;
+			const previousStatuses = { ...this.#statuses };
+			const next = { ...this.#keys };
+			delete next[provider];
+			try {
+				await this.storage.save(next);
+			} catch (error) {
+				this.#keys = previousKeys;
+				this.#statuses = previousStatuses;
+				this.#emit();
+				throw error;
+			}
+			this.#keys = next;
+			delete this.#statuses[provider];
+			this.#emit();
+			return;
+		}
+		const previousKeys = this.#keys;
+		const previousStatuses = this.#statuses;
+		const previousLocked = this.#locked;
+		const previousPrompt = this.#prompt;
+		try {
+			await this.storage.clear();
+		} catch (error) {
+			this.#keys = previousKeys;
+			this.#statuses = previousStatuses;
+			this.#locked = previousLocked;
+			this.#prompt = previousPrompt;
+			this.#emit();
+			throw error;
+		}
+		this.#keys = {};
+		this.#statuses = {};
+		this.#locked = false;
+		this.#prompt = null;
+		this.#storageError = null;
+		this.#emit();
+	}
+	async unlock() {
+		await this.#ready;
+		if (!this.storage.unlockable) return;
+		try {
+			const loaded = sanitizeKeyring(await this.storage.load());
+			this.#keys = {
+				...loaded,
+				...this.#keys
+			};
+			for (const [id, value] of Object.entries(loaded)) {
+				if (!isProviderId(id) || !value) continue;
+				const existing = this.#statuses[id];
+				if (!existing || existing.state === "locked") this.#statuses[id] = {
+					state: "set",
+					masked: maskKey(value)
+				};
+			}
+			this.#locked = false;
+			this.#storageError = null;
+			this.#emit();
+		} catch (error) {
+			if (isByokCeremonyCancel(error)) {
+				const provider = this.#lockedProvider();
+				if (provider) {
+					this.request(provider, "locked");
+					throw new ByokBlockedError(provider, "locked");
+				}
+			}
+			this.#storageError = errorMessage(error, "Failed to unlock keyring");
+			this.#emit();
+			throw error instanceof Error ? error : new Error(String(error));
+		}
+	}
+	#lockedProvider() {
+		if (this.#prompt && isProviderId(this.#prompt.provider)) return this.#prompt.provider;
+		for (const [id, status] of Object.entries(this.#statuses)) if (status?.state === "locked" && isProviderId(id)) return id;
+	}
+	async #hydrate() {
+		if (this.storage.unlockable) {
+			if (!this.storage.peek) return;
+			try {
+				const preview = await this.storage.peek();
+				for (const [id, last4] of Object.entries(preview)) {
+					if (!isProviderId(id) || this.#statuses[id]) continue;
+					this.#statuses[id] = {
+						state: "locked",
+						masked: last4 ? last4 : "••"
+					};
+				}
+				this.#locked = Object.keys(preview).length > 0;
+				this.#storageError = null;
+				this.#emit();
+			} catch (error) {
+				this.#storageError = errorMessage(error, "Failed to read keyring");
+				this.#emit();
+			}
+			return;
+		}
+		try {
+			const loaded = sanitizeKeyring(await this.storage.load());
+			this.#keys = {
+				...loaded,
+				...this.#keys
+			};
+			for (const [id, value] of Object.entries(loaded)) {
+				if (!isProviderId(id) || !value) continue;
+				this.#statuses[id] = {
+					state: "set",
+					masked: maskKey(value)
+				};
+			}
+			this.#storageError = null;
+			this.#emit();
+		} catch (error) {
+			this.#storageError = errorMessage(error, "Failed to read keyring");
+			this.#emit();
+		}
+	}
+	#emit() {
+		this.#snapshot = this.#buildSnapshot();
+		for (const listener of this.#listeners) listener();
+	}
+};
+function defineByok(options = {}) {
+	return new ByokClient(options);
+}
+//#endregion
+export { ByokClient, EMPTY_BYOK_SNAPSHOT, defineByok };
+
+//# sourceMappingURL=client.js.map

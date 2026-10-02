@@ -1,0 +1,42 @@
+[
+  {
+    "file": "client/mitm_ws_message_monitor.py",
+    "sha256": "4be70c24b3b44a691265e38b344b458602cacf4424e83ef598f04482e5046df2",
+    "matchesSource": true
+  },
+  {
+    "file": "client/run_client.py",
+    "sha256": "7faa946887b42cef33c9bedd7376d74e0dff29c4054cace67a2f522a5d218197",
+    "matchesSource": true
+  },
+  {
+    "file": "client/requirements.txt",
+    "sha256": "91ab9e59e025ae0c92705c69031bcfcd109d0451e4615bc6235c8f6ebe14fc8f",
+    "matchesSource": true
+  },
+  {
+    "file": "client/README.md",
+    "sha256": "d1fa78758d54706f223d0760ccd118de567e29f6df37a95e7707aa2120895c8c",
+    "matchesSource": true
+  },
+  {
+    "file": "client/MQTT-ONLY-UPDATE.md",
+    "sha256": "ca7258c1901736b567f382801416aa7bde71b8ec2c096ee1d7869865aaa3c6bb",
+    "matchesSource": true
+  },
+  {
+    "file": "client/RELIABLE-MQTT-UPDATE.md",
+    "sha256": "beffcb78dae23c619fa98f7bead6be04e10f8c777f0acbe113c930aba346eac4",
+    "matchesSource": true
+  },
+  {
+    "file": "client/test_relay_recovery.py",
+    "sha256": "f62f9e99e5b42798aeb71565e05280ab28ecc6c15aae27a2bf1c270df4a13039",
+    "matchesSource": true
+  },
+  {
+    "file": "client/test_relay_reliability.py",
+    "sha256": "b653285b60dc9a4ed561cb57f7b341ec58839f4274b5879b4b6923c22b4a5c33",
+    "matchesSource": true
+  }
+]

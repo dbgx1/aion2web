@@ -41,13 +41,16 @@ try{
   await page.goto(`http://127.0.0.1:${server.address().port}${path}`)
   await page.locator('textarea').fill('连接诊断')
   await page.getByRole('button',{name:'询问 AI',exact:true}).click()
-  await page.getByText('AI 服务响应超时，请稍后手动重试；如涉及发送，请先核对聊天记录。',{exact:true}).waitFor()
+  await page.getByText(/AI 服务响应超时.*错误码：504.*5739ms/).waitFor()
   assert.equal(await page.locator('textarea').inputValue(),'连接诊断','RUN_ERROR resolves sendMessage but must retain prompt')
   assert.equal(await page.locator('.console-ai-message.is-assistant').count(),0,'Failure before content must not render an empty bubble')
   assert.equal(requests,before+1)
   rateLimited=true
   await page.getByRole('button',{name:'询问 AI',exact:true}).click()
-  await page.getByText('AI 服务商当前限流（429），请稍后手动重试；如涉及发送，请先核对聊天记录。',{exact:true}).waitFor()
+  const errorDetails = page.getByText(/AI 服务商当前限流.*错误码：429/)
+  await errorDetails.waitFor()
+  assert.match(await errorDetails.innerText(), /StreamLake/)
+  assert.match(await errorDetails.innerText(), /shared pool rate limit/)
   assert.equal(await page.locator('textarea').inputValue(),'连接诊断')
   assert.equal(requests,before+2,'Nested provider error remains one explicit request')
   fail=false

@@ -1,0 +1,37 @@
+import { useChat } from "./use-chat.js";
+//#region src/create-chat-hook.ts
+/**
+* Bind chat options once at module scope. The returned `useChat` hook
+* creates a chat instance from those options.
+*
+* Pass per-call overrides for instance keys such as `threadId`,
+* `initialMessages`, `live`, and `forwardedProps`. Do not change `tools`,
+* `interrupts`, or `outputSchema` here. Those stay on the factory options.
+*
+* Rename the hook at the call site if you already import `useChat` from
+* `@tanstack/ai-react`: `const { useChat: useAppChat } = createChatHook(chatOptions)`.
+*
+* @example
+* ```tsx
+* const { useChat } = createChatHook(chatOptions)
+*
+* function Support() {
+*   const chat = useChat({ threadId: 'support-1' })
+*   return <UI.Chat chat={chat} />
+* }
+* ```
+*/
+function createChatHook(options) {
+	function useChat$1(overrides) {
+		if (!overrides) return useChat(options);
+		return useChat({
+			...options,
+			...overrides
+		});
+	}
+	return { useChat: useChat$1 };
+}
+//#endregion
+export { createChatHook };
+
+//# sourceMappingURL=create-chat-hook.js.map

@@ -1,0 +1,33 @@
+import { buildBaseUsage } from "@tanstack/ai";
+//#region src/usage.ts
+/**
+* Build normalized TokenUsage from OpenRouter's ChatUsage object.
+* Returns `undefined` when the provider reported no usage object, so callers
+* omit the field rather than fabricating zeroed totals.
+*/
+function buildOpenRouterUsage(usage) {
+	if (!usage) return void 0;
+	const result = buildBaseUsage({
+		promptTokens: usage.promptTokens || 0,
+		completionTokens: usage.completionTokens || 0,
+		totalTokens: usage.totalTokens || 0
+	});
+	if (usage.promptTokensDetails) result.promptTokensDetails = usage.promptTokensDetails;
+	if (usage.completionTokensDetails) {
+		const details = usage.completionTokensDetails;
+		result.completionTokensDetails = {
+			...details.reasoningTokens ? { reasoningTokens: details.reasoningTokens } : {},
+			...details.audioTokens ? { audioTokens: details.audioTokens } : {}
+		};
+		const providerDetails = {
+			...details.acceptedPredictionTokens ? { acceptedPredictionTokens: details.acceptedPredictionTokens } : {},
+			...details.rejectedPredictionTokens ? { rejectedPredictionTokens: details.rejectedPredictionTokens } : {}
+		};
+		if (Object.keys(providerDetails).length > 0) result.providerUsageDetails = providerDetails;
+	}
+	return result;
+}
+//#endregion
+export { buildOpenRouterUsage };
+
+//# sourceMappingURL=usage.js.map

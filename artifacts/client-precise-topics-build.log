@@ -1,0 +1,148 @@
+103 INFO: PyInstaller: 6.22.2, contrib hooks: 2026.7
+104 INFO: Python: 3.12.14
+128 INFO: Platform: Windows-10-10.0.19045-SP0
+128 INFO: Python environment: E:\project\aion2web\artifacts\client-build-env
+4237 INFO: Module search paths (PYTHONPATH):
+['E:\\project\\aion2web',
+ 'C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python312.zip',
+ 'C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\DLLs',
+ 'C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib',
+ 'C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python',
+ 'E:\\project\\aion2web\\artifacts\\client-build-env',
+ 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages',
+ 'E:\\project\\aion2\\client']
+4448 INFO: Appending 'datas' from .spec
+4461 INFO: checking Analysis
+4461 INFO: Building Analysis because Analysis-00.toc is non existent
+4461 INFO: Looking for Python shared library...
+4462 INFO: Using Python shared library: C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python312.dll
+4462 INFO: Running Analysis Analysis-00.toc
+4462 INFO: Target bytecode optimization level: 0
+4462 INFO: Initializing module dependency graph...
+4463 INFO: Initializing module graph hook caches...
+4482 INFO: Analyzing modules for base_library.zip ...
+5336 INFO: Processing standard module hook 'hook-encodings.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+5601 INFO: Processing standard module hook 'hook-math.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+6405 INFO: Processing standard module hook 'hook-pickle.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+7220 INFO: Processing standard module hook 'hook-heapq.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+7504 INFO: Caching module dependency graph...
+7536 INFO: Analyzing E:\project\aion2\client\run_client.py
+7552 INFO: Processing standard module hook 'hook-cryptography.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+8238 INFO: hook-cryptography: cryptography does not seem to be using dynamically linked OpenSSL.
+8446 INFO: Processing standard module hook 'hook-mitmproxy.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\mitmproxy\\utils\\pyinstaller'
+8563 INFO: Processing standard module hook 'hook-platform.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+8669 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+8782 INFO: Processing standard module hook 'hook-xml.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+9075 INFO: Processing standard module hook 'hook-_ctypes.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+9372 INFO: Processing standard module hook 'hook-mitmproxy_rs.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\mitmproxy_rs\\_pyinstaller'
+9379 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+9380 INFO: SetuptoolsInfo: initializing cached setuptools info...
+9953 INFO: Processing standard module hook 'hook-ruamel.yaml.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+10609 INFO: Processing standard module hook 'hook-jinja2.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+11330 INFO: Processing standard module hook 'hook-wcwidth.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+11718 INFO: Processing standard module hook 'hook-difflib.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+11932 INFO: Processing standard module hook 'hook-sysconfig.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+11996 INFO: Processing standard module hook 'hook-webbrowser.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+12579 INFO: Processing pre-safe-import-module hook 'hook-gi.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+12984 INFO: Processing standard module hook 'hook-certifi.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+13915 INFO: Processing standard module hook 'hook-xml.dom.domreg.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+14258 INFO: Processing standard module hook 'hook-publicsuffix2.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+14799 INFO: Processing standard module hook 'hook-mitmproxy.addons.onboardingapp.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\mitmproxy\\utils\\pyinstaller'
+16606 INFO: Processing pre-safe-import-module hook 'hook-importlib_metadata.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+16606 INFO: Setuptools: 'importlib_metadata' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.importlib_metadata'!
+16611 INFO: Processing standard module hook 'hook-setuptools.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+16620 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+16639 INFO: Processing pre-safe-import-module hook 'hook-jaraco.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+16639 INFO: Setuptools: 'jaraco' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco'!
+16645 INFO: Processing pre-safe-import-module hook 'hook-more_itertools.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+16645 INFO: Setuptools: 'more_itertools' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.more_itertools'!
+16752 INFO: Processing standard module hook 'hook-_osx_support.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+16762 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+16945 INFO: Processing standard module hook 'hook-setuptools._vendor.jaraco.text.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+16947 INFO: Processing pre-safe-import-module hook 'hook-importlib_resources.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+16955 INFO: Processing pre-safe-import-module hook 'hook-backports.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+16955 INFO: Setuptools: 'backports' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.backports'!
+17367 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+17367 INFO: Setuptools: 'tomli' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.tomli'!
+17719 INFO: Processing pre-safe-import-module hook 'hook-wheel.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+17719 INFO: Setuptools: 'wheel' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.wheel'!
+17754 INFO: Processing standard module hook 'hook-setuptools._vendor.importlib_metadata.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+17771 INFO: Processing pre-safe-import-module hook 'hook-zipp.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+17772 INFO: Setuptools: 'zipp' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.zipp'!
+18400 INFO: Processing standard module hook 'hook-passlib.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+18818 INFO: Processing standard module hook 'hook-pydivert.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+19074 INFO: Processing standard module hook 'hook-mitmproxy.tools.web.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\mitmproxy\\utils\\pyinstaller'
+19470 INFO: Analyzing hidden import 'sqlite3'
+19472 INFO: Processing standard module hook 'hook-sqlite3.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+19676 INFO: Analyzing hidden import 'mitmproxy.addons.server_side_events'
+19677 INFO: Analyzing hidden import 'mitmproxy.coretypes.bidi'
+19678 INFO: Analyzing hidden import 'mitmproxy.net.http.user_agents'
+19679 INFO: Analyzing hidden import 'mitmproxy.script'
+19681 INFO: Analyzing hidden import 'mitmproxy.utils.bits'
+19681 INFO: Analyzing hidden import 'mitmproxy.utils.pyinstaller'
+19682 INFO: Analyzing hidden import 'mitmproxy.utils.pyinstaller.hook-mitmproxy'
+19682 INFO: Analyzing hidden import 'aioquic.asyncio'
+19699 INFO: Analyzing hidden import 'aioquic.h0'
+19699 INFO: Analyzing hidden import 'aioquic.h0.connection'
+19701 INFO: Analyzing hidden import 'paho'
+19702 INFO: Analyzing hidden import 'paho.mqtt'
+19702 INFO: Analyzing hidden import 'paho.mqtt.client'
+19837 INFO: Analyzing hidden import 'paho.mqtt.publish'
+19840 INFO: Analyzing hidden import 'paho.mqtt.subscribe'
+19843 INFO: Analyzing hidden import 'mitmproxy_rs._pyinstaller'
+19843 INFO: Analyzing hidden import 'mitmproxy_rs._pyinstaller.hook-mitmproxy_macos'
+19882 INFO: Processing standard module hook 'hook-win32ctypes.core.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks'
+20592 INFO: Processing standard module hook 'hook-pycparser.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+21137 INFO: Analyzing hidden import 'mitmproxy_rs._pyinstaller.hook-mitmproxy_rs'
+21138 INFO: Analyzing hidden import 'mitmproxy_rs._pyinstaller.hook-mitmproxy_windows'
+21139 INFO: Processing module hooks (post-graph stage)...
+21140 INFO: Processing standard module hook 'hook-mitmproxy_windows.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\mitmproxy_rs\\_pyinstaller'
+21143 WARNING: Hidden import "pycparser.lextab" not found!
+21143 WARNING: Hidden import "pycparser.yacctab" not found!
+21211 INFO: Performing binary vs. data reclassification (418 entries)
+21248 INFO: Looking for ctypes DLLs
+21295 INFO: Analyzing run-time hooks ...
+21325 INFO: Including run-time hook 'pyi_rth_inspect.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+21327 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+21329 INFO: Including run-time hook 'pyi_rth_setuptools.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+21331 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+21333 INFO: Including run-time hook 'pyi_rth_cryptography_openssl.py' from 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
+21356 INFO: Creating base_library.zip...
+21372 INFO: Looking for dynamic libraries
+22565 INFO: Extra DLL search directories (AddDllDirectory): []
+22565 INFO: Extra DLL search directories (PATH): []
+22931 WARNING: Library not found: could not resolve 'WDFLDR.SYS', dependency of 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\mitmproxy_windows\\WinDivert64.sys'.
+22931 WARNING: Library not found: could not resolve 'NDIS.SYS', dependency of 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\mitmproxy_windows\\WinDivert64.sys'.
+22931 WARNING: Library not found: could not resolve 'fwpkclnt.sys', dependency of 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\mitmproxy_windows\\WinDivert64.sys'.
+22932 WARNING: Library not found: could not resolve 'WDFLDR.SYS', dependency of 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\pydivert\\windivert_dll\\WinDivert64.sys'.
+22932 WARNING: Library not found: could not resolve 'fwpkclnt.sys', dependency of 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\pydivert\\windivert_dll\\WinDivert64.sys'.
+22932 WARNING: Library not found: could not resolve 'NDIS.SYS', dependency of 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\pydivert\\windivert_dll\\WinDivert64.sys'.
+22932 WARNING: Library not found: could not resolve 'WDFLDR.SYS', dependency of 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\pydivert\\windivert_dll\\WinDivert32.sys'.
+22933 WARNING: Library not found: could not resolve 'NDIS.SYS', dependency of 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\pydivert\\windivert_dll\\WinDivert32.sys'.
+22933 WARNING: Library not found: could not resolve 'fwpkclnt.sys', dependency of 'E:\\project\\aion2web\\artifacts\\client-build-env\\Lib\\site-packages\\pydivert\\windivert_dll\\WinDivert32.sys'.
+22949 INFO: Warnings written to E:\project\aion2web\artifacts\client-pyinstaller-work\precise-topics-20260914\aion2-client\warn-aion2-client.txt
+23045 INFO: Graph cross-reference written to E:\project\aion2web\artifacts\client-pyinstaller-work\precise-topics-20260914\aion2-client\xref-aion2-client.html
+23091 INFO: checking PYZ
+23091 INFO: Building PYZ because PYZ-00.toc is non existent
+23091 INFO: Building PYZ (ZlibArchive) E:\project\aion2web\artifacts\client-pyinstaller-work\precise-topics-20260914\aion2-client\PYZ-00.pyz
+23973 INFO: Building PYZ (ZlibArchive) E:\project\aion2web\artifacts\client-pyinstaller-work\precise-topics-20260914\aion2-client\PYZ-00.pyz completed successfully.
+23997 INFO: checking PKG
+23997 INFO: Building PKG because PKG-00.toc is non existent
+23997 INFO: Building PKG (CArchive) aion2-client.pkg
+24016 INFO: Building PKG (CArchive) aion2-client.pkg completed successfully.
+24017 INFO: Bootloader E:\project\aion2web\artifacts\client-build-env\Lib\site-packages\PyInstaller\bootloader\Windows-64bit-intel\run.exe
+24017 INFO: checking EXE
+24017 INFO: Building EXE because EXE-00.toc is non existent
+24017 INFO: Building EXE from EXE-00.toc
+24017 INFO: Copying bootloader EXE to E:\project\aion2web\artifacts\client-pyinstaller-work\precise-topics-20260914\aion2-client\aion2-client.exe
+24019 INFO: Copying icon to EXE
+24021 INFO: Copying 0 resources to EXE
+24021 INFO: Embedding manifest in EXE
+24022 INFO: Appending PKG archive to EXE
+24027 INFO: Fixing EXE headers
+24089 INFO: Building EXE from EXE-00.toc completed successfully.
+24095 INFO: checking COLLECT
+24096 INFO: Building COLLECT because COLLECT-00.toc is non existent
+24096 INFO: Building COLLECT COLLECT-00.toc
+24328 INFO: Building COLLECT COLLECT-00.toc completed successfully.
+24336 INFO: Build complete! The results are available in: E:\project\aion2web\artifacts\client-release\precise-topics-20260914

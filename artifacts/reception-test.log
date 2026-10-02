@@ -1,0 +1,9 @@
+
+> test:reception
+> node scripts/test-reception.mjs && node scripts/test-reception-client.mjs && node scripts/test-reception-ui.mjs
+
+[reception-provider] {"elapsedMs":1,"message":"fixture provider failure"}
+[reception-generation] { turnId: '68423dc1-25b5-4efe-86b0-63e968345c8a', aborted: false }
+PASS: reception policy, real SQL persistence, consent, resource delivery, deduplication, takeover, stale decisions, uncertain receipts, failure queue, account scope and API validation
+PASS: reception client plan/claim/receipt lifecycle, no sends for handoff or stale claims, no transport retry, reply-only scheduler and duplicate input suppression
+PASS: reception desktop/mobile UI, takeover, guide editing/saving, failure display and simulated conversation

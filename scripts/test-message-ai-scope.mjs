@@ -15,8 +15,8 @@ function Fixture(){
  window.sent ||= []; window.bulk ||= []
  return <MessageCenter agent={{agentId:'agent',serverId:'1001',host:'Agent'}} selectedCharacter={selected} onCharacterSelect={select}
   agentMessages={[]} messages={[]} readMessageIds={new Set()} onMessagesRead={()=>{}} content={content} onContentChange={setContent}
-  actionMessage="" onBack={()=>{}} onSend={()=>{}} onSendPrivateChat={value=>{window.sent.push({id:selected.characterId,value});return true}}
-  onSendAll={async()=>{window.bulk.push(true);return {sent:true,sentCount:1,totalCount:1,varied:false,message:'sent'}}}
+  actionMessage="" onBack={()=>{}} onSend={()=>{}} onSendPrivateChat={value=>{window.sent.push({id:selected.characterId,value});return Promise.resolve({sent:true,status:"confirmed",message:"confirmed"})}}
+  onSendAll={async(_,options)=>{window.bulk.push(true);if(window.delayGroup){window.groupSignal=options.signal;return new Promise(resolve=>window.finishGroup=()=>resolve({sent:true,sentCount:1,totalCount:1,varied:false,message:'LATE GROUP'}))}return {sent:true,sentCount:1,totalCount:1,varied:false,message:'sent'}}}
   onStopBulkSend={()=>{}} onQueryPresence={async()=>{}} presenceConnected={false} bulkSending={false} canOperate={true} lockOwner=""
   operationKey={operation} bulkIntervalRangeMs={{min:1000,max:1000}} onBulkIntervalRangeChange={()=>{}} />
 }
@@ -34,9 +34,9 @@ const bundle=await build({stdin:{contents:source+fixture,loader:'tsx',resolveDir
     if(!session.current){
      const item={started:0,stopped:0,tools:[]};(window.aiSessions||=[]).push(item);session.current=item
      item.stop=()=>{item.stopped++;setLoading(false);item.resolve?.()}
-     item.sendMessage=()=>{item.started++;setLoading(true);return new Promise(resolve=>item.resolve=resolve)}
+     item.sendMessage=()=>{item.started++;setLoading(true);item.ids=Object.fromEntries(item.tools.map(t=>[t.name,crypto.randomUUID()]));for(const tool of item.tools)item.onChunk?.({type:'TOOL_CALL_START',toolCallId:item.ids[tool.name],toolCallName:tool.name});return new Promise(resolve=>item.resolve=resolve)}
     }
-    session.current.tools=options.tools;window.aiSession=session.current
+    session.current.tools=options.tools;session.current.onChunk=options.onChunk;window.aiSession=session.current
     return {isLoading:loading,messages:[],sendMessage:session.current.sendMessage,stop:session.current.stop,clear:()=>{}}
    }
   `}))
@@ -58,6 +58,7 @@ try{
  page.on('pageerror',error=>errors.push(error.message))
  await page.goto(`http://127.0.0.1:${server.address().port}`)
  await page.getByPlaceholder('发送消息给 Role 1').waitFor()
+ await page.getByRole('button',{name:'AI 助手',exact:true}).click()
  const start=async()=>{
   await page.locator('.message-ai-panel textarea').fill('send a greeting')
   await page.getByRole('button',{name:'询问 AI',exact:true}).click()
@@ -69,13 +70,13 @@ try{
  await page.getByPlaceholder('发送消息给 Role 2').waitFor()
  const rejectOld=()=>page.evaluate(async()=>{
   const failures=[]
-  for(const tool of window.oldSession.tools){try{await tool.execute({content:'late message'});failures.push(false)}catch{failures.push(true)}}
+  for(const tool of window.oldSession.tools){try{await tool.execute({content:'late message'},{toolCallId:window.oldSession.ids[tool.name]});failures.push(false)}catch{failures.push(true)}}
   return failures
  })
  assert.deepEqual(await rejectOld(),[true,true,true,true],'Every old sending/draft tool is invalid after recipient switch')
  assert.ok(await page.evaluate(()=>window.oldSession.stopped>0))
  await start()
- const result=await page.evaluate(()=>window.aiSession.tools.find(t=>t.name==='send_private_chat').execute({content:'current message'}))
+ const result=await page.evaluate(()=>window.aiSession.tools.find(t=>t.name==='send_private_chat').execute({content:'current message'},{toolCallId:window.aiSession.ids.send_private_chat}))
  assert.equal(result.sent,true,'A valid new-scope request can still send')
  assert.deepEqual(await page.evaluate(()=>window.sent),[{id:'2',value:'current message'}])
  await page.evaluate(()=>window.oldSession=window.aiSession)
@@ -90,6 +91,18 @@ try{
  await page.evaluate(()=>window.oldSession=window.aiSession)
  await page.locator('.message-ai-panel').getByRole('button',{name:'停止',exact:true}).click()
  assert.deepEqual(await rejectOld(),[true,true,true,true],'Stop invalidates pending tool callbacks immediately')
+ await start()
+ await page.evaluate(()=>{
+  window.delayGroup=true
+  window.pendingGroup=window.aiSession.tools.find(t=>t.name==='send_group_chat').execute({content:'delayed group'},{toolCallId:window.aiSession.ids.send_group_chat})
+ })
+ await page.waitForFunction(()=>typeof window.finishGroup==='function')
+ await page.locator('.message-ai-panel').getByRole('button',{name:'停止',exact:true}).click()
+ assert.equal(await page.evaluate(()=>window.groupSignal.aborted),true,'Stopping assistant also stops pending bulk work')
+ await start()
+ await page.evaluate(async()=>{window.finishGroup();await window.pendingGroup})
+ assert.equal(await page.getByText('LATE GROUP',{exact:true}).count(),0,'Late bulk outcome cannot update restarted conversation')
+ await page.locator('.message-ai-panel').getByRole('button',{name:'停止',exact:true}).click()
  assert.deepEqual(errors,[])
  console.log('PASS: actual MessageCenter AI tools reject stale recipient/filter/lock scopes and stopped requests; current scope still sends')
 }finally{await browser.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve))}

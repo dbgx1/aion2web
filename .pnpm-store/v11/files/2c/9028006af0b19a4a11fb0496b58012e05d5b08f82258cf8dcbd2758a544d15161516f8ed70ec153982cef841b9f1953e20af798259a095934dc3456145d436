@@ -1,0 +1,103 @@
+import { AudioVisualization, RealtimeMessage, RealtimeMode, RealtimeSessionConfig, RealtimeStatus } from '@tanstack/ai/client';
+import { RealtimeClientOptions, RealtimeStateChangeCallback } from './realtime-types.js';
+/**
+ * Client for managing realtime voice conversations.
+ *
+ * Handles connection lifecycle, audio I/O, message state,
+ * and tool execution for realtime voice-to-voice AI interactions.
+ *
+ * @example
+ * ```typescript
+ * import { RealtimeClient } from '@tanstack/ai-client'
+ * import { openaiRealtime } from '@tanstack/ai-openai'
+ *
+ * const client = new RealtimeClient({
+ *   getToken: () => fetch('/api/realtime-token').then(r => r.json()),
+ *   adapter: openaiRealtime(),
+ *   tools: [myTool.client(handler)],
+ *   onMessage: (msg) => console.log('Message:', msg),
+ * })
+ *
+ * await client.connect()
+ * ```
+ */
+export declare class RealtimeClient {
+    private readonly options;
+    private connection;
+    private token;
+    private tokenRefreshTimeout;
+    private readonly clientTools;
+    private readonly stateChangeCallbacks;
+    private unsubscribers;
+    private state;
+    constructor(options: RealtimeClientOptions);
+    /**
+     * Connect to the realtime session.
+     * Fetches a token and establishes the connection.
+     */
+    connect(): Promise<void>;
+    /**
+     * Disconnect from the realtime session.
+     */
+    disconnect(): Promise<void>;
+    /**
+     * Start listening for voice input.
+     * Only needed when vadMode is 'manual'.
+     */
+    startListening(): void;
+    /**
+     * Stop listening for voice input.
+     * Only needed when vadMode is 'manual'.
+     */
+    stopListening(): void;
+    /**
+     * Interrupt the current assistant response.
+     */
+    interrupt(): void;
+    /**
+     * Send a text message instead of voice.
+     */
+    sendText(text: string): void;
+    /**
+     * Send an image to the conversation.
+     * @param imageData - Base64-encoded image data or a URL
+     * @param mimeType - MIME type of the image (e.g., 'image/png', 'image/jpeg')
+     */
+    sendImage(imageData: string, mimeType: string): void;
+    /** Get current connection status */
+    get status(): RealtimeStatus;
+    /** Get current mode */
+    get mode(): RealtimeMode;
+    /** Get conversation messages */
+    get messages(): Array<RealtimeMessage>;
+    /** Get current error, if any */
+    get error(): Error | null;
+    /** Get pending user transcript (while user is speaking) */
+    get pendingUserTranscript(): string | null;
+    /** Get pending assistant transcript (while assistant is speaking) */
+    get pendingAssistantTranscript(): string | null;
+    /** Get audio visualization data */
+    get audio(): AudioVisualization | null;
+    /**
+     * Update the session configuration.
+     * This applies changes to the active connection and persists them for future reconnections.
+     */
+    updateSession(config: Partial<RealtimeSessionConfig>): void;
+    /**
+     * Subscribe to state changes.
+     * @returns Unsubscribe function
+     */
+    onStateChange(callback: RealtimeStateChangeCallback): () => void;
+    /**
+     * Clean up resources.
+     * Call this when disposing of the client.
+     */
+    destroy(): void;
+    private updateState;
+    private addMessage;
+    private scheduleTokenRefresh;
+    private refreshToken;
+    private subscribeToConnectionEvents;
+    private applySessionConfig;
+    private generateId;
+}

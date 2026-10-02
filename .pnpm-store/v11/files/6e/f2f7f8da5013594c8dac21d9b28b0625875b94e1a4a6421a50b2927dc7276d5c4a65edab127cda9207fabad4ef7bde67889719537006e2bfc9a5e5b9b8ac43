@@ -1,0 +1,217 @@
+import { GenerationClientState, GenerationPersistenceOptions, GenerationResumeSnapshot, GenerationTransport, VideoGenerateInput, VideoGenerateResult, VideoGenerationClientOptions, VideoStatusInfo } from './generation-types.js';
+/**
+ * A specialized client for job-based video generation.
+ *
+ * Video generation is asynchronous: a job is created, then polled for status
+ * until completion. This client handles the full lifecycle.
+ *
+ * Supports two transport modes:
+ * - **ConnectConnectionAdapter** — Server handles the polling loop internally and
+ *   streams status updates via CUSTOM events.
+ * - **Fetcher** — Direct async function that returns a completed
+ *   `VideoGenerateResult`.
+ *
+ * @example
+ * ```typescript
+ * // With streaming connection adapter (server-driven polling)
+ * const client = new VideoGenerationClient({
+ *   connection: fetchServerSentEvents('/api/generate/video'),
+ *   onResultChange: setResult,
+ *   onVideoStatusChange: setVideoStatus,
+ * })
+ *
+ * // With fetcher (direct result)
+ * const client = new VideoGenerationClient({
+ *   fetcher: async (input) => {
+ *     const res = await fetch('/api/video/generate', {
+ *       method: 'POST',
+ *       body: JSON.stringify(input),
+ *     })
+ *     return res.json() // { jobId, status: 'completed', url, expiresAt }
+ *   },
+ * })
+ *
+ * await client.generate({ prompt: 'A flying car over a city' })
+ * ```
+ */
+export declare class VideoGenerationClient<TOutput = VideoGenerateResult> {
+    private readonly connection;
+    private readonly hydrateGenerationHandler;
+    private readonly joinRunHandler;
+    private readonly fetcher;
+    private uniqueId;
+    private readonly devtoolsMetadata;
+    private readonly devtoolsBridge;
+    private threadId;
+    private readonly serverDriven;
+    private body;
+    private byok;
+    private byokProvider;
+    private result;
+    private input;
+    private progress;
+    private jobId;
+    private videoStatus;
+    private isLoading;
+    private error;
+    private status;
+    private resumeSnapshot;
+    private abortController;
+    private rejoinedRunId;
+    private readonly callbacksRef;
+    private devtoolsMounted;
+    private disposed;
+    private serverHydrationStarted;
+    constructor(options: Omit<VideoGenerationClientOptions<TOutput>, 'persistence' | 'threadId'> & GenerationPersistenceOptions & GenerationTransport<VideoGenerateInput, VideoGenerateResult>);
+    private buildDevtoolsBridgeOptions;
+    mountDevtools(): void;
+    /**
+     * Trigger video generation.
+     * Only one generation can be in-flight at a time.
+     */
+    generate(input: VideoGenerateInput): Promise<void>;
+    /**
+     * Direct fetcher mode: call fetcher and set result.
+     */
+    private generateWithFetcher;
+    /**
+     * Process a stream of AG-UI events from the streaming connection adapter.
+     * The server handles the polling loop and streams status updates.
+     *
+     * Throws {@link GENERATION_STREAM_TRUNCATED_MESSAGE} when the iteration ends
+     * without a terminal chunk — see the note on
+     * `GenerationClient.processStream`. Video runs are long enough that a proxy
+     * idle timeout mid-poll is the likeliest way to hit it.
+     */
+    private processStream;
+    /**
+     * Abort any in-flight generation or polling.
+     */
+    stop(): void;
+    /**
+     * Clear all state and return to idle. Also drops the client's in-memory
+     * resume snapshot, so a remount restores nothing. The server-side record is
+     * untouched — this client no longer writes one — so a full page reload under
+     * `persistence: true` re-hydrates the last generation again.
+     */
+    reset(): void;
+    /**
+     * Update options without recreating the client.
+     */
+    updateOptions(options: Partial<Pick<VideoGenerationClientOptions<TOutput>, 'body' | 'byok' | 'byokProvider' | 'onResult' | 'onError' | 'onProgress' | 'onChunk' | 'onJobCreated' | 'onStatusUpdate'>>): void;
+    dispose(): void;
+    getResult(): TOutput | null;
+    getJobId(): string | null;
+    getVideoStatus(): VideoStatusInfo | null;
+    getIsLoading(): boolean;
+    getError(): Error | undefined;
+    getStatus(): GenerationClientState;
+    getResumeSnapshot(): GenerationResumeSnapshot | undefined;
+    private setResult;
+    private setJobId;
+    private setVideoStatus;
+    private setIsLoading;
+    private setError;
+    private setStatus;
+    private setProgress;
+    private createCompletedVideoStatus;
+    private createDevtoolsMetadata;
+    private ensureThreadId;
+    private generateUniqueId;
+    private createRunContext;
+    private observeResumeSnapshot;
+    /** Notify the internal snapshot listener AND emit the public resume state. */
+    private notifyResumeSnapshotChanged;
+    /** Derive the public `resumeState` from the internal snapshot. */
+    private emitResumeState;
+    /**
+     * Repaint the normal fields from a restored snapshot so a reload presents the
+     * video in `result` / `status` / `error` / `jobId`, never a snapshot object.
+     * `isLoading` stays false (no auto-tail). Not re-persisted (it came from
+     * storage / the server).
+     *
+     * A `complete` snapshot with no durable video artifact cannot be rebuilt, so
+     * it repaints as an error rather than a `success` with a `null` result — see
+     * the note on `GenerationClient.repaintFromSnapshot`.
+     */
+    private repaintFromSnapshot;
+    /**
+     * Report a `complete` snapshot with no durable video artifact to rebuild
+     * from. Runs after the status/error repaint above, so it wins over the
+     * snapshot's own `complete` status.
+     */
+    private reportUnrestorableResult;
+    /**
+     * Repaint a restored snapshot (client store or server hydrate) and, when it
+     * reports a run still in flight, tail that run to completion via `joinRun`
+     * (from the connection, or the `joinRun` option when the transport can't
+     * carry one).
+     *
+     * A `running` snapshot that no `joinRun` handler can tail is repainted as an
+     * interrupted error instead of a `generating` status that would never
+     * settle: an interrupted generation cannot be resumed, only re-run.
+     */
+    private repaintRestoredSnapshot;
+    /**
+     * Rebuild a `VideoGenerateResult` from a restored snapshot: the video's bytes
+     * are served from the durable artifact URL, so the restored result renders
+     * from your own origin. Returns `null` when there is no durable video artifact.
+     */
+    private reconstructVideoResult;
+    /**
+     * The plain (non-Response) fetcher path never observes stream chunks, so
+     * the terminal snapshot is built here from the fetcher's own result. A
+     * stale `error` from a previous run is intentionally dropped — this run
+     * succeeded.
+     */
+    private completePlainFetcherResumeSnapshot;
+    /**
+     * Records a transport-level failure (network drop, throwing callback) in
+     * the snapshot. Without this, only a server-emitted RUN_ERROR chunk would
+     * mark the snapshot `error`, leaving a persisted record that claims the
+     * run is still in flight.
+     */
+    private recordResumeSnapshotError;
+    /**
+     * Drop the client's in-memory snapshot and re-emit. Purely local — this
+     * client writes no storage, so nothing persisted is removed.
+     */
+    private clearResumeSnapshot;
+    /**
+     * Server-driven mount hydration entry point (`persistence: true`). Runs at
+     * most once, from the commit-phase mount path (`mountDevtools`) — never the
+     * constructor / render phase — so remounts and speculative renders can't
+     * re-fire the hydrate GET.
+     */
+    private maybeHydrateFromServer;
+    /**
+     * Server-driven mount hydration (`persistence: true`). The client holds no
+     * local snapshot; on mount it asks the server — keyed by the stable threadId —
+     * for the last generation's resume snapshot, validates it, and repaints it. It
+     * never auto-starts a run, and never blocks: a `generate()` that starts first
+     * owns the client and hydration backs off, mirroring the chat client.
+     *
+     * A genuine **miss** (no record for the thread) is silent; a genuine
+     * **failure** (transport error, authorize rejection, malformed body, a record
+     * the validator rejects) surfaces through `status` / `error` / `onError` — see
+     * the note on `GenerationClient.hydrateFromServer`.
+     */
+    private hydrateFromServer;
+    /**
+     * Surface a hydration failure on the observable fields. Skipped when a
+     * `generate()` took ownership while the hydrate GET was in flight.
+     */
+    private failHydration;
+    /**
+     * Re-attach to an already-loaded `running` snapshot (remount case); see the
+     * note in GenerationClient.maybeResumeInFlight. Guarded by `rejoinInFlight`.
+     */
+    private maybeResumeInFlight;
+    /**
+     * Re-attach to a video run still generating and stream it to completion,
+     * mirroring the chat client's mount-time rejoin. Reuses `processStream`, so
+     * the job status and result repaint from the replayed chunks. A live
+     * `generate()` owns the client and is never stomped; a run is rejoined once.
+     */
+    private rejoinInFlight;
+}

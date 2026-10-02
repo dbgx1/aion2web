@@ -1,0 +1,7 @@
+export type MissingResponseStreamFeature = 'TextDecoder' | 'Response.body' | 'Response.body.getReader';
+export declare class UnsupportedResponseStreamError extends Error {
+    readonly missingFeature: MissingResponseStreamFeature;
+    constructor(missingFeature: MissingResponseStreamFeature);
+}
+export declare function getResponseStreamReader(response: Response): ReadableStreamDefaultReader<Uint8Array>;
+export declare function createResponseStreamTextDecoder(): TextDecoder;

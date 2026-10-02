@@ -1,0 +1,83 @@
+import { useChatContext } from "./chat.js";
+import { Fragment, jsx, jsxs } from "react/jsx-runtime";
+//#region src/chat-ui/tool-approval.tsx
+/**
+* @deprecated Use `createChatUI()` interrupt components with `chat.interrupts`.
+* Deprecated in 0.9.0. Removed in 1.0.0.
+*
+* Tool approval component - renders approve/deny buttons for tools that need approval
+*
+* @example
+* ```tsx
+* {part.approval && (
+*   <ToolApproval
+*     toolCallId={part.id}
+*     toolName={part.name}
+*     input={JSON.parse(part.arguments)}
+*     approval={part.approval}
+*   />
+* )}
+* ```
+*/
+function ToolApproval({ toolCallId: _, toolName, input, approval, className, children }) {
+	const { addToolApprovalResponse } = useChatContext();
+	const handleApprove = () => {
+		addToolApprovalResponse({
+			id: approval.id,
+			approved: true
+		});
+	};
+	const handleDeny = () => {
+		addToolApprovalResponse({
+			id: approval.id,
+			approved: false
+		});
+	};
+	const hasResponded = approval.approved !== void 0;
+	const renderProps = {
+		toolName,
+		input,
+		onApprove: handleApprove,
+		onDeny: handleDeny,
+		hasResponded,
+		approved: approval.approved
+	};
+	if (children) return /* @__PURE__ */ jsx(Fragment, { children: children(renderProps) });
+	if (hasResponded) return /* @__PURE__ */ jsx("div", {
+		className,
+		"data-tool-approval": true,
+		"data-approval-status": approval.approved ? "approved" : "denied",
+		children: approval.approved ? "✓ Approved" : "✗ Denied"
+	});
+	return /* @__PURE__ */ jsxs("div", {
+		className,
+		"data-tool-approval": true,
+		"data-approval-status": "pending",
+		children: [
+			/* @__PURE__ */ jsxs("div", {
+				"data-approval-header": true,
+				children: [/* @__PURE__ */ jsx("strong", { children: toolName }), " requires approval"]
+			}),
+			/* @__PURE__ */ jsx("div", {
+				"data-approval-input": true,
+				children: /* @__PURE__ */ jsx("pre", { children: JSON.stringify(input, null, 2) })
+			}),
+			/* @__PURE__ */ jsxs("div", {
+				"data-approval-actions": true,
+				children: [/* @__PURE__ */ jsx("button", {
+					onClick: handleApprove,
+					"data-approval-approve": true,
+					children: "Approve"
+				}), /* @__PURE__ */ jsx("button", {
+					onClick: handleDeny,
+					"data-approval-deny": true,
+					children: "Deny"
+				})]
+			})
+		]
+	});
+}
+//#endregion
+export { ToolApproval };
+
+//# sourceMappingURL=tool-approval.js.map

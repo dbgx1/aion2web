@@ -1,0 +1,1 @@
+PASS: independent service without chat lock, database query entry, immediate updates, persistence, reload, responsive docs, no legacy task polling

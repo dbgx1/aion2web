@@ -1,0 +1,1 @@
+PASS: real React hook with MQTT subscription filtering; three clients stay online for six simulated minutes across selection/deselection; true expiry, return without refresh, reconnect, and scoped chat/receipts

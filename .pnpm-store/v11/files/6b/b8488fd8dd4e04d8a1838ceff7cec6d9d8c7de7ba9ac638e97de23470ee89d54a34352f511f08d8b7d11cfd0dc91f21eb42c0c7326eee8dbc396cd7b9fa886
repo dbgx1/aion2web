@@ -1,0 +1,143 @@
+import { generateId, getOpenRouterApiKeyFromEnv } from "../utils/client.js";
+import { buildOpenRouterUsage } from "../usage.js";
+import { extractUsageCost } from "./cost.js";
+import { OpenRouter } from "@openrouter/sdk";
+import { resolveMediaPrompt } from "@tanstack/ai";
+import { BaseImageAdapter } from "@tanstack/ai/adapters";
+//#region src/adapters/image.ts
+/**
+* Mapping of standard image sizes to their aspect ratios
+* Used for Gemini and other models that support aspect ratio configuration
+*/
+var SIZE_TO_ASPECT_RATIO = {
+	"1024x1024": "1:1",
+	"832x1248": "2:3",
+	"1248x832": "3:2",
+	"864x1184": "3:4",
+	"1184x864": "4:3",
+	"896x1152": "4:5",
+	"1152x896": "5:4",
+	"768x1344": "9:16",
+	"1344x768": "16:9",
+	"1536x672": "21:9"
+};
+/**
+* Resolve a requested size to the aspect ratio OpenRouter's chat-completions
+* image pathway understands (`image_config.aspect_ratio`). The pathway has
+* no free-form size field, so a size outside the mapping table cannot be
+* expressed — throw rather than silently generating at the default 1:1.
+* Accepts the multiplication sign ('×') as a separator for tolerance.
+*/
+function sizeToAspectRatio(size) {
+	if (!size) return void 0;
+	const aspectRatio = SIZE_TO_ASPECT_RATIO[size.replace("×", "x")];
+	if (!aspectRatio) throw new Error(`openrouter: unsupported image size '${size}'. Supported sizes: ${Object.keys(SIZE_TO_ASPECT_RATIO).join(", ")}.`);
+	return aspectRatio;
+}
+/**
+* Convert a TanStack ImagePart into the URL string accepted by OpenRouter's
+* `image_url` content parts: public URLs pass through, data sources become
+* base64 data URIs.
+*/
+function imagePartToUrl(part) {
+	if (part.source.type === "url") return part.source.value;
+	return `data:${part.source.mimeType};base64,${part.source.value}`;
+}
+var OpenRouterImageAdapter = class extends BaseImageAdapter {
+	kind = "image";
+	name = "openrouter";
+	client;
+	constructor(config, model) {
+		super(model, {});
+		this.client = new OpenRouter({
+			...config,
+			apiKey: config.apiKey,
+			serverURL: config.baseURL
+		});
+	}
+	async generateImages(options) {
+		const resolved = resolveMediaPrompt(options.prompt);
+		if (resolved.videos.length > 0 || resolved.audios.length > 0) throw new Error(`openrouter.generateImages does not support video / audio prompt parts on model ${this.model}.`);
+		const { model, numberOfImages, size, modelOptions, logger } = options;
+		if (numberOfImages !== void 0 && numberOfImages > 1) throw new Error(`openrouter: the chat-completions image pathway generates one image per request (numberOfImages: ${numberOfImages}). Make multiple requests instead.`);
+		const aspectRatio = sizeToAspectRatio(size);
+		const content = resolved.images.length > 0 ? resolved.parts.flatMap((part) => {
+			if (part.type === "text") return [{
+				type: "text",
+				text: part.content
+			}];
+			if (part.type === "image") return [{
+				type: "image_url",
+				imageUrl: { url: imagePartToUrl(part) }
+			}];
+			return [];
+		}) : resolved.text;
+		logger.request(`activity=generateImage provider=openrouter model=${this.model}`, {
+			provider: "openrouter",
+			model: this.model
+		});
+		const response = await this.client.chat.send({ chatRequest: {
+			model,
+			messages: [{
+				role: "user",
+				content
+			}],
+			modalities: ["image"],
+			stream: false,
+			imageConfig: {
+				...aspectRatio ? { aspect_ratio: aspectRatio } : {},
+				...modelOptions?.image_size ? { image_size: modelOptions.image_size } : {},
+				...modelOptions?.strength !== void 0 ? { strength: modelOptions.strength } : {}
+			}
+		} });
+		if ("error" in response && response.error) {
+			const { error } = response;
+			const errorMsg = typeof error === "object" && "message" in error ? String(error.message) : String(error);
+			throw new Error(`Image generation failed: ${errorMsg}`);
+		}
+		return this.transformResponse(model, response);
+	}
+	generateId() {
+		return generateId(this.name);
+	}
+	transformResponse(model, response) {
+		const images = [];
+		for (const choice of response.choices) {
+			const choiceImages = choice.message.images;
+			if (choiceImages) for (const img of choiceImages) {
+				if (typeof img.imageUrl.url !== "string") continue;
+				const url = img.imageUrl.url;
+				if (url.startsWith("data:")) {
+					const base64Match = url.match(/^data:image\/[^;]+;base64,(.+)$/);
+					if (base64Match && base64Match[1]) images.push({ b64Json: base64Match[1] });
+					else images.push({ url });
+				} else images.push({ url });
+			}
+		}
+		if (images.length === 0) throw new Error("Image generation failed: response contained no images");
+		const baseUsage = buildOpenRouterUsage(response.usage);
+		const usage = baseUsage && {
+			...baseUsage,
+			...extractUsageCost(response.usage)
+		};
+		return {
+			id: response.id || this.generateId(),
+			model: response.model || model,
+			images,
+			...usage ? { usage } : {}
+		};
+	}
+};
+function createOpenRouterImage(model, apiKey, config) {
+	return new OpenRouterImageAdapter({
+		apiKey,
+		...config
+	}, model);
+}
+function openRouterImage(model, config) {
+	return createOpenRouterImage(model, getOpenRouterApiKeyFromEnv(), config);
+}
+//#endregion
+export { OpenRouterImageAdapter, createOpenRouterImage, openRouterImage };
+
+//# sourceMappingURL=image.js.map

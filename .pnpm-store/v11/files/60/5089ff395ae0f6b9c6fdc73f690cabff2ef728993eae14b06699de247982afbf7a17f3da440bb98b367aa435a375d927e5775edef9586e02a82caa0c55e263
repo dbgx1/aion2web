@@ -1,0 +1,35 @@
+//#region src/message-date-normalizer.ts
+function validDate(value) {
+	if (value instanceof Date) return Number.isNaN(value.getTime()) ? void 0 : value;
+	if (typeof value !== "string") return void 0;
+	const date = new Date(value);
+	return Number.isNaN(date.getTime()) ? void 0 : date;
+}
+function normalizeMessageDates(message) {
+	const messageDate = validDate(message.createdAt);
+	const parts = message.parts.map((part) => {
+		if (part.type !== "tool-result") return part;
+		const date = validDate(part.createdAt);
+		const { createdAt: _ignored, ...rest } = part;
+		return date ? {
+			...rest,
+			createdAt: date
+		} : rest;
+	});
+	const { createdAt: _ignored, ...rest } = message;
+	return messageDate ? {
+		...rest,
+		parts,
+		createdAt: messageDate
+	} : {
+		...rest,
+		parts
+	};
+}
+function normalizeMessagesDates(messages) {
+	return messages.map(normalizeMessageDates);
+}
+//#endregion
+export { normalizeMessageDates, normalizeMessagesDates };
+
+//# sourceMappingURL=message-date-normalizer.js.map

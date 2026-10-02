@@ -1,0 +1,114 @@
+[
+  {
+    "results": [
+      {
+        "status": "offline",
+        "total": 20
+      },
+      {
+        "status": "online",
+        "total": 8
+      },
+      {
+        "status": "unknown",
+        "total": 44
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.2709
+      },
+      "duration": 0.2709,
+      "changes": 0,
+      "last_row_id": 1133429,
+      "changed_db": false,
+      "size_after": 65961984,
+      "rows_read": 144,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "id": "787305b3-16f3-4191-b637-eb98b07958c8",
+        "finished": 0,
+        "server": "1305",
+        "created": "2026-10-01 05:20:58",
+        "returned": 0
+      },
+      {
+        "id": "21167a1f-ed09-4ffe-bb9c-04394348087c",
+        "finished": 1,
+        "server": "1305",
+        "created": "2026-10-01 05:19:43",
+        "returned": 1
+      },
+      {
+        "id": "fcca9e2b-5aa0-49d1-ac22-fef12ec1cfbb",
+        "finished": 1,
+        "server": "1305",
+        "created": "2026-10-01 05:15:14",
+        "returned": 1
+      },
+      {
+        "id": "84938296-b9ce-4700-b24d-212b332fb6c3",
+        "finished": 1,
+        "server": "1305",
+        "created": "2026-10-01 05:14:49",
+        "returned": 1
+      },
+      {
+        "id": "25739645-e6f1-4edc-95dd-5d347504d6a4",
+        "finished": 1,
+        "server": "2201",
+        "created": "2026-10-01 05:13:50",
+        "returned": 1
+      },
+      {
+        "id": "d9200ff5-d55d-4681-85bb-97265d2a377d",
+        "finished": 1,
+        "server": "2201",
+        "created": "2026-10-01 05:12:48",
+        "returned": 1
+      },
+      {
+        "id": "47a395bd-2380-443c-95db-5daffd837766",
+        "finished": 1,
+        "server": "2201",
+        "created": "2026-10-01 05:11:46",
+        "returned": 1
+      },
+      {
+        "id": "68ed4897-96e0-4fbd-a1c5-8e01c92666a1",
+        "finished": 1,
+        "server": "1305",
+        "created": "2026-10-01 05:08:42",
+        "returned": 0
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.3624
+      },
+      "duration": 0.3624,
+      "changes": 0,
+      "last_row_id": 1133429,
+      "changed_db": false,
+      "size_after": 65961984,
+      "rows_read": 135,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

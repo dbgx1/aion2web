@@ -1,0 +1,56 @@
+[
+  {
+    "results": [
+      {
+        "server_id": "1101",
+        "user_ids": "[15]",
+        "user_id": 15,
+        "username": "mmoexp01",
+        "status": "active",
+        "role": "agent"
+      },
+      {
+        "server_id": "1102",
+        "user_ids": "[15]",
+        "user_id": 15,
+        "username": "mmoexp01",
+        "status": "active",
+        "role": "agent"
+      },
+      {
+        "server_id": "1303",
+        "user_ids": "[15]",
+        "user_id": 15,
+        "username": "mmoexp01",
+        "status": "active",
+        "role": "agent"
+      },
+      {
+        "server_id": "2301",
+        "user_ids": "[15]",
+        "user_id": 15,
+        "username": "mmoexp01",
+        "status": "active",
+        "role": "agent"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.5063
+      },
+      "duration": 0.5063,
+      "changes": 0,
+      "last_row_id": 1515445,
+      "changed_db": false,
+      "size_after": 86614016,
+      "rows_read": 16,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

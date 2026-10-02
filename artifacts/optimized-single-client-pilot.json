@@ -1,0 +1,148 @@
+{
+  "at": "2026-09-10T03:43:51.709Z",
+  "gameDelayMs": 20,
+  "machine": {
+    "cpu": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "ramGB": 32
+  },
+  "scope": "Loopback Aedes broker + real Python WebRtcRelay/Paho + real browser useAionConsole. Game HTTP replaced with fixed-delay success (gameDelayMs); mitmproxy host stubbed. No game, public broker, production API/DB, AI, account authorization, or full console page load.",
+  "stages": [
+    {
+      "clients": 1,
+      "consoles": 2,
+      "messagesPerClientPerSecond": 10,
+      "trafficSeconds": 10,
+      "elapsedSeconds": 10.841,
+      "generated": 100,
+      "brokerReceivedChat": 100,
+      "expectedDeliveries": 200,
+      "receivedDeliveries": 200,
+      "drained": true,
+      "chatLatencyMs": {
+        "count": 200,
+        "p50": 1.8,
+        "p95": 7.9,
+        "p99": 18.5,
+        "max": 48
+      },
+      "commandLatencyMs": {
+        "count": 350,
+        "p50": 32.2,
+        "p95": 41.2,
+        "p99": 45.6,
+        "max": 46.5
+      },
+      "commandStatuses": {
+        "confirmed": 350
+      },
+      "clientStats": {
+        "executed": 350,
+        "active": 0,
+        "maxActiveGameCalls": 10,
+        "gameDelayMs": 20,
+        "ready": 1,
+        "outbox": 0
+      },
+      "longTasks": {
+        "count": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "browserHeapMB": [
+        26,
+        26
+      ],
+      "offlineQueueProbe": {
+        "offlineSubmitted": 600,
+        "offlineRetained": 600
+      },
+      "duplicateExecutions": 1,
+      "errors": [],
+      "eventReplayProbe": {
+        "chatSubmissions": 1,
+        "chatPublishes": 1,
+        "webrtcPending": 0
+      }
+    },
+    {
+      "clients": 1,
+      "consoles": 20,
+      "messagesPerClientPerSecond": 10,
+      "trafficSeconds": 30,
+      "elapsedSeconds": 30.881,
+      "generated": 300,
+      "brokerReceivedChat": 300,
+      "expectedDeliveries": 6000,
+      "receivedDeliveries": 6000,
+      "drained": true,
+      "chatLatencyMs": {
+        "count": 6000,
+        "p50": 101,
+        "p95": 280.9,
+        "p99": 337.1,
+        "max": 382.4
+      },
+      "commandLatencyMs": {
+        "count": 5390,
+        "p50": 323.7,
+        "p95": 405.6,
+        "p99": 505.4,
+        "max": 529.6
+      },
+      "commandStatuses": {
+        "confirmed": 5390
+      },
+      "clientStats": {
+        "executed": 5390,
+        "active": 0,
+        "maxActiveGameCalls": 24,
+        "gameDelayMs": 20,
+        "ready": 1,
+        "outbox": 0
+      },
+      "longTasks": {
+        "count": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "browserHeapMB": [
+        25,
+        23,
+        18,
+        18,
+        22,
+        25,
+        24,
+        23,
+        23,
+        24,
+        25,
+        20,
+        23,
+        24,
+        16,
+        19,
+        24,
+        25,
+        20,
+        20
+      ],
+      "offlineQueueProbe": {
+        "offlineSubmitted": 600,
+        "offlineRetained": 600
+      },
+      "duplicateExecutions": 1,
+      "errors": [],
+      "eventReplayProbe": {
+        "chatSubmissions": 1,
+        "chatPublishes": 1,
+        "webrtcPending": 0
+      }
+    }
+  ]
+}

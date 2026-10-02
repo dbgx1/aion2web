@@ -1,0 +1,1164 @@
+import { DefaultChatClientEventEmitter } from "./events.js";
+import { convertSchemaToJsonSchema } from "@tanstack/ai/client";
+import { aiEventClient, createAIDevtoolsEventEnvelope, emitAIDevtoolsEvent } from "@tanstack/ai-event-client";
+//#region src/devtools.ts
+function readCompactionBoundaryValue(rawValue) {
+	if (!rawValue || typeof rawValue !== "object") return {};
+	return {
+		..."before" in rawValue && typeof rawValue.before === "number" ? { before: rawValue.before } : {},
+		..."after" in rawValue && typeof rawValue.after === "number" ? { after: rawValue.after } : {},
+		..."messagesBefore" in rawValue && typeof rawValue.messagesBefore === "number" ? { messagesBefore: rawValue.messagesBefore } : {},
+		..."messagesAfter" in rawValue && typeof rawValue.messagesAfter === "number" ? { messagesAfter: rawValue.messagesAfter } : {},
+		..."reusedCheckpoint" in rawValue && typeof rawValue.reusedCheckpoint === "boolean" ? { reusedCheckpoint: rawValue.reusedCheckpoint } : {},
+		..."maxTokens" in rawValue && typeof rawValue.maxTokens === "number" ? { maxTokens: rawValue.maxTokens } : {},
+		..."strategyKey" in rawValue && typeof rawValue.strategyKey === "string" ? { strategyKey: rawValue.strategyKey } : {},
+		..."durationMs" in rawValue && typeof rawValue.durationMs === "number" ? { durationMs: rawValue.durationMs } : {}
+	};
+}
+function readPreviewList(value) {
+	if (!Array.isArray(value)) return void 0;
+	const previews = [];
+	for (const item of value) {
+		if (!item || typeof item !== "object") continue;
+		if (!("role" in item) || !("tokens" in item) || !("text" in item)) continue;
+		if (typeof item.role !== "string" || typeof item.tokens !== "number" || typeof item.text !== "string") continue;
+		previews.push({
+			role: item.role,
+			tokens: item.tokens,
+			text: item.text
+		});
+	}
+	return previews;
+}
+function readCompactionStateValue(rawValue) {
+	if (!rawValue || typeof rawValue !== "object") return null;
+	if (!("before" in rawValue) || !("after" in rawValue) || !("messagesBefore" in rawValue) || !("messagesAfter" in rawValue)) return null;
+	if (typeof rawValue.before !== "number" || typeof rawValue.after !== "number" || typeof rawValue.messagesBefore !== "number" || typeof rawValue.messagesAfter !== "number") return null;
+	const reusedCheckpoint = "reusedCheckpoint" in rawValue && rawValue.reusedCheckpoint === true;
+	const maxTokens = "maxTokens" in rawValue && typeof rawValue.maxTokens === "number" ? rawValue.maxTokens : void 0;
+	const strategyKey = "strategyKey" in rawValue && typeof rawValue.strategyKey === "string" ? rawValue.strategyKey : void 0;
+	const dropped = "dropped" in rawValue ? readPreviewList(rawValue.dropped) : void 0;
+	const result = "result" in rawValue ? readPreviewList(rawValue.result) : void 0;
+	return {
+		before: rawValue.before,
+		after: rawValue.after,
+		messagesBefore: rawValue.messagesBefore,
+		messagesAfter: rawValue.messagesAfter,
+		reusedCheckpoint,
+		...maxTokens !== void 0 ? { maxTokens } : {},
+		...strategyKey ? { strategyKey } : {},
+		...dropped ? { dropped } : {},
+		...result ? { result } : {}
+	};
+}
+function createAIDevtoolsGenerationPreview(input) {
+	if (input.outputKind === "image") return imagePreviewFromResult(input.result);
+	if (input.outputKind === "audio") return audioPreviewFromResult(input.result);
+	if (input.outputKind === "video") return videoPreviewFromResult(input.result, input.videoStatus);
+	if (input.outputKind === "text") return textPreviewFromResult(input.result);
+	if (input.result === null || input.result === void 0) return { kind: "empty" };
+	return {
+		kind: "structured",
+		value: input.result
+	};
+}
+function imagePreviewFromResult(result) {
+	const record = asRecord(result);
+	const items = (Array.isArray(record?.images) ? record.images : []).map((image) => mediaItemFromSource(image, "image/png")).filter(isGenerationMediaItem);
+	if (items.length === 0 && result !== null && result !== void 0) {
+		const directItem = mediaItemFromSource(result, "image/png");
+		if (directItem) items.push(directItem);
+	}
+	return {
+		kind: "image",
+		items
+	};
+}
+function audioPreviewFromResult(result) {
+	const record = asRecord(result);
+	const audio = record?.audio;
+	const resultContentType = stringField(record, "contentType");
+	const format = stringField(record, "format");
+	const mimeType = resultContentType ?? mimeTypeFromAudioFormat(format);
+	const items = [];
+	const directItem = typeof audio === "string" ? base64MediaItem(audio, mimeType, {
+		format,
+		duration: numberField(record, "duration")
+	}) : mediaItemFromSource(audio, mimeType, { format });
+	if (directItem) items.push(directItem);
+	return {
+		kind: "audio",
+		items
+	};
+}
+function videoPreviewFromResult(result, videoStatus) {
+	const resultRecord = asRecord(result);
+	const statusRecord = asRecord(videoStatus);
+	const item = mediaItemFromSource(result, "video/mp4") ?? mediaItemFromSource(videoStatus, "video/mp4");
+	const items = item ? [item] : [];
+	const job = videoJobFromStatus(statusRecord ?? resultRecord);
+	return {
+		kind: "video",
+		items,
+		...job ? { job } : {}
+	};
+}
+function textPreviewFromResult(result) {
+	const record = asRecord(result);
+	const text = stringField(record, "text") ?? stringField(record, "summary") ?? stringField(record, "content") ?? (typeof result === "string" ? result : void 0);
+	if (text !== void 0) return {
+		kind: "text",
+		text
+	};
+	if (result === null || result === void 0) return { kind: "empty" };
+	return {
+		kind: "structured",
+		value: result
+	};
+}
+function videoJobFromStatus(record) {
+	const jobId = stringField(record, "jobId");
+	if (!jobId) return void 0;
+	return {
+		jobId,
+		...stringField(record, "status") ? { status: stringField(record, "status") } : {},
+		...numberField(record, "progress") !== void 0 ? { progress: numberField(record, "progress") } : {},
+		...stringField(record, "error") ? { error: stringField(record, "error") } : {}
+	};
+}
+function mediaItemFromSource(value, defaultMimeType, extras = {}) {
+	const record = asRecord(value);
+	if (!record) return void 0;
+	const explicitContentType = stringField(record, "contentType") ?? stringField(record, "mimeType");
+	const duration = numberField(record, "duration") ?? extras.duration;
+	const format = stringField(record, "format") ?? extras.format;
+	const url = stringField(record, "url");
+	if (url) return {
+		src: url,
+		sourceType: "url",
+		...explicitContentType ? { mimeType: explicitContentType } : {},
+		...format ? { format } : {},
+		...duration !== void 0 ? { duration } : {}
+	};
+	const b64Json = stringField(record, "b64Json");
+	if (!b64Json) return void 0;
+	return base64MediaItem(b64Json, explicitContentType ?? defaultMimeType, {
+		format,
+		duration
+	});
+}
+function base64MediaItem(value, mimeType, extras = {}) {
+	return {
+		src: value.startsWith("data:") ? value : `data:${mimeType ?? "application/octet-stream"};base64,${value}`,
+		sourceType: "base64",
+		...mimeType ? { mimeType } : {},
+		...extras.format ? { format: extras.format } : {},
+		...extras.duration !== void 0 ? { duration: extras.duration } : {}
+	};
+}
+function mimeTypeFromAudioFormat(format) {
+	if (!format) return "audio/mpeg";
+	if (format === "mp3") return "audio/mpeg";
+	return `audio/${format}`;
+}
+function asRecord(value) {
+	if (!value || typeof value !== "object" || Array.isArray(value)) return;
+	return value;
+}
+function stringField(record, field) {
+	const value = record?.[field];
+	return typeof value === "string" && value.length > 0 ? value : void 0;
+}
+function numberField(record, field) {
+	const value = record?.[field];
+	return typeof value === "number" ? value : void 0;
+}
+function isGenerationMediaItem(value) {
+	return Boolean(value);
+}
+var activeBridgeRegistryKey = Symbol.for("tanstack.ai.devtools.activeBridgeByHookId");
+function getActiveBridgeRegistry() {
+	const global = globalThis;
+	const existing = global[activeBridgeRegistryKey];
+	if (existing) return existing;
+	const registry = /* @__PURE__ */ new Map();
+	global[activeBridgeRegistryKey] = registry;
+	return registry;
+}
+/**
+* `{...options}` turns `get hookId()` into a data property. Chat/generation
+* clients mint `threadId` after construct (`ensureThreadId` on mount), so a
+* spread would freeze `hookId: ''` and DevTools could never select the hook.
+*/
+function withLiveClientIdentity(identity, rest) {
+	return {
+		get hookId() {
+			return identity.hookId;
+		},
+		get clientId() {
+			return identity.clientId;
+		},
+		get threadId() {
+			return identity.threadId;
+		},
+		metadata: identity.metadata,
+		getSnapshot: rest.getSnapshot,
+		...rest.getTools || identity.getTools ? { getTools: rest.getTools ?? identity.getTools } : {},
+		...rest.applyToolFixture || identity.applyToolFixture ? { applyToolFixture: rest.applyToolFixture ?? identity.applyToolFixture } : {}
+	};
+}
+var ClientDevtoolsBridge = class {
+	options;
+	unsubscribers = [];
+	disposed = false;
+	superseded = false;
+	registered = false;
+	constructor(options) {
+		this.options = options;
+	}
+	emitRegistered() {
+		if (!this.prepareForMountEmit()) return;
+		this.registered = true;
+		emitAIDevtoolsEvent("hook:registered", {
+			...this.createEnvelope("hook:registered"),
+			...this.createMetadataPayload(),
+			lifecycle: "mounted"
+		});
+	}
+	emitUpdated() {
+		if (!this.prepareForEmit()) return;
+		emitAIDevtoolsEvent("hook:updated", {
+			...this.createEnvelope("hook:updated"),
+			...this.createMetadataPayload(),
+			lifecycle: "active"
+		});
+	}
+	emitSnapshot() {
+		if (!this.prepareForEmit()) return;
+		emitAIDevtoolsEvent("hook:state-snapshot", {
+			...this.createEnvelope("hook:state-snapshot"),
+			...this.createMetadataPayload(),
+			state: this.options.getSnapshot()
+		});
+	}
+	emitToolsRegistered() {
+		if (!this.prepareForEmit()) return;
+		const tools = this.options.getTools ? Array.from(this.options.getTools()).map((tool) => ({
+			name: tool.name,
+			description: tool.description,
+			inputSchema: tool.inputSchema ? convertSchemaToJsonSchema(tool.inputSchema) : { type: "object" },
+			outputSchema: tool.outputSchema ? convertSchemaToJsonSchema(tool.outputSchema) : void 0,
+			needsApproval: tool.needsApproval,
+			metadata: tool.metadata
+		})) : [];
+		emitAIDevtoolsEvent("tools:registered", {
+			...this.createEnvelope("tools:registered"),
+			...this.createMetadataPayload(),
+			tools
+		});
+	}
+	emitRunLifecycle(eventType, runId, status, options = {}) {
+		if (!this.prepareForEmit()) return;
+		emitAIDevtoolsEvent(eventType, {
+			...this.createEnvelope(eventType, "client-state", { runId }),
+			runId,
+			status,
+			...options.error ? { error: options.error } : {}
+		});
+	}
+	deactivate() {
+		const activeBridgeByHookId = getActiveBridgeRegistry();
+		if (activeBridgeByHookId.get(this.options.hookId) === this) activeBridgeByHookId.delete(this.options.hookId);
+		for (const unsubscribe of this.unsubscribers.splice(0)) unsubscribe();
+	}
+	supersede() {
+		if (this.disposed) return;
+		this.superseded = true;
+		this.disposed = true;
+		this.deactivate();
+	}
+	dispose() {
+		if (this.disposed) return;
+		this.disposed = true;
+		if (!this.registered) {
+			this.deactivate();
+			return;
+		}
+		if (getActiveBridgeRegistry().get(this.options.hookId) !== this) {
+			this.deactivate();
+			return;
+		}
+		const payload = {
+			...this.createEnvelope("hook:unregistered"),
+			...this.createMetadataPayload(),
+			reason: "disposed"
+		};
+		emitAIDevtoolsEvent("hook:unregistered", payload);
+		this.deactivate();
+	}
+	prepareForEmit() {
+		if (this.disposed || this.superseded) return false;
+		this.activate();
+		return true;
+	}
+	prepareForMountEmit() {
+		if (this.superseded) return false;
+		if (this.disposed) {
+			this.disposed = false;
+			this.registered = false;
+		}
+		this.activate();
+		return true;
+	}
+	activate() {
+		if (this.disposed) return;
+		const activeBridgeByHookId = getActiveBridgeRegistry();
+		const activeBridge = activeBridgeByHookId.get(this.options.hookId);
+		if (activeBridge && activeBridge !== this) {
+			if (typeof activeBridge.supersede === "function") activeBridge.supersede();
+			else activeBridge.deactivate();
+		}
+		activeBridgeByHookId.set(this.options.hookId, this);
+		if (this.unsubscribers.length > 0) return;
+		this.unsubscribers.push(aiEventClient.on("devtools:request-state", (event) => {
+			this.handleRequestState(event);
+		}));
+		if (this.options.applyToolFixture) this.unsubscribers.push(aiEventClient.on("devtools:tool-fixture:apply", (event) => {
+			this.handleToolFixtureApply(event);
+		}));
+	}
+	handleRequestState(event) {
+		if (this.disposed || this.superseded) return;
+		const targetHookId = event.payload.targetHookId;
+		if (targetHookId && targetHookId !== this.options.hookId) return;
+		this.emitRegistered();
+		this.emitToolsRegistered();
+		this.emitSnapshot();
+		this.onReplayState();
+	}
+	/**
+	* Extension hook for subclasses to replay any additional cached state on a
+	* `devtools:request-state` (i.e. when a panel opens). Called only after the
+	* base guards (disposed/superseded/targetHookId) pass. No-op by default.
+	*/
+	onReplayState() {}
+	async handleToolFixtureApply(event) {
+		const fixture = event.payload;
+		if (!this.matchesFixtureTarget(fixture)) return;
+		await this.options.applyToolFixture?.(fixture);
+	}
+	matchesFixtureTarget(fixture) {
+		if (!fixture.hookId && !fixture.threadId) return false;
+		if (fixture.hookId) return fixture.hookId === this.options.hookId;
+		if (fixture.threadId && (!this.options.threadId || fixture.threadId !== this.options.threadId)) return false;
+		return true;
+	}
+	createEnvelope(eventType, visibility = "client-state", context = {}) {
+		return createAIDevtoolsEventEnvelope({
+			eventType,
+			source: "client",
+			visibility,
+			clientId: this.options.clientId,
+			hookId: this.options.hookId,
+			...this.options.threadId ? { threadId: this.options.threadId } : {},
+			...context.runId ? { runId: context.runId } : {},
+			timestamp: Date.now()
+		});
+	}
+	createMetadataPayload() {
+		return {
+			hookId: this.options.hookId,
+			hookName: this.options.metadata.hookName,
+			...this.options.metadata.name ? { displayName: this.options.metadata.name } : {},
+			...this.options.metadata.outputKind ? { outputKind: this.options.metadata.outputKind } : {},
+			...this.options.metadata.framework ? { framework: this.options.metadata.framework } : {}
+		};
+	}
+};
+var ChatDevtoolsBridge = class extends ClientDevtoolsBridge {
+	events;
+	chatOptions;
+	currentRunId = null;
+	currentRunThreadId = null;
+	currentStreamId = null;
+	lastStreamId = null;
+	lastRunEventContext;
+	/** Last transported `memory:state` value, replayed when a panel opens. */
+	lastMemoryStateValue = null;
+	/** Transported compaction CUSTOM events, replayed when a panel opens. */
+	lastCompactionEvents = [];
+	/** Last transported `skills:state` value, replayed when a panel opens. */
+	lastSkillsStateValue = null;
+	constructor(options) {
+		super(withLiveClientIdentity(options, {
+			getSnapshot: options.getSnapshot,
+			applyToolFixture: (fixture) => this.applyFixture(fixture)
+		}));
+		this.chatOptions = options;
+		this.events = new ChatDevtoolsAwareEventEmitter(() => options.clientId, this);
+	}
+	setCurrentStreamId(streamId) {
+		this.currentStreamId = streamId;
+		if (streamId) this.lastStreamId = streamId;
+	}
+	/**
+	* Called by the auto-attaching emitter every time it sees a non-empty
+	* streamId pass through. Lets devtools track the latest stream id
+	* without the chat client wiring it up explicitly.
+	*/
+	recordStreamId(streamId) {
+		if (streamId) this.lastStreamId = streamId;
+	}
+	mountWithTools(initialMessageCount) {
+		this.events.clientCreated(initialMessageCount);
+		this.emitRegistered();
+		this.emitToolsRegistered();
+		this.emitSnapshot();
+	}
+	notifyToolsChanged() {
+		this.emitToolsRegistered();
+		this.emitSnapshot();
+	}
+	getCurrentStreamId() {
+		return this.currentStreamId;
+	}
+	getLastStreamId() {
+		return this.lastStreamId;
+	}
+	resolveStreamId() {
+		return this.currentStreamId ?? this.lastStreamId ?? this.chatOptions.generateId("stream");
+	}
+	beginRun(runId, threadId) {
+		this.currentRunId = runId;
+		this.currentRunThreadId = threadId;
+		this.lastRunEventContext = {
+			runId,
+			threadId
+		};
+	}
+	observeChunk(chunk) {
+		if (chunk.type === "RUN_STARTED") {
+			this.beginRun(chunk.runId, chunk.threadId);
+			return;
+		}
+		if (chunk.type === "RUN_FINISHED" || chunk.type === "RUN_ERROR") {
+			const runId = chunk.type === "RUN_FINISHED" ? chunk.runId : chunk.runId;
+			if (!runId || runId === this.currentRunId) {
+				const context = this.getCurrentRunEventContext();
+				if (context) this.lastRunEventContext = context;
+				this.currentRunId = null;
+				this.currentRunThreadId = null;
+			}
+		}
+	}
+	/**
+	* Record a transported `memory:state` value (the server memory middleware's
+	* per-turn recall metrics + store snapshot). Called from the chat client's
+	* `onCustomEvent` handler — the designated path for CUSTOM stream events —
+	* NOT from `observeChunk`. Re-emits the browser `memory:*` events the devtools
+	* store consumes, and caches the value so a panel opened later can replay it
+	* (see {@link onReplayState}). Symmetric with the generation bridge's
+	* `recordResultChange` / `recordProgressChange`.
+	*/
+	recordMemoryState(rawValue) {
+		this.lastMemoryStateValue = rawValue;
+		this.emitMemoryState(rawValue);
+	}
+	recordSkillsState(rawValue) {
+		this.lastSkillsStateValue = rawValue;
+		this.emitSkillsState(rawValue);
+	}
+	/**
+	* Re-emit the browser-side `memory:*` events from a transported
+	* `memory:state` value. The devtools store consumes these to render the
+	* Memory tab (operations timeline + live contents). The recall pair mirrors
+	* the server middleware's own emits; the snapshot is included only when the
+	* adapter supports introspection.
+	*/
+	emitMemoryState(rawValue) {
+		if (!rawValue || typeof rawValue !== "object") return;
+		const value = rawValue;
+		const scope = value.scope;
+		const adapter = value.adapter;
+		if (!scope || typeof adapter !== "string") return;
+		const runContext = this.currentRunId ? { runId: this.currentRunId } : {};
+		emitAIDevtoolsEvent("memory:retrieve:started", {
+			...this.createEnvelope("memory:retrieve:started", "client-state", runContext),
+			scope,
+			adapter,
+			query: value.query ?? ""
+		});
+		if (value.recall) emitAIDevtoolsEvent("memory:retrieve:completed", {
+			...this.createEnvelope("memory:retrieve:completed", "client-state", runContext),
+			scope,
+			adapter,
+			fragmentCount: value.recall.fragmentCount ?? 0,
+			hasTools: Boolean(value.recall.hasTools),
+			systemPromptChars: value.recall.systemPromptChars ?? 0,
+			durationMs: value.recall.durationMs ?? 0
+		});
+		if (value.snapshot) emitAIDevtoolsEvent("memory:snapshot", {
+			...this.createEnvelope("memory:snapshot", "client-state", runContext),
+			scope,
+			adapter,
+			takenAt: value.snapshot.takenAt,
+			data: value.snapshot.data,
+			facts: value.snapshot.facts ?? []
+		});
+	}
+	/**
+	* Record a transported compaction CUSTOM event. Called from the chat
+	* client's `onCustomEvent` handler so server-side compaction reaches the
+	* browser DevTools panel.
+	*/
+	recordCompactionEvent(eventType, rawValue) {
+		this.lastCompactionEvents.push({
+			eventType,
+			value: rawValue
+		});
+		if (this.lastCompactionEvents.length > 60) this.lastCompactionEvents.splice(0, this.lastCompactionEvents.length - 60);
+		this.emitCompactionEvent(eventType, rawValue);
+	}
+	recordCompactionState(rawValue) {
+		this.recordCompactionEvent("compaction:state", rawValue);
+	}
+	emitCompactionEvent(eventType, rawValue) {
+		const runContext = this.currentRunId ? { runId: this.currentRunId } : {};
+		if (eventType === "compaction:started") {
+			const value = readCompactionBoundaryValue(rawValue);
+			emitAIDevtoolsEvent("compaction:started", {
+				...this.createEnvelope("compaction:started", "client-state", runContext),
+				...value
+			});
+			return;
+		}
+		if (eventType === "compaction:ended") {
+			const value = readCompactionBoundaryValue(rawValue);
+			emitAIDevtoolsEvent("compaction:ended", {
+				...this.createEnvelope("compaction:ended", "client-state", runContext),
+				...value
+			});
+			return;
+		}
+		if (eventType === "compaction:state") {
+			const value = readCompactionStateValue(rawValue);
+			if (!value) return;
+			emitAIDevtoolsEvent("compaction:state", {
+				...this.createEnvelope("compaction:state", "client-state", runContext),
+				...value
+			});
+		}
+	}
+	emitSkillsState(rawValue) {
+		if (!rawValue || typeof rawValue !== "object") return;
+		const value = rawValue;
+		const catalog = Array.isArray(value.catalog) ? value.catalog : [];
+		const activated = Array.isArray(value.activated) ? value.activated : [];
+		const runContext = this.currentRunId ? { runId: this.currentRunId } : {};
+		emitAIDevtoolsEvent("skills:snapshot", {
+			...this.createEnvelope("skills:snapshot", "client-state", runContext),
+			catalog,
+			activated
+		});
+	}
+	onReplayState() {
+		if (this.lastMemoryStateValue != null) this.emitMemoryState(this.lastMemoryStateValue);
+		for (const event of this.lastCompactionEvents) this.emitCompactionEvent(event.eventType, event.value);
+		if (this.lastSkillsStateValue != null) this.emitSkillsState(this.lastSkillsStateValue);
+	}
+	getCurrentRunEventContext() {
+		if (!this.currentRunId) return void 0;
+		return {
+			threadId: this.currentRunThreadId ?? this.chatOptions.threadId ?? "",
+			runId: this.currentRunId
+		};
+	}
+	getCurrentOrLastRunEventContext() {
+		return this.getCurrentRunEventContext() ?? this.lastRunEventContext;
+	}
+	findToolCallContext(toolCallId) {
+		const base = { toolCallId };
+		const runContext = this.getCurrentRunEventContext();
+		if (runContext) return {
+			threadId: runContext.threadId,
+			runId: runContext.runId,
+			toolCallId
+		};
+		if (this.chatOptions.threadId) return {
+			threadId: this.chatOptions.threadId,
+			toolCallId
+		};
+		return base;
+	}
+	/**
+	* Entry point invoked when the devtools panel emits
+	* `devtools:tool-fixture:apply`. The chat client never calls this
+	* directly; it is wired through the base bridge's fixture subscription.
+	*/
+	async applyFixture(fixture) {
+		const messages = this.chatOptions.getMessages();
+		const threadId = fixture.threadId ?? this.chatOptions.threadId ?? "";
+		if (fixture.execute) {
+			await this.executeFixture(fixture, messages, threadId);
+			return;
+		}
+		const { message, toolCallId } = this.createReplayMessageFromFixture(fixture, messages);
+		const messageId = message.id;
+		this.events.messageAppended(message, void 0, {
+			threadId,
+			toolCallId,
+			...fixture.runId ? { runId: fixture.runId } : {}
+		});
+		this.chatOptions.setMessages([...messages, message]);
+		this.events.toolFixtureApplied({
+			hookId: this.chatOptions.hookId,
+			threadId,
+			...fixture.runId ? { runId: fixture.runId } : {},
+			toolName: fixture.toolName,
+			input: fixture.input,
+			output: fixture.output,
+			messageId,
+			toolCallId,
+			...fixture.execute !== void 0 ? { execute: fixture.execute } : {},
+			...fixture.message ? { message: fixture.message } : {},
+			...fixture.errorText ? { errorText: fixture.errorText } : {}
+		});
+		this.emitSnapshot();
+	}
+	async executeFixture(fixture, messages, threadId) {
+		const toolCallId = this.resolveFixtureToolCallId(fixture.toolCallId, messages);
+		const messageId = this.resolveFixtureMessageId(fixture.messageId, messages);
+		const message = {
+			id: messageId,
+			role: "assistant",
+			parts: [{
+				type: "tool-call",
+				id: toolCallId,
+				name: fixture.toolName,
+				arguments: stringifyFixtureValue(fixture.input),
+				input: fixture.input,
+				state: "input-complete"
+			}],
+			createdAt: /* @__PURE__ */ new Date()
+		};
+		this.events.messageAppended(message, void 0, {
+			threadId,
+			toolCallId,
+			...fixture.runId ? { runId: fixture.runId } : {}
+		});
+		this.chatOptions.setMessages([...messages, message]);
+		this.emitSnapshot();
+		const executeFunc = this.findClientTool(fixture.toolName)?.execute;
+		if (!executeFunc) {
+			console.warn(`[ai-devtools] tool fixture "${fixture.toolName}" requested execute=true but no client tool implementation is registered; replaying saved output instead.`);
+			this.addToolResultForFixture({
+				fixture,
+				messageId,
+				toolCallId,
+				threadId,
+				output: fixture.output,
+				errorText: fixture.errorText
+			});
+			return;
+		}
+		let output;
+		try {
+			output = await executeFunc(fixture.input);
+		} catch (error) {
+			console.error(`[ai-devtools] tool fixture "${fixture.toolName}" execute threw`, error);
+			this.addToolResultForFixture({
+				fixture,
+				messageId,
+				toolCallId,
+				threadId,
+				output: null,
+				errorText: error instanceof Error ? `${error.name}: ${error.message}` : `Tool execution failed: ${String(error)}`
+			});
+			return;
+		}
+		this.addToolResultForFixture({
+			fixture,
+			messageId,
+			toolCallId,
+			threadId,
+			output
+		});
+	}
+	addToolResultForFixture(input) {
+		const state = input.errorText ? "output-error" : "output-available";
+		this.events.toolResultAdded(input.toolCallId, input.fixture.toolName, input.output, state, {
+			threadId: input.threadId,
+			...input.fixture.runId ? { runId: input.fixture.runId } : {},
+			toolCallId: input.toolCallId
+		});
+		this.chatOptions.addToolResult(input.toolCallId, input.output, input.errorText);
+		this.events.toolFixtureApplied({
+			hookId: this.chatOptions.hookId,
+			threadId: input.threadId,
+			...input.fixture.runId ? { runId: input.fixture.runId } : {},
+			toolName: input.fixture.toolName,
+			input: input.fixture.input,
+			output: input.output,
+			execute: true,
+			messageId: input.messageId,
+			toolCallId: input.toolCallId,
+			...input.errorText ? { errorText: input.errorText } : {}
+		});
+		this.emitSnapshot();
+	}
+	createReplayMessageFromFixture(fixture, messages) {
+		const cloned = this.cloneFixtureSourceMessage(fixture, messages);
+		if (cloned) return cloned;
+		const toolCallId = this.resolveFixtureToolCallId(fixture.toolCallId, messages);
+		const messageId = this.resolveFixtureMessageId(fixture.messageId, messages);
+		const state = fixture.errorText ? "error" : "complete";
+		return {
+			toolCallId,
+			message: {
+				id: messageId,
+				role: "assistant",
+				parts: [{
+					type: "tool-call",
+					id: toolCallId,
+					name: fixture.toolName,
+					arguments: stringifyFixtureValue(fixture.input),
+					input: fixture.input,
+					state: "input-complete",
+					output: fixture.output
+				}, {
+					type: "tool-result",
+					toolCallId,
+					content: stringifyFixtureValue(fixture.output),
+					state,
+					...fixture.errorText ? { error: fixture.errorText } : {}
+				}],
+				createdAt: /* @__PURE__ */ new Date()
+			}
+		};
+	}
+	cloneFixtureSourceMessage(fixture, messages) {
+		const sourceMessage = fixture.message;
+		if (!sourceMessage || !Array.isArray(sourceMessage.parts)) return;
+		const toolCallIds = this.createFixtureToolCallIdMap(sourceMessage.parts, messages);
+		const parts = sourceMessage.parts.map((part) => cloneFixtureMessagePart(part, toolCallIds)).filter((part) => Boolean(part));
+		const mappedFixtureToolCallId = fixture.toolCallId ? toolCallIds.get(fixture.toolCallId) : void 0;
+		hydrateToolCallOutputs(parts, {
+			...mappedFixtureToolCallId ? { mappedToolCallId: mappedFixtureToolCallId } : {},
+			output: fixture.output
+		});
+		if (parts.length === 0) return void 0;
+		const toolCallId = (fixture.toolCallId ? toolCallIds.get(fixture.toolCallId) : void 0) ?? firstToolCallId(parts);
+		if (!toolCallId) return void 0;
+		return {
+			toolCallId,
+			message: {
+				id: this.resolveFixtureMessageId(sourceMessage.id, messages),
+				role: sourceMessage.role,
+				parts,
+				createdAt: /* @__PURE__ */ new Date()
+			}
+		};
+	}
+	createFixtureToolCallIdMap(parts, messages) {
+		const ids = /* @__PURE__ */ new Map();
+		for (const part of parts) {
+			if (!isRecord(part) || part.type !== "tool-call") continue;
+			if (typeof part.id !== "string") continue;
+			ids.set(part.id, this.resolveFixtureToolCallId(part.id, messages));
+		}
+		return ids;
+	}
+	resolveFixtureMessageId(messageId, messages) {
+		if (messageId && !messages.some((message) => message.id === messageId)) return messageId;
+		return this.chatOptions.generateId("fixture-msg");
+	}
+	resolveFixtureToolCallId(toolCallId, messages) {
+		if (toolCallId && !hasToolCallId(messages, toolCallId)) return toolCallId;
+		return this.chatOptions.generateId("fixture-tool-call");
+	}
+	findClientTool(name) {
+		const tools = this.chatOptions.getTools?.();
+		if (!tools) return void 0;
+		for (const tool of tools) if (tool.name === name) return tool;
+	}
+};
+function isRecord(value) {
+	return typeof value === "object" && value !== null;
+}
+function stringifyFixtureValue(value) {
+	if (typeof value === "string") return value;
+	if (value === void 0 || typeof value === "function" || typeof value === "symbol") return String(value);
+	try {
+		return JSON.stringify(value);
+	} catch (error) {
+		console.error("[ai-devtools] failed to JSON.stringify fixture value; falling back to String(). Tool call arguments may be malformed.", {
+			error,
+			value
+		});
+		return String(value);
+	}
+}
+function parseFixtureResultContent(content) {
+	try {
+		return JSON.parse(content);
+	} catch (error) {
+		console.error("[ai-devtools] failed to JSON.parse fixture result content; replaying as raw string. Fixture payload may be corrupted.", {
+			error,
+			content
+		});
+		return content;
+	}
+}
+function cloneFixtureMessagePart(part, toolCallIds) {
+	if (!isRecord(part) || typeof part.type !== "string") return void 0;
+	const cloned = { ...part };
+	if (part.type === "tool-call" && typeof part.id === "string") cloned.id = toolCallIds.get(part.id) ?? part.id;
+	if (part.type === "tool-result" && typeof part.toolCallId === "string") cloned.toolCallId = toolCallIds.get(part.toolCallId) ?? part.toolCallId;
+	return cloned;
+}
+function firstToolCallId(parts) {
+	const toolCall = parts.find((part) => part.type === "tool-call");
+	return toolCall?.type === "tool-call" ? toolCall.id : void 0;
+}
+function hydrateToolCallOutputs(parts, fixtureOutput) {
+	for (const part of parts) {
+		if (part.type !== "tool-result") continue;
+		const toolCall = parts.find((candidate) => candidate.type === "tool-call" && candidate.id === part.toolCallId && candidate.output === void 0);
+		if (toolCall) toolCall.output = Array.isArray(part.content) ? part.content : parseFixtureResultContent(part.content);
+	}
+	if (fixtureOutput.mappedToolCallId && fixtureOutput.output !== void 0) {
+		const toolCall = parts.find((candidate) => candidate.type === "tool-call" && candidate.id === fixtureOutput.mappedToolCallId && candidate.output === void 0);
+		if (toolCall) toolCall.output = fixtureOutput.output;
+	}
+}
+function hasToolCallId(messages, toolCallId) {
+	return messages.some((message) => message.parts.some((part) => {
+		if (part.type === "tool-call") return part.id === toolCallId;
+		if (part.type === "tool-result") return part.toolCallId === toolCallId;
+		return false;
+	}));
+}
+var GenerationDevtoolsBridge = class extends ClientDevtoolsBridge {
+	activeRunId = null;
+	activeRunStarted = false;
+	devtoolsRuns = [];
+	maxRuns;
+	getCoreState;
+	constructor(options) {
+		super(withLiveClientIdentity(options, { getSnapshot: () => this.buildSnapshot() }));
+		this.maxRuns = options.maxRuns ?? 20;
+		this.getCoreState = options.getCoreState;
+	}
+	beginRun(input) {
+		const runId = this.generateRunId();
+		this.activeRunId = runId;
+		this.activeRunStarted = false;
+		this.upsertRun(runId, {
+			input,
+			result: null,
+			preview: this.createPreview(null),
+			progress: null,
+			status: "generating",
+			isLoading: true,
+			clearError: true
+		});
+		return runId;
+	}
+	ensureRunStarted(runId) {
+		if (this.activeRunStarted && this.activeRunId === runId) return;
+		if (!this.activeRunStarted && this.activeRunId && this.activeRunId !== runId) this.renameRun(this.activeRunId, runId);
+		this.activeRunId = runId;
+		this.activeRunStarted = true;
+		this.upsertRun(runId, {
+			status: "generating",
+			isLoading: true,
+			clearError: true
+		});
+		this.emitRunLifecycle("run:started", runId, "started");
+		this.emitState();
+	}
+	finishRun(runId, eventType, status, error) {
+		this.ensureRunStarted(runId);
+		const completedAt = Date.now();
+		const completedProgress = status === "completed" ? this.completeProgress() : this.getProgress();
+		const runStatus = status === "completed" ? "success" : status === "errored" ? "error" : "cancelled";
+		this.upsertRun(runId, {
+			status: runStatus,
+			isLoading: false,
+			progress: completedProgress,
+			completedAt,
+			...error ? { error } : { clearError: true }
+		});
+		if (this.activeRunId === runId) this.activeRunId = null;
+		this.activeRunStarted = false;
+		this.emitRunLifecycle(eventType, runId, status, { ...error ? { error } : {} });
+		this.emitState();
+	}
+	getActiveRunId() {
+		return this.activeRunId;
+	}
+	/** Clear all per-run history. Called when the client `reset()`s. */
+	resetRuns() {
+		this.activeRunId = null;
+		this.activeRunStarted = false;
+		this.devtoolsRuns = [];
+	}
+	/** Record state changes from the client and emit the matching snapshot. */
+	recordResultChange() {
+		this.updateActiveRun({
+			result: this.getCoreState().result,
+			preview: this.createPreview(this.getCoreState().result),
+			clearError: true
+		});
+		this.emitState();
+	}
+	recordLoadingChange() {
+		this.updateActiveRun({ isLoading: this.getCoreState().isLoading });
+		this.emitState();
+	}
+	recordErrorChange(error) {
+		this.updateActiveRun(error ? { error: error.message } : { clearError: true });
+		this.emitState();
+	}
+	recordStatusChange(status) {
+		this.updateActiveRun({ status });
+		this.emitState();
+	}
+	recordProgressChange() {
+		this.updateActiveRun({ progress: this.getCoreState().progress });
+		this.emitState();
+	}
+	/** Emit the latest snapshot without touching run state. */
+	emitState() {
+		this.emitUpdated();
+		this.emitSnapshot();
+	}
+	buildSnapshot() {
+		const core = this.getCoreState();
+		return {
+			input: core.input,
+			result: core.result,
+			preview: this.createPreview(core.result),
+			progress: core.progress,
+			status: core.status,
+			isLoading: core.isLoading,
+			activeRunId: this.activeRunId,
+			runs: this.devtoolsRuns,
+			...core.error ? { error: core.error } : {}
+		};
+	}
+	updateActiveRun(patch) {
+		if (!this.activeRunId) return;
+		this.upsertRun(this.activeRunId, patch);
+	}
+	upsertRun(runId, patch) {
+		const now = Date.now();
+		const index = this.devtoolsRuns.findIndex((run) => run.id === runId);
+		const existing = index >= 0 ? this.devtoolsRuns[index] : void 0;
+		const next = existing ? { ...existing } : {
+			id: runId,
+			input: this.getCoreState().input,
+			result: null,
+			preview: this.createPreview(null),
+			progress: null,
+			status: "idle",
+			isLoading: false,
+			startedAt: now,
+			updatedAt: now
+		};
+		if ("input" in patch) next.input = patch.input ?? null;
+		if ("result" in patch) next.result = patch.result ?? null;
+		if (patch.preview) next.preview = patch.preview;
+		if ("progress" in patch) next.progress = patch.progress ?? null;
+		if (patch.status) next.status = patch.status;
+		if ("isLoading" in patch) next.isLoading = patch.isLoading === true;
+		if (patch.completedAt !== void 0) next.completedAt = patch.completedAt;
+		if (patch.clearError) delete next.error;
+		if (patch.error !== void 0) next.error = patch.error;
+		next.updatedAt = now;
+		if (index >= 0) this.devtoolsRuns = this.devtoolsRuns.map((run) => run.id === runId ? next : run);
+		else this.devtoolsRuns = [...this.devtoolsRuns, next];
+		if (this.devtoolsRuns.length > this.maxRuns) this.devtoolsRuns = this.devtoolsRuns.slice(-this.maxRuns);
+	}
+	renameRun(previousRunId, nextRunId) {
+		if (previousRunId === nextRunId) return;
+		const existing = this.devtoolsRuns.find((run) => run.id === previousRunId);
+		if (!existing) return;
+		const renamed = {
+			...existing,
+			id: nextRunId,
+			updatedAt: Date.now()
+		};
+		this.devtoolsRuns = this.devtoolsRuns.filter((run) => run.id !== nextRunId).map((run) => run.id === previousRunId ? renamed : run);
+	}
+	getProgress() {
+		return this.getCoreState().progress;
+	}
+	completeProgress() {
+		const progress = this.getCoreState().progress;
+		if (!progress) return null;
+		return {
+			value: 100,
+			...progress.message ? { message: progress.message } : {}
+		};
+	}
+	createPreview(result) {
+		return createAIDevtoolsGenerationPreview({
+			outputKind: this.options.metadata.outputKind,
+			result
+		});
+	}
+	generateRunId() {
+		return `run-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+	}
+};
+var VideoDevtoolsBridge = class extends GenerationDevtoolsBridge {
+	constructor(options) {
+		super(options);
+	}
+	recordJobIdChange() {
+		this.updateActiveRun({ jobId: this.getCoreState().jobId });
+		this.emitState();
+	}
+	recordVideoStatusChange() {
+		const core = this.getCoreState();
+		this.updateActiveRun({
+			videoStatus: core.videoStatus,
+			preview: this.createVideoPreview(core.result, core.videoStatus)
+		});
+		this.emitState();
+	}
+	buildSnapshot() {
+		const core = this.getCoreState();
+		return {
+			input: core.input,
+			result: core.result,
+			preview: this.createVideoPreview(core.result, core.videoStatus),
+			progress: core.progress,
+			status: core.status,
+			isLoading: core.isLoading,
+			activeRunId: this.activeRunId,
+			runs: this.devtoolsRuns,
+			jobId: core.jobId,
+			videoStatus: core.videoStatus,
+			...core.error ? { error: core.error } : {}
+		};
+	}
+	upsertRun(runId, patch) {
+		super.upsertRun(runId, patch);
+		if (!("jobId" in patch || "videoStatus" in patch)) return;
+		const index = this.devtoolsRuns.findIndex((run) => run.id === runId);
+		if (index < 0) return;
+		const target = this.devtoolsRuns[index];
+		if (!target) return;
+		const merged = { ...target };
+		if ("jobId" in patch) merged.jobId = patch.jobId ?? null;
+		if ("videoStatus" in patch) merged.videoStatus = patch.videoStatus ?? null;
+		this.devtoolsRuns = this.devtoolsRuns.map((run) => run.id === runId ? merged : run);
+	}
+	createPreview(result) {
+		const core = this.getCoreState();
+		return this.createVideoPreview(result, core.videoStatus);
+	}
+	createVideoPreview(result, videoStatus) {
+		return createAIDevtoolsGenerationPreview({
+			outputKind: this.options.metadata.outputKind,
+			result,
+			videoStatus
+		});
+	}
+};
+var ChatDevtoolsAwareEventEmitter = class extends DefaultChatClientEventEmitter {
+	getClientId;
+	helper;
+	constructor(getClientId, helper) {
+		super(getClientId());
+		this.getClientId = getClientId;
+		this.helper = helper;
+	}
+	emitEvent(eventName, data) {
+		this.clientId = this.getClientId();
+		super.emitEvent(eventName, data);
+	}
+	afterEmit(streamId) {
+		if (streamId) this.helper.recordStreamId(streamId);
+		this.helper.emitSnapshot();
+	}
+	textUpdated(streamId, messageId, content, context) {
+		super.textUpdated(streamId, messageId, content, context ?? this.helper.getCurrentRunEventContext());
+		this.afterEmit(streamId);
+	}
+	thinkingUpdated(streamId, messageId, content, delta, context) {
+		super.thinkingUpdated(streamId, messageId, content, delta, context ?? this.helper.getCurrentRunEventContext());
+		this.afterEmit(streamId);
+	}
+	messageAppended(uiMessage, streamId, context) {
+		super.messageAppended(uiMessage, streamId, context ?? this.helper.getCurrentRunEventContext());
+		this.afterEmit(streamId);
+	}
+	toolCallStateChanged(streamId, messageId, toolCallId, toolName, state, args, context) {
+		super.toolCallStateChanged(streamId, messageId, toolCallId, toolName, state, args, context ?? this.helper.getCurrentRunEventContext());
+		this.afterEmit(streamId);
+	}
+	structuredOutputChanged(eventName, streamId, messageId, output, context) {
+		super.structuredOutputChanged(eventName, streamId, messageId, output, context ?? this.helper.getCurrentOrLastRunEventContext());
+		this.afterEmit(streamId);
+	}
+	approvalRequested(streamId, messageId, toolCallId, toolName, input, approvalId, context) {
+		super.approvalRequested(streamId, messageId, toolCallId, toolName, input, approvalId, context ?? this.helper.getCurrentOrLastRunEventContext());
+		this.afterEmit(streamId);
+	}
+	toolResultAdded(toolCallId, toolName, output, state, context) {
+		super.toolResultAdded(toolCallId, toolName, output, state, context ?? this.helper.getCurrentRunEventContext());
+		this.afterEmit();
+	}
+	toolApprovalResponded(approvalId, toolCallId, approved, context) {
+		super.toolApprovalResponded(approvalId, toolCallId, approved, context ?? this.helper.getCurrentRunEventContext());
+		this.afterEmit();
+	}
+	clientCreated(initialMessageCount) {
+		super.clientCreated(initialMessageCount);
+		this.afterEmit();
+	}
+	loadingChanged(isLoading) {
+		super.loadingChanged(isLoading);
+		this.afterEmit();
+	}
+	errorChanged(error) {
+		super.errorChanged(error);
+		this.afterEmit();
+	}
+	reloaded(fromMessageIndex) {
+		super.reloaded(fromMessageIndex);
+		this.afterEmit();
+	}
+	stopped() {
+		super.stopped();
+		this.afterEmit();
+	}
+	messagesCleared() {
+		super.messagesCleared();
+		this.afterEmit();
+	}
+	messageSent(messageId, content) {
+		super.messageSent(messageId, content);
+		this.afterEmit();
+	}
+	toolFixtureApplied(fixture) {
+		super.toolFixtureApplied(fixture);
+		this.afterEmit();
+	}
+};
+function createChatDevtoolsBridge(options) {
+	return new ChatDevtoolsBridge(options);
+}
+function createGenerationDevtoolsBridge(options) {
+	return new GenerationDevtoolsBridge(options);
+}
+function createVideoDevtoolsBridge(options) {
+	return new VideoDevtoolsBridge(options);
+}
+//#endregion
+export { ChatDevtoolsBridge, ClientDevtoolsBridge, GenerationDevtoolsBridge, VideoDevtoolsBridge, createAIDevtoolsGenerationPreview, createChatDevtoolsBridge, createGenerationDevtoolsBridge, createVideoDevtoolsBridge };
+
+//# sourceMappingURL=devtools.js.map

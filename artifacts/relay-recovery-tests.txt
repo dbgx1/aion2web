@@ -1,0 +1,25 @@
+test_chat_before_start_is_queued_and_replayed_once (__main__.RelayRecoveryTests.test_chat_before_start_is_queued_and_replayed_once) ... ok
+test_disconnect_during_publish_uses_pahos_existing_queue (__main__.RelayRecoveryTests.test_disconnect_during_publish_uses_pahos_existing_queue) ... ok
+[RELAY] agent=7IEAK94Z-ec21ed78796f room=aion2-local mqtt=127.0.0.1:49519
+[RELAY] MQTT connected, ready for console commands
+[RELAY] MQTT disconnected: Normal disconnection
+test_disk_backlog_reopens_and_drains_through_real_paho (__main__.RelayRecoveryTests.test_disk_backlog_reopens_and_drains_through_real_paho) ... ok
+[RELAY] agent=7IEAK94Z-ec21ed78796f room=aion2-local mqtt=127.0.0.1:49525
+[RELAY] MQTT connection failed; automatic retry in 1-15 seconds
+[RELAY] MQTT connected, ready for console commands
+[RELAY] MQTT disconnected: Unspecified error
+[RELAY] MQTT connected, ready for console commands
+[RELAY] MQTT disconnected: Keep alive timeout
+[RELAY] MQTT disconnected: Keep alive timeout
+[RELAY] MQTT connected, ready for console commands
+[RELAY] MQTT disconnected: Normal disconnection
+test_initial_failure_reconnect_and_offline_event_replay (__main__.RelayRecoveryTests.test_initial_failure_reconnect_and_offline_event_replay) ... ok
+[RELAY] MQTT connected, ready for console commands
+test_mqtt_discovery_and_commands_without_webrtc (__main__.RelayRecoveryTests.test_mqtt_discovery_and_commands_without_webrtc) ... ok
+test_publish_failure_does_not_poison_deduplication (__main__.RelayRecoveryTests.test_publish_failure_does_not_poison_deduplication) ... ok
+test_successful_chat_is_not_replayed_after_dedup_rotation (__main__.RelayRecoveryTests.test_successful_chat_is_not_replayed_after_dedup_rotation) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 9.938s
+
+OK

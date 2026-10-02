@@ -1,0 +1,157 @@
+import { ThinkingPart } from "./thinking-part.js";
+import { toolResultContentToString } from "./tool-result-content.js";
+import { Fragment, jsx, jsxs } from "react/jsx-runtime";
+//#region src/chat-ui/chat-message.tsx
+/**
+* @deprecated Use `createChatUI()` Message instead. Deprecated in 0.9.0. Removed in 1.0.0.
+*
+* Message component - renders a single message with all its parts
+*
+* This component natively understands TanStack AI's parts-based message format:
+* - thinking parts: rendered as collapsible thinking/reasoning sections (auto-collapses when complete)
+* - text parts: rendered as content
+* - tool-call parts: rendered with state, approvals, etc.
+* - tool-result parts: rendered with results
+*
+* @example Basic usage
+* ```tsx
+* <Chat.Message message={message} />
+* ```
+*
+* @example With role-based styling
+* ```tsx
+* <ChatMessage
+*   message={message}
+*   className="flex"
+*   userClassName="justify-end"
+*   assistantClassName="justify-start"
+* />
+* ```
+*
+* @example With custom thinking renderer
+* ```tsx
+* <ChatMessage
+*   message={message}
+*   thinkingPartRenderer={({ content, isComplete }) => (
+*     <details open={!isComplete}>
+*       <summary>💭 Thinking...</summary>
+*       <pre>{content}</pre>
+*     </details>
+*   )}
+* />
+* ```
+*
+* @example With named tool renderers
+* ```tsx
+* <ChatMessage
+*   message={message}
+*   toolsRenderer={{
+*     recommendGuitar: ({ id, arguments: args }) => <GuitarCard {...JSON.parse(args)} />,
+*     weatherLookup: ({ id, arguments: args }) => <WeatherWidget {...JSON.parse(args)} />,
+*   }}
+*   defaultToolRenderer={() => null}
+* />
+* ```
+*/
+function ChatMessage({ message, className = "", userClassName = "", assistantClassName = "", textPartRenderer, thinkingPartRenderer, toolsRenderer, defaultToolRenderer, toolResultRenderer }) {
+	const combinedClassName = [className, message.role === "user" ? userClassName : assistantClassName].filter(Boolean).join(" ");
+	return /* @__PURE__ */ jsx("div", {
+		className: combinedClassName || void 0,
+		"data-message-id": message.id,
+		"data-message-role": message.role,
+		"data-message-created": message.createdAt?.toISOString(),
+		children: message.parts.map((part, index) => {
+			const isThinkingComplete = part.type === "thinking" && message.parts.slice(index + 1).some((p) => p.type === "text");
+			return /* @__PURE__ */ jsx(MessagePart, {
+				part,
+				isThinkingComplete,
+				textPartRenderer,
+				thinkingPartRenderer,
+				toolsRenderer,
+				defaultToolRenderer,
+				toolResultRenderer
+			}, `${message.id}-part-${index}`);
+		})
+	});
+}
+function MessagePart({ part, isThinkingComplete, textPartRenderer, thinkingPartRenderer, toolsRenderer, defaultToolRenderer, toolResultRenderer }) {
+	if (part.type === "text") {
+		if (textPartRenderer) return /* @__PURE__ */ jsx(Fragment, { children: textPartRenderer({ content: part.content }) });
+		return /* @__PURE__ */ jsx("div", {
+			"data-part-type": "text",
+			"data-part-content": true,
+			children: part.content
+		});
+	}
+	if (part.type === "thinking") {
+		if (thinkingPartRenderer) return /* @__PURE__ */ jsx(Fragment, { children: thinkingPartRenderer({
+			content: part.content,
+			isComplete: isThinkingComplete
+		}) });
+		return /* @__PURE__ */ jsx(ThinkingPart, {
+			content: part.content,
+			isComplete: isThinkingComplete
+		});
+	}
+	if (part.type === "tool-call") {
+		const toolProps = {
+			id: part.id,
+			name: part.name,
+			arguments: part.arguments,
+			state: part.state,
+			approval: part.approval,
+			output: part.output
+		};
+		if (toolsRenderer?.[part.name]) return /* @__PURE__ */ jsx(Fragment, { children: toolsRenderer[part.name]?.(toolProps) });
+		if (defaultToolRenderer) return /* @__PURE__ */ jsx(Fragment, { children: defaultToolRenderer(toolProps) });
+		return /* @__PURE__ */ jsxs("div", {
+			"data-part-type": "tool-call",
+			"data-tool-name": part.name,
+			"data-tool-state": part.state,
+			"data-tool-id": part.id,
+			children: [
+				/* @__PURE__ */ jsxs("div", {
+					"data-tool-header": true,
+					children: [/* @__PURE__ */ jsx("strong", { children: part.name }), /* @__PURE__ */ jsx("span", {
+						"data-tool-state-badge": true,
+						children: part.state
+					})]
+				}),
+				part.arguments && /* @__PURE__ */ jsx("div", {
+					"data-tool-arguments": true,
+					children: /* @__PURE__ */ jsx("pre", { children: part.arguments })
+				}),
+				part.approval && /* @__PURE__ */ jsx("div", {
+					"data-tool-approval": true,
+					children: part.approval.approved !== void 0 ? part.approval.approved ? "✓ Approved" : "✗ Denied" : "⏳ Awaiting approval..."
+				}),
+				part.output && /* @__PURE__ */ jsx("div", {
+					"data-tool-output": true,
+					children: /* @__PURE__ */ jsx("pre", { children: JSON.stringify(part.output, null, 2) })
+				})
+			]
+		});
+	}
+	if (part.type === "tool-result") {
+		const toolResultContent = toolResultContentToString(part.content);
+		if (toolResultRenderer) return /* @__PURE__ */ jsx(Fragment, { children: toolResultRenderer({
+			toolCallId: part.toolCallId,
+			content: toolResultContent,
+			state: part.state
+		}) });
+		return /* @__PURE__ */ jsx("div", {
+			"data-part-type": "tool-result",
+			"data-tool-call-id": part.toolCallId,
+			"data-tool-result-state": part.state,
+			children: /* @__PURE__ */ jsx("div", {
+				"data-tool-result-content": true,
+				children: toolResultContent
+			})
+		});
+	}
+	return null;
+}
+//#endregion
+export { ChatMessage };
+
+//# sourceMappingURL=chat-message.js.map

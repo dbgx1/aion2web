@@ -1,0 +1,25 @@
+//#region src/response-stream.ts
+var UnsupportedResponseStreamError = class extends Error {
+	missingFeature;
+	constructor(missingFeature) {
+		super(createUnsupportedResponseStreamMessage(missingFeature));
+		this.name = "UnsupportedResponseStreamError";
+		this.missingFeature = missingFeature;
+	}
+};
+function createUnsupportedResponseStreamMessage(missingFeature) {
+	return `Streaming fetch responses are not supported in this runtime because ${missingFeature} is unavailable. React Native users need a compatible fetch/stream/TextDecoder polyfill, or should use a fetch, XHR, or custom transport that can deliver streaming chunks.`;
+}
+function getResponseStreamReader(response) {
+	if (!response.body) throw new UnsupportedResponseStreamError("Response.body");
+	if (typeof response.body.getReader !== "function") throw new UnsupportedResponseStreamError("Response.body.getReader");
+	return response.body.getReader();
+}
+function createResponseStreamTextDecoder() {
+	if (typeof globalThis.TextDecoder !== "function") throw new UnsupportedResponseStreamError("TextDecoder");
+	return new globalThis.TextDecoder();
+}
+//#endregion
+export { UnsupportedResponseStreamError, createResponseStreamTextDecoder, getResponseStreamReader };
+
+//# sourceMappingURL=response-stream.js.map

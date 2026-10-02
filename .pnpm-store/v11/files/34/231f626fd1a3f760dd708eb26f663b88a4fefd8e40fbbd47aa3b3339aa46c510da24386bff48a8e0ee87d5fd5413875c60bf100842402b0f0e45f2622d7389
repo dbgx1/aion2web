@@ -1,0 +1,151 @@
+import { VideoGenerationClient } from "@tanstack/ai-client";
+import { createVideoDevtoolsBridge } from "@tanstack/ai-client/devtools";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+//#region src/use-generate-video.ts
+/**
+* React hook for generating videos using AI models.
+*
+* Video generation is asynchronous: a job is created, then polled for status
+* until completion. This hook handles the full lifecycle.
+*
+* @example
+* ```tsx
+* import { useGenerateVideo } from '@tanstack/ai-react'
+* import { fetchServerSentEvents } from '@tanstack/ai-client'
+*
+* function VideoGenerator() {
+*   const { generate, result, videoStatus, isLoading } = useGenerateVideo({
+*     connection: fetchServerSentEvents('/api/generate/video'),
+*     onStatusUpdate: (status) => console.log(`Progress: ${status.progress}%`),
+*   })
+*
+*   return (
+*     <div>
+*       <button onClick={() => generate({ prompt: 'A flying car over a city' })}>
+*         Generate Video
+*       </button>
+*       {isLoading && videoStatus && (
+*         <p>Status: {videoStatus.status} ({videoStatus.progress}%)</p>
+*       )}
+*       {result && <video src={result.url} controls />}
+*     </div>
+*   )
+* }
+* ```
+*/
+function useGenerateVideo(options) {
+	const hookId = useId();
+	const clientIdentity = options.threadId ?? hookId;
+	const [result, setResult] = useState(null);
+	const [jobId, setJobId] = useState(null);
+	const [videoStatus, setVideoStatus] = useState(null);
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState(void 0);
+	const [status, setStatus] = useState("idle");
+	const [runId, setRunId] = useState(null);
+	const optionsRef = useRef(options);
+	optionsRef.current = options;
+	const disposedRef = useRef(false);
+	const client = useMemo(() => {
+		const opts = optionsRef.current;
+		const baseOptions = {
+			body: opts.body,
+			...opts.hydrateGeneration !== void 0 && { hydrateGeneration: opts.hydrateGeneration },
+			...opts.joinRun !== void 0 && { joinRun: opts.joinRun },
+			...opts.byok !== void 0 && { byok: opts.byok },
+			byokProvider: () => optionsRef.current.byokProvider?.(),
+			devtoolsBridgeFactory: createVideoDevtoolsBridge,
+			devtools: {
+				...opts.devtools,
+				framework: "react",
+				hookName: "useGenerateVideo",
+				outputKind: "video"
+			},
+			onResult: ((r) => optionsRef.current.onResult?.(r)),
+			onError: (e) => {
+				if (!disposedRef.current) optionsRef.current.onError?.(e);
+			},
+			onProgress: (p, m) => {
+				if (!disposedRef.current) optionsRef.current.onProgress?.(p, m);
+			},
+			onChunk: (c) => {
+				if (!disposedRef.current) optionsRef.current.onChunk?.(c);
+			},
+			onJobCreated: (id) => {
+				if (!disposedRef.current) optionsRef.current.onJobCreated?.(id);
+			},
+			onStatusUpdate: (s) => {
+				if (!disposedRef.current) optionsRef.current.onStatusUpdate?.(s);
+			},
+			onResultChange: (r) => {
+				if (!disposedRef.current) setResult(r);
+			},
+			onLoadingChange: (l) => {
+				if (!disposedRef.current) setIsLoading(l);
+			},
+			onErrorChange: (e) => {
+				if (!disposedRef.current) setError(e);
+			},
+			onStatusChange: (s) => {
+				if (!disposedRef.current) setStatus(s);
+			},
+			onJobIdChange: (id) => {
+				if (!disposedRef.current) setJobId(id);
+			},
+			onVideoStatusChange: (s) => {
+				if (!disposedRef.current) setVideoStatus(s);
+			},
+			onResumeStateChange: (rs) => {
+				if (!disposedRef.current) setRunId(rs?.runId ?? null);
+			}
+		};
+		const persistenceProps = typeof opts.threadId === "string" && opts.persistence ? {
+			persistence: opts.persistence,
+			threadId: opts.threadId
+		} : { ...opts.threadId !== void 0 && { threadId: opts.threadId } };
+		if (opts.connection) return new VideoGenerationClient({
+			...baseOptions,
+			...persistenceProps,
+			connection: opts.connection
+		});
+		if (opts.fetcher) return new VideoGenerationClient({
+			...baseOptions,
+			...persistenceProps,
+			fetcher: opts.fetcher
+		});
+		throw new Error("useGenerateVideo requires either a connection or fetcher option");
+	}, [clientIdentity, hookId]);
+	useEffect(() => {
+		client.updateOptions({ ...options.body !== void 0 && { body: options.body } });
+	}, [client, options.body]);
+	useEffect(() => {
+		disposedRef.current = false;
+		client.mountDevtools();
+		return () => {
+			disposedRef.current = true;
+			client.dispose();
+		};
+	}, [client]);
+	return {
+		generate: useCallback(async (input) => {
+			await client.generate(input);
+		}, [client]),
+		result,
+		jobId,
+		videoStatus,
+		isLoading,
+		error,
+		status,
+		stop: useCallback(() => {
+			client.stop();
+		}, [client]),
+		reset: useCallback(() => {
+			client.reset();
+		}, [client]),
+		runId
+	};
+}
+//#endregion
+export { useGenerateVideo };
+
+//# sourceMappingURL=use-generate-video.js.map

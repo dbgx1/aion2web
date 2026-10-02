@@ -1,0 +1,1 @@
+export declare function parseSseDataLine(line: string): string;

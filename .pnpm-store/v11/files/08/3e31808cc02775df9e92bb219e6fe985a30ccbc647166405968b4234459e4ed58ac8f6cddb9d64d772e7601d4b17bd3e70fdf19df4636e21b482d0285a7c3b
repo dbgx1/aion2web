@@ -1,0 +1,56 @@
+import { createResponseStreamTextDecoder, getResponseStreamReader } from "./response-stream.js";
+import { parseSseDataLine } from "./sse-utils.js";
+import { ByokMissingError, isByokMissingBody } from "@tanstack/ai/byok";
+//#region src/sse-parser.ts
+/**
+* Read lines from a stream (newline-delimited)
+*/
+async function* readStreamLines(reader, abortSignal) {
+	try {
+		const decoder = createResponseStreamTextDecoder();
+		let buffer = "";
+		while (!abortSignal?.aborted) {
+			const { done, value } = await reader.read();
+			if (done) break;
+			buffer += decoder.decode(value, { stream: true });
+			const lines = buffer.split("\n");
+			buffer = lines.pop() || "";
+			for (const line of lines) if (line.trim()) yield line;
+		}
+		if (buffer.trim()) yield buffer;
+	} finally {
+		reader.releaseLock();
+	}
+}
+/**
+* Parse a Response body as Server-Sent Events, yielding StreamChunks.
+*
+* Used by GenerationClient to parse SSE Responses returned from fetchers
+* (e.g., TanStack Start server functions using `toServerSentEventsResponse()`).
+*/
+async function* parseSSEResponse(response, abortSignal) {
+	if (!response.ok) {
+		if (response.status === 401) {
+			const body = await response.clone().json().catch(() => null);
+			if (isByokMissingBody(body)) throw new ByokMissingError(body.error.provider);
+		}
+		throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
+	}
+	const reader = getResponseStreamReader(response);
+	for await (const line of readStreamLines(reader, abortSignal)) {
+		const data = parseSseDataLine(line);
+		if (data === "[DONE]") {
+			console.warn("[@tanstack/ai-client] Received [DONE] sentinel. This is deprecated — upgrade your @tanstack/ai server package. RUN_FINISHED is the stream terminator.");
+			continue;
+		}
+		try {
+			yield JSON.parse(data);
+		} catch (parseError) {
+			console.warn("Failed to parse SSE chunk:", data);
+		}
+	}
+}
+//#endregion
+export { parseSSEResponse };
+
+//# sourceMappingURL=sse-parser.js.map

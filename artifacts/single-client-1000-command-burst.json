@@ -1,0 +1,3177 @@
+{
+  "at": "2026-09-10T06:18:59.366Z",
+  "machine": {
+    "cpu": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "cores": 20,
+    "totalGiB": 31.813480377197266,
+    "freeGiBAtStart": 8.355220794677734
+  },
+  "clients": 1,
+  "consoles": 1000,
+  "browserConsoles": 20,
+  "protocolConsoles": 980,
+  "clientSha256": "4be70c24b3b44a691265e38b344b458602cacf4424e83ef598f04482e5046df2",
+  "consoleSha256": "27391468664a9933b77c5aa7defa59781ae8f5b14157580cbcaba0463850a4ed",
+  "gameDelayMs": 500,
+  "stages": [],
+  "scope": "Real MQTT-only Python relay with mitmproxy host stub; local Aedes in a separate process; independent MQTT.js WebSocket connections across 10 load processes and 20 real Edge hook fixtures. Game execution is simulated at 500ms. No public broker, production DB, AI, business locks, real game or full UI.",
+  "subscriberConnections": 1000,
+  "connectionsBeforeTraffic": 1001,
+  "burst": {
+    "submitted": 1000,
+    "statuses": {
+      "confirmed": 128,
+      "not_sent": 872
+    },
+    "latencyByStatus": {
+      "confirmed": {
+        "count": 128,
+        "p50": 21925,
+        "p95": 23349,
+        "p99": 23472,
+        "max": 23487
+      },
+      "not_sent": {
+        "count": 872,
+        "p50": 11665,
+        "p95": 19363,
+        "p99": 20005,
+        "max": 20113
+      }
+    },
+    "publishSpreadMs": 17,
+    "executed": 128,
+    "clientStats": {
+      "executed": 128,
+      "active": 0,
+      "maxActiveGameCalls": 24,
+      "gameDelayMs": 500,
+      "ready": 1,
+      "outbox": 0,
+      "resourceSamples": [
+        {
+          "at": 1789021152767,
+          "cpuOneCorePercent": 29.7,
+          "rssMB": 33.5,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021153771,
+          "cpuOneCorePercent": 0,
+          "rssMB": 33.5,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021154778,
+          "cpuOneCorePercent": 1.6,
+          "rssMB": 33.5,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021155785,
+          "cpuOneCorePercent": 32.3,
+          "rssMB": 38.5,
+          "activeCommandsObserved": 128
+        },
+        {
+          "at": 1789021156793,
+          "cpuOneCorePercent": 48.4,
+          "rssMB": 39.2,
+          "activeCommandsObserved": 104
+        },
+        {
+          "at": 1789021157805,
+          "cpuOneCorePercent": 4.6,
+          "rssMB": 39.3,
+          "activeCommandsObserved": 67
+        },
+        {
+          "at": 1789021158814,
+          "cpuOneCorePercent": 1.6,
+          "rssMB": 39.4,
+          "activeCommandsObserved": 28
+        },
+        {
+          "at": 1789021159821,
+          "cpuOneCorePercent": 1.5,
+          "rssMB": 39.4,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021160830,
+          "cpuOneCorePercent": 3.1,
+          "rssMB": 39.4,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021161838,
+          "cpuOneCorePercent": 0,
+          "rssMB": 39.4,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021162848,
+          "cpuOneCorePercent": 0,
+          "rssMB": 39.4,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021163857,
+          "cpuOneCorePercent": 0,
+          "rssMB": 39.5,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021164858,
+          "cpuOneCorePercent": 1.6,
+          "rssMB": 39.5,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021165862,
+          "cpuOneCorePercent": 0,
+          "rssMB": 39.5,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021166864,
+          "cpuOneCorePercent": 0,
+          "rssMB": 39.5,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021167864,
+          "cpuOneCorePercent": 0,
+          "rssMB": 39.5,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021168871,
+          "cpuOneCorePercent": 3.1,
+          "rssMB": 39.5,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021169883,
+          "cpuOneCorePercent": 0,
+          "rssMB": 39.5,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021170884,
+          "cpuOneCorePercent": 4.7,
+          "rssMB": 39.5,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021171888,
+          "cpuOneCorePercent": 0,
+          "rssMB": 39.5,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021172897,
+          "cpuOneCorePercent": 1.5,
+          "rssMB": 39.5,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021173910,
+          "cpuOneCorePercent": 3.1,
+          "rssMB": 39.5,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021174921,
+          "cpuOneCorePercent": 1.6,
+          "rssMB": 39.5,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021175933,
+          "cpuOneCorePercent": 3.1,
+          "rssMB": 39.6,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021176939,
+          "cpuOneCorePercent": 0,
+          "rssMB": 39.6,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021177953,
+          "cpuOneCorePercent": 1.6,
+          "rssMB": 39.6,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021178963,
+          "cpuOneCorePercent": 0,
+          "rssMB": 39.6,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021179975,
+          "cpuOneCorePercent": 1.5,
+          "rssMB": 39.6,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021180981,
+          "cpuOneCorePercent": 0,
+          "rssMB": 39.6,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021181986,
+          "cpuOneCorePercent": 0,
+          "rssMB": 39.6,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021182994,
+          "cpuOneCorePercent": 1.6,
+          "rssMB": 39.6,
+          "activeCommandsObserved": 0
+        },
+        {
+          "at": 1789021184008,
+          "cpuOneCorePercent": 0,
+          "rssMB": 39.6,
+          "activeCommandsObserved": 0
+        }
+      ]
+    },
+    "chatGenerated": 300,
+    "chatExpectedDeliveries": 300000,
+    "chatReceived": 300000,
+    "chatProtocolLatencyMs": {
+      "count": 294000,
+      "p50": 10724,
+      "p95": 19463,
+      "p99": 19948,
+      "max": 20124
+    },
+    "chatBrowserLatencyMs": {
+      "count": 6000,
+      "p50": 10716,
+      "p95": 19454,
+      "p99": 19942,
+      "max": 20112
+    },
+    "browserLongTasks": [],
+    "brokerConnections": 1001
+  },
+  "passed": true,
+  "errors": [],
+  "coordinatorResources": [
+    {
+      "at": 1789021140108,
+      "rssMB": 128,
+      "freeGiB": 8.18,
+      "cpuOneCorePercent": 43,
+      "timerLagMs": 14
+    },
+    {
+      "at": 1789021141120,
+      "rssMB": 142,
+      "freeGiB": 7.98,
+      "cpuOneCorePercent": 11,
+      "timerLagMs": 12
+    },
+    {
+      "at": 1789021142133,
+      "rssMB": 152,
+      "freeGiB": 7.85,
+      "cpuOneCorePercent": 9,
+      "timerLagMs": 13
+    },
+    {
+      "at": 1789021143137,
+      "rssMB": 166,
+      "freeGiB": 7.71,
+      "cpuOneCorePercent": 5,
+      "timerLagMs": 4
+    },
+    {
+      "at": 1789021144139,
+      "rssMB": 141,
+      "freeGiB": 7.65,
+      "cpuOneCorePercent": 13,
+      "timerLagMs": 2
+    },
+    {
+      "at": 1789021145150,
+      "rssMB": 154,
+      "freeGiB": 7.5,
+      "cpuOneCorePercent": 9,
+      "timerLagMs": 11
+    },
+    {
+      "at": 1789021146158,
+      "rssMB": 159,
+      "freeGiB": 7.4,
+      "cpuOneCorePercent": 3,
+      "timerLagMs": 9
+    },
+    {
+      "at": 1789021147160,
+      "rssMB": 168,
+      "freeGiB": 7.3,
+      "cpuOneCorePercent": 3,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021148161,
+      "rssMB": 146,
+      "freeGiB": 7.17,
+      "cpuOneCorePercent": 8,
+      "timerLagMs": 2
+    },
+    {
+      "at": 1789021149175,
+      "rssMB": 154,
+      "freeGiB": 6.98,
+      "cpuOneCorePercent": 5,
+      "timerLagMs": 13
+    },
+    {
+      "at": 1789021150469,
+      "rssMB": 159,
+      "freeGiB": 6.59,
+      "cpuOneCorePercent": 54,
+      "timerLagMs": 294
+    },
+    {
+      "at": 1789021151470,
+      "rssMB": 159,
+      "freeGiB": 6.15,
+      "cpuOneCorePercent": 1,
+      "timerLagMs": 2
+    },
+    {
+      "at": 1789021152472,
+      "rssMB": 111,
+      "freeGiB": 6.01,
+      "cpuOneCorePercent": 19,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021153472,
+      "rssMB": 111,
+      "freeGiB": 5.82,
+      "cpuOneCorePercent": 2,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021154472,
+      "rssMB": 175,
+      "freeGiB": 5.72,
+      "cpuOneCorePercent": 3,
+      "timerLagMs": 0
+    },
+    {
+      "at": 1789021155476,
+      "rssMB": 175,
+      "freeGiB": 5.63,
+      "cpuOneCorePercent": 6,
+      "timerLagMs": 4
+    },
+    {
+      "at": 1789021156477,
+      "rssMB": 175,
+      "freeGiB": 5.55,
+      "cpuOneCorePercent": 0,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021157478,
+      "rssMB": 175,
+      "freeGiB": 5.41,
+      "cpuOneCorePercent": 3,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021158479,
+      "rssMB": 175,
+      "freeGiB": 5.34,
+      "cpuOneCorePercent": 0,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021159480,
+      "rssMB": 175,
+      "freeGiB": 5.22,
+      "cpuOneCorePercent": 8,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021160481,
+      "rssMB": 175,
+      "freeGiB": 5.19,
+      "cpuOneCorePercent": 0,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021161482,
+      "rssMB": 176,
+      "freeGiB": 5.12,
+      "cpuOneCorePercent": 9,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021162483,
+      "rssMB": 178,
+      "freeGiB": 5.09,
+      "cpuOneCorePercent": 6,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021163484,
+      "rssMB": 177,
+      "freeGiB": 5.07,
+      "cpuOneCorePercent": 2,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021164485,
+      "rssMB": 178,
+      "freeGiB": 5.1,
+      "cpuOneCorePercent": 3,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021165485,
+      "rssMB": 177,
+      "freeGiB": 5.14,
+      "cpuOneCorePercent": 3,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021166486,
+      "rssMB": 177,
+      "freeGiB": 5.12,
+      "cpuOneCorePercent": 6,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021167487,
+      "rssMB": 177,
+      "freeGiB": 5.03,
+      "cpuOneCorePercent": 5,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021168487,
+      "rssMB": 178,
+      "freeGiB": 4.97,
+      "cpuOneCorePercent": 8,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021169489,
+      "rssMB": 177,
+      "freeGiB": 4.85,
+      "cpuOneCorePercent": 0,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021170490,
+      "rssMB": 177,
+      "freeGiB": 4.78,
+      "cpuOneCorePercent": 0,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021171491,
+      "rssMB": 177,
+      "freeGiB": 4.96,
+      "cpuOneCorePercent": 8,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021172492,
+      "rssMB": 177,
+      "freeGiB": 4.96,
+      "cpuOneCorePercent": 9,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021173493,
+      "rssMB": 178,
+      "freeGiB": 5,
+      "cpuOneCorePercent": 5,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021174493,
+      "rssMB": 178,
+      "freeGiB": 5.04,
+      "cpuOneCorePercent": 9,
+      "timerLagMs": 0
+    },
+    {
+      "at": 1789021175496,
+      "rssMB": 178,
+      "freeGiB": 5.09,
+      "cpuOneCorePercent": 9,
+      "timerLagMs": 2
+    },
+    {
+      "at": 1789021176496,
+      "rssMB": 178,
+      "freeGiB": 5.07,
+      "cpuOneCorePercent": 6,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021177497,
+      "rssMB": 178,
+      "freeGiB": 5.17,
+      "cpuOneCorePercent": 1,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021178498,
+      "rssMB": 178,
+      "freeGiB": 5.22,
+      "cpuOneCorePercent": 0,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021179500,
+      "rssMB": 177,
+      "freeGiB": 5.27,
+      "cpuOneCorePercent": 5,
+      "timerLagMs": 2
+    },
+    {
+      "at": 1789021180502,
+      "rssMB": 178,
+      "freeGiB": 5.27,
+      "cpuOneCorePercent": 5,
+      "timerLagMs": 2
+    },
+    {
+      "at": 1789021181503,
+      "rssMB": 178,
+      "freeGiB": 5.22,
+      "cpuOneCorePercent": 2,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021182505,
+      "rssMB": 178,
+      "freeGiB": 5.19,
+      "cpuOneCorePercent": 5,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021183509,
+      "rssMB": 178,
+      "freeGiB": 5.15,
+      "cpuOneCorePercent": 3,
+      "timerLagMs": 4
+    }
+  ],
+  "brokerResources": [
+    {
+      "at": 1789021140646,
+      "rssMB": 67,
+      "freeGiB": 8.05,
+      "cpuOneCorePercent": 9,
+      "timerLagMs": 12
+    },
+    {
+      "at": 1789021141659,
+      "rssMB": 78,
+      "freeGiB": 7.9,
+      "cpuOneCorePercent": 14,
+      "timerLagMs": 13
+    },
+    {
+      "at": 1789021142660,
+      "rssMB": 78,
+      "freeGiB": 7.75,
+      "cpuOneCorePercent": 2,
+      "timerLagMs": 1
+    },
+    {
+      "at": 1789021143660,
+      "rssMB": 78,
+      "freeGiB": 7.71,
+      "cpuOneCorePercent": 0,
+      "timerLagMs": 0
+    },
+    {
+      "at": 1789021144674,
+      "rssMB": 79,
+      "freeGiB": 7.57,
+      "cpuOneCorePercent": 0,
+      "timerLagMs": 14
+    },
+    {
+      "at": 1789021145683,
+      "rssMB": 79,
+      "freeGiB": 7.42,
+      "cpuOneCorePercent": 0,
+      "timerLagMs": 9
+    },
+    {
+      "at": 1789021146693,
+      "rssMB": 79,
+      "freeGiB": 7.37,
+      "cpuOneCorePercent": 0,
+      "timerLagMs": 10
+    },
+    {
+      "at": 1789021147695,
+      "rssMB": 79,
+      "freeGiB": 7.27,
+      "cpuOneCorePercent": 1,
+      "timerLagMs": 2
+    },
+    {
+      "at": 1789021148698,
+      "rssMB": 79,
+      "freeGiB": 7.08,
+      "cpuOneCorePercent": 0,
+      "timerLagMs": 2
+    },
+    {
+      "at": 1789021149705,
+      "rssMB": 67,
+      "freeGiB": 6.83,
+      "cpuOneCorePercent": 6,
+      "timerLagMs": 7
+    },
+    {
+      "at": 1789021150712,
+      "rssMB": 73,
+      "freeGiB": 6.37,
+      "cpuOneCorePercent": 12,
+      "timerLagMs": 7
+    },
+    {
+      "at": 1789021151716,
+      "rssMB": 125,
+      "freeGiB": 6.16,
+      "cpuOneCorePercent": 98,
+      "timerLagMs": 3
+    },
+    {
+      "at": 1789021152721,
+      "rssMB": 148,
+      "freeGiB": 5.97,
+      "cpuOneCorePercent": 31,
+      "timerLagMs": 5
+    },
+    {
+      "at": 1789021153725,
+      "rssMB": 152,
+      "freeGiB": 5.76,
+      "cpuOneCorePercent": 36,
+      "timerLagMs": 4
+    },
+    {
+      "at": 1789021154731,
+      "rssMB": 219,
+      "freeGiB": 5.7,
+      "cpuOneCorePercent": 19,
+      "timerLagMs": 6
+    },
+    {
+      "at": 1789021156310,
+      "rssMB": 284,
+      "freeGiB": 5.55,
+      "cpuOneCorePercent": 72,
+      "timerLagMs": 578
+    },
+    {
+      "at": 1789021158247,
+      "rssMB": 331,
+      "freeGiB": 5.36,
+      "cpuOneCorePercent": 89,
+      "timerLagMs": 938
+    },
+    {
+      "at": 1789021159543,
+      "rssMB": 368,
+      "freeGiB": 5.22,
+      "cpuOneCorePercent": 88,
+      "timerLagMs": 296
+    },
+    {
+      "at": 1789021160711,
+      "rssMB": 365,
+      "freeGiB": 5.16,
+      "cpuOneCorePercent": 104,
+      "timerLagMs": 168
+    },
+    {
+      "at": 1789021161930,
+      "rssMB": 370,
+      "freeGiB": 5.08,
+      "cpuOneCorePercent": 99,
+      "timerLagMs": 219
+    },
+    {
+      "at": 1789021163200,
+      "rssMB": 367,
+      "freeGiB": 5.06,
+      "cpuOneCorePercent": 91,
+      "timerLagMs": 269
+    },
+    {
+      "at": 1789021164459,
+      "rssMB": 376,
+      "freeGiB": 5.1,
+      "cpuOneCorePercent": 93,
+      "timerLagMs": 259
+    },
+    {
+      "at": 1789021165746,
+      "rssMB": 405,
+      "freeGiB": 5.17,
+      "cpuOneCorePercent": 93,
+      "timerLagMs": 287
+    },
+    {
+      "at": 1789021167025,
+      "rssMB": 437,
+      "freeGiB": 5.08,
+      "cpuOneCorePercent": 94,
+      "timerLagMs": 279
+    },
+    {
+      "at": 1789021168288,
+      "rssMB": 465,
+      "freeGiB": 4.99,
+      "cpuOneCorePercent": 85,
+      "timerLagMs": 262
+    },
+    {
+      "at": 1789021169570,
+      "rssMB": 501,
+      "freeGiB": 4.85,
+      "cpuOneCorePercent": 95,
+      "timerLagMs": 283
+    },
+    {
+      "at": 1789021170854,
+      "rssMB": 503,
+      "freeGiB": 4.91,
+      "cpuOneCorePercent": 97,
+      "timerLagMs": 284
+    },
+    {
+      "at": 1789021172114,
+      "rssMB": 501,
+      "freeGiB": 4.96,
+      "cpuOneCorePercent": 87,
+      "timerLagMs": 259
+    },
+    {
+      "at": 1789021173333,
+      "rssMB": 499,
+      "freeGiB": 5.01,
+      "cpuOneCorePercent": 92,
+      "timerLagMs": 220
+    },
+    {
+      "at": 1789021174523,
+      "rssMB": 496,
+      "freeGiB": 5.04,
+      "cpuOneCorePercent": 88,
+      "timerLagMs": 190
+    },
+    {
+      "at": 1789021175686,
+      "rssMB": 510,
+      "freeGiB": 5.11,
+      "cpuOneCorePercent": 91,
+      "timerLagMs": 163
+    },
+    {
+      "at": 1789021176959,
+      "rssMB": 508,
+      "freeGiB": 5.14,
+      "cpuOneCorePercent": 96,
+      "timerLagMs": 273
+    },
+    {
+      "at": 1789021178253,
+      "rssMB": 507,
+      "freeGiB": 5.2,
+      "cpuOneCorePercent": 92,
+      "timerLagMs": 294
+    },
+    {
+      "at": 1789021179583,
+      "rssMB": 506,
+      "freeGiB": 5.3,
+      "cpuOneCorePercent": 85,
+      "timerLagMs": 330
+    },
+    {
+      "at": 1789021180967,
+      "rssMB": 499,
+      "freeGiB": 5.25,
+      "cpuOneCorePercent": 84,
+      "timerLagMs": 384
+    },
+    {
+      "at": 1789021182387,
+      "rssMB": 525,
+      "freeGiB": 5.18,
+      "cpuOneCorePercent": 87,
+      "timerLagMs": 420
+    },
+    {
+      "at": 1789021183624,
+      "rssMB": 510,
+      "freeGiB": 5.17,
+      "cpuOneCorePercent": 97,
+      "timerLagMs": 237
+    }
+  ],
+  "subscriberResources": [
+    [
+      {
+        "at": 1789021151119,
+        "rssMB": 77,
+        "freeGiB": 6.24,
+        "cpuOneCorePercent": 39,
+        "timerLagMs": 3
+      },
+      {
+        "at": 1789021152124,
+        "rssMB": 83,
+        "freeGiB": 6.1,
+        "cpuOneCorePercent": 6,
+        "timerLagMs": 5
+      },
+      {
+        "at": 1789021153131,
+        "rssMB": 94,
+        "freeGiB": 5.85,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 7
+      },
+      {
+        "at": 1789021154137,
+        "rssMB": 158,
+        "freeGiB": 5.73,
+        "cpuOneCorePercent": 8,
+        "timerLagMs": 6
+      },
+      {
+        "at": 1789021155144,
+        "rssMB": 158,
+        "freeGiB": 5.68,
+        "cpuOneCorePercent": 6,
+        "timerLagMs": 7
+      },
+      {
+        "at": 1789021156144,
+        "rssMB": 158,
+        "freeGiB": 5.56,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021157144,
+        "rssMB": 158,
+        "freeGiB": 5.5,
+        "cpuOneCorePercent": 27,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021158144,
+        "rssMB": 158,
+        "freeGiB": 5.37,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021159144,
+        "rssMB": 159,
+        "freeGiB": 5.26,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021160144,
+        "rssMB": 159,
+        "freeGiB": 5.21,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021161144,
+        "rssMB": 158,
+        "freeGiB": 5.14,
+        "cpuOneCorePercent": 27,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021162144,
+        "rssMB": 159,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021163144,
+        "rssMB": 158,
+        "freeGiB": 5.06,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021164144,
+        "rssMB": 158,
+        "freeGiB": 5.08,
+        "cpuOneCorePercent": 6,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021165144,
+        "rssMB": 158,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021166144,
+        "rssMB": 158,
+        "freeGiB": 5.13,
+        "cpuOneCorePercent": 23,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021167148,
+        "rssMB": 158,
+        "freeGiB": 5.06,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 4
+      },
+      {
+        "at": 1789021168148,
+        "rssMB": 158,
+        "freeGiB": 5,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021169148,
+        "rssMB": 159,
+        "freeGiB": 4.89,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021170152,
+        "rssMB": 159,
+        "freeGiB": 4.81,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 4
+      },
+      {
+        "at": 1789021171152,
+        "rssMB": 158,
+        "freeGiB": 4.93,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021172153,
+        "rssMB": 159,
+        "freeGiB": 4.96,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021173154,
+        "rssMB": 158,
+        "freeGiB": 5.01,
+        "cpuOneCorePercent": 23,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021174154,
+        "rssMB": 158,
+        "freeGiB": 5.03,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021175154,
+        "rssMB": 158,
+        "freeGiB": 5.06,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021176154,
+        "rssMB": 158,
+        "freeGiB": 5.1,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021177154,
+        "rssMB": 159,
+        "freeGiB": 5.17,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021178154,
+        "rssMB": 159,
+        "freeGiB": 5.21,
+        "cpuOneCorePercent": 30,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021179154,
+        "rssMB": 160,
+        "freeGiB": 5.26,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021180154,
+        "rssMB": 160,
+        "freeGiB": 5.27,
+        "cpuOneCorePercent": 28,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021181154,
+        "rssMB": 160,
+        "freeGiB": 5.25,
+        "cpuOneCorePercent": 23,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021182155,
+        "rssMB": 161,
+        "freeGiB": 5.2,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021183157,
+        "rssMB": 161,
+        "freeGiB": 5.16,
+        "cpuOneCorePercent": 23,
+        "timerLagMs": 2
+      }
+    ],
+    [
+      {
+        "at": 1789021151196,
+        "rssMB": 77,
+        "freeGiB": 6.21,
+        "cpuOneCorePercent": 33,
+        "timerLagMs": 8
+      },
+      {
+        "at": 1789021152205,
+        "rssMB": 85,
+        "freeGiB": 6.07,
+        "cpuOneCorePercent": 3,
+        "timerLagMs": 9
+      },
+      {
+        "at": 1789021153206,
+        "rssMB": 94,
+        "freeGiB": 5.86,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021154212,
+        "rssMB": 95,
+        "freeGiB": 5.72,
+        "cpuOneCorePercent": 12,
+        "timerLagMs": 6
+      },
+      {
+        "at": 1789021155219,
+        "rssMB": 95,
+        "freeGiB": 5.67,
+        "cpuOneCorePercent": 5,
+        "timerLagMs": 7
+      },
+      {
+        "at": 1789021156219,
+        "rssMB": 95,
+        "freeGiB": 5.55,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021157220,
+        "rssMB": 95,
+        "freeGiB": 5.41,
+        "cpuOneCorePercent": 30,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021158220,
+        "rssMB": 95,
+        "freeGiB": 5.36,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021159220,
+        "rssMB": 95,
+        "freeGiB": 5.25,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021160221,
+        "rssMB": 96,
+        "freeGiB": 5.21,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021161220,
+        "rssMB": 96,
+        "freeGiB": 5.14,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021162221,
+        "rssMB": 96,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021163228,
+        "rssMB": 96,
+        "freeGiB": 5.07,
+        "cpuOneCorePercent": 23,
+        "timerLagMs": 7
+      },
+      {
+        "at": 1789021164228,
+        "rssMB": 96,
+        "freeGiB": 5.08,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021165228,
+        "rssMB": 96,
+        "freeGiB": 5.11,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021166230,
+        "rssMB": 95,
+        "freeGiB": 5.13,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021167231,
+        "rssMB": 96,
+        "freeGiB": 5.06,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021168232,
+        "rssMB": 95,
+        "freeGiB": 4.99,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021169232,
+        "rssMB": 96,
+        "freeGiB": 4.88,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021170232,
+        "rssMB": 96,
+        "freeGiB": 4.8,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021171232,
+        "rssMB": 96,
+        "freeGiB": 4.92,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021172232,
+        "rssMB": 159,
+        "freeGiB": 4.95,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021173232,
+        "rssMB": 159,
+        "freeGiB": 5.02,
+        "cpuOneCorePercent": 9,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021174232,
+        "rssMB": 159,
+        "freeGiB": 5.03,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021175233,
+        "rssMB": 159,
+        "freeGiB": 5.06,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021176233,
+        "rssMB": 159,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021177233,
+        "rssMB": 159,
+        "freeGiB": 5.16,
+        "cpuOneCorePercent": 12,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021178233,
+        "rssMB": 159,
+        "freeGiB": 5.2,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021179233,
+        "rssMB": 159,
+        "freeGiB": 5.26,
+        "cpuOneCorePercent": 23,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021180233,
+        "rssMB": 161,
+        "freeGiB": 5.26,
+        "cpuOneCorePercent": 31,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021181234,
+        "rssMB": 160,
+        "freeGiB": 5.26,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021182233,
+        "rssMB": 161,
+        "freeGiB": 5.2,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021183233,
+        "rssMB": 162,
+        "freeGiB": 5.16,
+        "cpuOneCorePercent": 28,
+        "timerLagMs": 0
+      }
+    ],
+    [
+      {
+        "at": 1789021151283,
+        "rssMB": 78,
+        "freeGiB": 6.19,
+        "cpuOneCorePercent": 48,
+        "timerLagMs": 14
+      },
+      {
+        "at": 1789021152297,
+        "rssMB": 85,
+        "freeGiB": 6.06,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 13
+      },
+      {
+        "at": 1789021153312,
+        "rssMB": 94,
+        "freeGiB": 5.85,
+        "cpuOneCorePercent": 9,
+        "timerLagMs": 15
+      },
+      {
+        "at": 1789021154318,
+        "rssMB": 94,
+        "freeGiB": 5.74,
+        "cpuOneCorePercent": 6,
+        "timerLagMs": 6
+      },
+      {
+        "at": 1789021155318,
+        "rssMB": 94,
+        "freeGiB": 5.66,
+        "cpuOneCorePercent": 6,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021156319,
+        "rssMB": 94,
+        "freeGiB": 5.55,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021157319,
+        "rssMB": 95,
+        "freeGiB": 5.44,
+        "cpuOneCorePercent": 30,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021158319,
+        "rssMB": 95,
+        "freeGiB": 5.36,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021159319,
+        "rssMB": 95,
+        "freeGiB": 5.26,
+        "cpuOneCorePercent": 24,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021160319,
+        "rssMB": 95,
+        "freeGiB": 5.19,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021161320,
+        "rssMB": 95,
+        "freeGiB": 5.13,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021162320,
+        "rssMB": 95,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021163320,
+        "rssMB": 95,
+        "freeGiB": 5.07,
+        "cpuOneCorePercent": 24,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021164320,
+        "rssMB": 95,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021165321,
+        "rssMB": 95,
+        "freeGiB": 5.12,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021166321,
+        "rssMB": 95,
+        "freeGiB": 5.13,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021167321,
+        "rssMB": 95,
+        "freeGiB": 5.04,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021168322,
+        "rssMB": 95,
+        "freeGiB": 4.99,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021169322,
+        "rssMB": 96,
+        "freeGiB": 4.88,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021170324,
+        "rssMB": 95,
+        "freeGiB": 4.8,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021171324,
+        "rssMB": 95,
+        "freeGiB": 4.94,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021172324,
+        "rssMB": 159,
+        "freeGiB": 4.96,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021173324,
+        "rssMB": 159,
+        "freeGiB": 5.01,
+        "cpuOneCorePercent": 27,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021174326,
+        "rssMB": 159,
+        "freeGiB": 5.02,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021175333,
+        "rssMB": 159,
+        "freeGiB": 5.1,
+        "cpuOneCorePercent": 9,
+        "timerLagMs": 7
+      },
+      {
+        "at": 1789021176336,
+        "rssMB": 159,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 3
+      },
+      {
+        "at": 1789021177335,
+        "rssMB": 160,
+        "freeGiB": 5.17,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021178336,
+        "rssMB": 159,
+        "freeGiB": 5.2,
+        "cpuOneCorePercent": 28,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021179338,
+        "rssMB": 159,
+        "freeGiB": 5.26,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021180338,
+        "rssMB": 161,
+        "freeGiB": 5.25,
+        "cpuOneCorePercent": 23,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021181338,
+        "rssMB": 160,
+        "freeGiB": 5.24,
+        "cpuOneCorePercent": 23,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021182338,
+        "rssMB": 160,
+        "freeGiB": 5.19,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021183338,
+        "rssMB": 162,
+        "freeGiB": 5.16,
+        "cpuOneCorePercent": 30,
+        "timerLagMs": 0
+      }
+    ],
+    [
+      {
+        "at": 1789021151332,
+        "rssMB": 80,
+        "freeGiB": 6.18,
+        "cpuOneCorePercent": 34,
+        "timerLagMs": 10
+      },
+      {
+        "at": 1789021152342,
+        "rssMB": 85,
+        "freeGiB": 6.06,
+        "cpuOneCorePercent": 6,
+        "timerLagMs": 10
+      },
+      {
+        "at": 1789021153343,
+        "rssMB": 94,
+        "freeGiB": 5.84,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021154342,
+        "rssMB": 94,
+        "freeGiB": 5.74,
+        "cpuOneCorePercent": 6,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021155342,
+        "rssMB": 94,
+        "freeGiB": 5.67,
+        "cpuOneCorePercent": 3,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021156349,
+        "rssMB": 95,
+        "freeGiB": 5.55,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 7
+      },
+      {
+        "at": 1789021157358,
+        "rssMB": 95,
+        "freeGiB": 5.44,
+        "cpuOneCorePercent": 15,
+        "timerLagMs": 9
+      },
+      {
+        "at": 1789021158359,
+        "rssMB": 95,
+        "freeGiB": 5.35,
+        "cpuOneCorePercent": 8,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021159359,
+        "rssMB": 95,
+        "freeGiB": 5.25,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021160359,
+        "rssMB": 95,
+        "freeGiB": 5.18,
+        "cpuOneCorePercent": 27,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021161359,
+        "rssMB": 95,
+        "freeGiB": 5.12,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021162360,
+        "rssMB": 95,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021163360,
+        "rssMB": 95,
+        "freeGiB": 5.07,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021164360,
+        "rssMB": 95,
+        "freeGiB": 5.1,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021165360,
+        "rssMB": 95,
+        "freeGiB": 5.12,
+        "cpuOneCorePercent": 34,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021166361,
+        "rssMB": 95,
+        "freeGiB": 5.13,
+        "cpuOneCorePercent": 27,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021167360,
+        "rssMB": 95,
+        "freeGiB": 5.04,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021168360,
+        "rssMB": 95,
+        "freeGiB": 4.99,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021169360,
+        "rssMB": 95,
+        "freeGiB": 4.88,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021170360,
+        "rssMB": 95,
+        "freeGiB": 4.8,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021171360,
+        "rssMB": 95,
+        "freeGiB": 4.94,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021172361,
+        "rssMB": 158,
+        "freeGiB": 4.96,
+        "cpuOneCorePercent": 33,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021173367,
+        "rssMB": 159,
+        "freeGiB": 5.02,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 5
+      },
+      {
+        "at": 1789021174368,
+        "rssMB": 159,
+        "freeGiB": 5.03,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021175368,
+        "rssMB": 158,
+        "freeGiB": 5.1,
+        "cpuOneCorePercent": 28,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021176369,
+        "rssMB": 159,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021177369,
+        "rssMB": 158,
+        "freeGiB": 5.17,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021178369,
+        "rssMB": 159,
+        "freeGiB": 5.2,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021179369,
+        "rssMB": 160,
+        "freeGiB": 5.26,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021180369,
+        "rssMB": 160,
+        "freeGiB": 5.25,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021181369,
+        "rssMB": 161,
+        "freeGiB": 5.24,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021182369,
+        "rssMB": 161,
+        "freeGiB": 5.18,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021183369,
+        "rssMB": 162,
+        "freeGiB": 5.17,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 0
+      }
+    ],
+    [
+      {
+        "at": 1789021151410,
+        "rssMB": 81,
+        "freeGiB": 6.16,
+        "cpuOneCorePercent": 45,
+        "timerLagMs": 5
+      },
+      {
+        "at": 1789021152417,
+        "rssMB": 87,
+        "freeGiB": 6.04,
+        "cpuOneCorePercent": 8,
+        "timerLagMs": 7
+      },
+      {
+        "at": 1789021153420,
+        "rssMB": 94,
+        "freeGiB": 5.83,
+        "cpuOneCorePercent": 6,
+        "timerLagMs": 3
+      },
+      {
+        "at": 1789021154426,
+        "rssMB": 94,
+        "freeGiB": 5.72,
+        "cpuOneCorePercent": 8,
+        "timerLagMs": 6
+      },
+      {
+        "at": 1789021155427,
+        "rssMB": 94,
+        "freeGiB": 5.64,
+        "cpuOneCorePercent": 6,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021156426,
+        "rssMB": 95,
+        "freeGiB": 5.55,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021157426,
+        "rssMB": 95,
+        "freeGiB": 5.44,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021158430,
+        "rssMB": 95,
+        "freeGiB": 5.35,
+        "cpuOneCorePercent": 9,
+        "timerLagMs": 4
+      },
+      {
+        "at": 1789021159429,
+        "rssMB": 95,
+        "freeGiB": 5.24,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021160429,
+        "rssMB": 96,
+        "freeGiB": 5.18,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021161429,
+        "rssMB": 95,
+        "freeGiB": 5.12,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021162432,
+        "rssMB": 95,
+        "freeGiB": 5.08,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021163433,
+        "rssMB": 95,
+        "freeGiB": 5.07,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021164432,
+        "rssMB": 95,
+        "freeGiB": 5.1,
+        "cpuOneCorePercent": 27,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021165433,
+        "rssMB": 95,
+        "freeGiB": 5.12,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021166435,
+        "rssMB": 95,
+        "freeGiB": 5.12,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021167435,
+        "rssMB": 95,
+        "freeGiB": 5.05,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021168437,
+        "rssMB": 95,
+        "freeGiB": 4.97,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021169438,
+        "rssMB": 95,
+        "freeGiB": 4.87,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021170437,
+        "rssMB": 95,
+        "freeGiB": 4.79,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021171438,
+        "rssMB": 95,
+        "freeGiB": 4.94,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021172437,
+        "rssMB": 95,
+        "freeGiB": 4.96,
+        "cpuOneCorePercent": 30,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021173438,
+        "rssMB": 159,
+        "freeGiB": 5.01,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021174437,
+        "rssMB": 158,
+        "freeGiB": 5.03,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021175437,
+        "rssMB": 159,
+        "freeGiB": 5.1,
+        "cpuOneCorePercent": 12,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021176438,
+        "rssMB": 159,
+        "freeGiB": 5.08,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021177440,
+        "rssMB": 159,
+        "freeGiB": 5.17,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021178439,
+        "rssMB": 160,
+        "freeGiB": 5.22,
+        "cpuOneCorePercent": 27,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021179440,
+        "rssMB": 160,
+        "freeGiB": 5.28,
+        "cpuOneCorePercent": 12,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021180440,
+        "rssMB": 160,
+        "freeGiB": 5.25,
+        "cpuOneCorePercent": 28,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021181439,
+        "rssMB": 161,
+        "freeGiB": 5.22,
+        "cpuOneCorePercent": 9,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021182440,
+        "rssMB": 160,
+        "freeGiB": 5.2,
+        "cpuOneCorePercent": 9,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021183440,
+        "rssMB": 162,
+        "freeGiB": 5.16,
+        "cpuOneCorePercent": 9,
+        "timerLagMs": 0
+      }
+    ],
+    [
+      {
+        "at": 1789021151501,
+        "rssMB": 81,
+        "freeGiB": 6.14,
+        "cpuOneCorePercent": 44,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021152507,
+        "rssMB": 89,
+        "freeGiB": 6.01,
+        "cpuOneCorePercent": 5,
+        "timerLagMs": 6
+      },
+      {
+        "at": 1789021153511,
+        "rssMB": 94,
+        "freeGiB": 5.82,
+        "cpuOneCorePercent": 8,
+        "timerLagMs": 5
+      },
+      {
+        "at": 1789021154518,
+        "rssMB": 95,
+        "freeGiB": 5.71,
+        "cpuOneCorePercent": 5,
+        "timerLagMs": 6
+      },
+      {
+        "at": 1789021155518,
+        "rssMB": 95,
+        "freeGiB": 5.62,
+        "cpuOneCorePercent": 9,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021156518,
+        "rssMB": 95,
+        "freeGiB": 5.53,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021157518,
+        "rssMB": 95,
+        "freeGiB": 5.41,
+        "cpuOneCorePercent": 37,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021158518,
+        "rssMB": 95,
+        "freeGiB": 5.33,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021159518,
+        "rssMB": 96,
+        "freeGiB": 5.22,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021160518,
+        "rssMB": 96,
+        "freeGiB": 5.18,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021161518,
+        "rssMB": 95,
+        "freeGiB": 5.11,
+        "cpuOneCorePercent": 28,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021162518,
+        "rssMB": 96,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 27,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021163518,
+        "rssMB": 96,
+        "freeGiB": 5.06,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021164519,
+        "rssMB": 96,
+        "freeGiB": 5.1,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021165519,
+        "rssMB": 96,
+        "freeGiB": 5.14,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021166518,
+        "rssMB": 96,
+        "freeGiB": 5.12,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021167518,
+        "rssMB": 96,
+        "freeGiB": 5.02,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021168518,
+        "rssMB": 95,
+        "freeGiB": 4.96,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021169519,
+        "rssMB": 96,
+        "freeGiB": 4.86,
+        "cpuOneCorePercent": 12,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021170519,
+        "rssMB": 96,
+        "freeGiB": 4.76,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021171520,
+        "rssMB": 96,
+        "freeGiB": 4.95,
+        "cpuOneCorePercent": 13,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021172519,
+        "rssMB": 96,
+        "freeGiB": 4.96,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021173519,
+        "rssMB": 159,
+        "freeGiB": 5,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021174519,
+        "rssMB": 159,
+        "freeGiB": 5.04,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021175520,
+        "rssMB": 159,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021176520,
+        "rssMB": 159,
+        "freeGiB": 5.07,
+        "cpuOneCorePercent": 12,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021177520,
+        "rssMB": 159,
+        "freeGiB": 5.19,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021178520,
+        "rssMB": 159,
+        "freeGiB": 5.22,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021179521,
+        "rssMB": 160,
+        "freeGiB": 5.3,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021180520,
+        "rssMB": 161,
+        "freeGiB": 5.26,
+        "cpuOneCorePercent": 27,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021181520,
+        "rssMB": 161,
+        "freeGiB": 5.23,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021182522,
+        "rssMB": 161,
+        "freeGiB": 5.18,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021183521,
+        "rssMB": 162,
+        "freeGiB": 5.15,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      }
+    ],
+    [
+      {
+        "at": 1789021151578,
+        "rssMB": 82,
+        "freeGiB": 6.12,
+        "cpuOneCorePercent": 31,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021152583,
+        "rssMB": 89,
+        "freeGiB": 5.99,
+        "cpuOneCorePercent": 9,
+        "timerLagMs": 5
+      },
+      {
+        "at": 1789021153588,
+        "rssMB": 95,
+        "freeGiB": 5.78,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 6
+      },
+      {
+        "at": 1789021154594,
+        "rssMB": 95,
+        "freeGiB": 5.7,
+        "cpuOneCorePercent": 6,
+        "timerLagMs": 5
+      },
+      {
+        "at": 1789021155596,
+        "rssMB": 95,
+        "freeGiB": 5.62,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021156607,
+        "rssMB": 95,
+        "freeGiB": 5.54,
+        "cpuOneCorePercent": 26,
+        "timerLagMs": 10
+      },
+      {
+        "at": 1789021157607,
+        "rssMB": 95,
+        "freeGiB": 5.42,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021158608,
+        "rssMB": 95,
+        "freeGiB": 5.33,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021159608,
+        "rssMB": 96,
+        "freeGiB": 5.22,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021160608,
+        "rssMB": 96,
+        "freeGiB": 5.17,
+        "cpuOneCorePercent": 27,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021161607,
+        "rssMB": 96,
+        "freeGiB": 5.12,
+        "cpuOneCorePercent": 23,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021162608,
+        "rssMB": 95,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 23,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021163608,
+        "rssMB": 95,
+        "freeGiB": 5.07,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021164607,
+        "rssMB": 96,
+        "freeGiB": 5.1,
+        "cpuOneCorePercent": 30,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021165608,
+        "rssMB": 95,
+        "freeGiB": 5.15,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021166609,
+        "rssMB": 96,
+        "freeGiB": 5.12,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021167609,
+        "rssMB": 96,
+        "freeGiB": 5.02,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021168610,
+        "rssMB": 96,
+        "freeGiB": 4.97,
+        "cpuOneCorePercent": 23,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021169610,
+        "rssMB": 96,
+        "freeGiB": 4.85,
+        "cpuOneCorePercent": 28,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021170610,
+        "rssMB": 96,
+        "freeGiB": 4.88,
+        "cpuOneCorePercent": 13,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021171609,
+        "rssMB": 96,
+        "freeGiB": 4.95,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021172610,
+        "rssMB": 96,
+        "freeGiB": 4.95,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021173609,
+        "rssMB": 159,
+        "freeGiB": 5.02,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021174609,
+        "rssMB": 159,
+        "freeGiB": 5.04,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021175610,
+        "rssMB": 159,
+        "freeGiB": 5.11,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021176609,
+        "rssMB": 159,
+        "freeGiB": 5.13,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021177609,
+        "rssMB": 159,
+        "freeGiB": 5.19,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021178609,
+        "rssMB": 159,
+        "freeGiB": 5.23,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021179613,
+        "rssMB": 161,
+        "freeGiB": 5.3,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 3
+      },
+      {
+        "at": 1789021180614,
+        "rssMB": 161,
+        "freeGiB": 5.26,
+        "cpuOneCorePercent": 12,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021181614,
+        "rssMB": 160,
+        "freeGiB": 5.24,
+        "cpuOneCorePercent": 24,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021182614,
+        "rssMB": 161,
+        "freeGiB": 5.18,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021183613,
+        "rssMB": 162,
+        "freeGiB": 5.17,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 0
+      }
+    ],
+    [
+      {
+        "at": 1789021151686,
+        "rssMB": 82,
+        "freeGiB": 6.16,
+        "cpuOneCorePercent": 30,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021152691,
+        "rssMB": 90,
+        "freeGiB": 5.97,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 5
+      },
+      {
+        "at": 1789021153694,
+        "rssMB": 94,
+        "freeGiB": 5.76,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 3
+      },
+      {
+        "at": 1789021154702,
+        "rssMB": 94,
+        "freeGiB": 5.7,
+        "cpuOneCorePercent": 5,
+        "timerLagMs": 8
+      },
+      {
+        "at": 1789021155703,
+        "rssMB": 95,
+        "freeGiB": 5.61,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021156704,
+        "rssMB": 95,
+        "freeGiB": 5.53,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021157704,
+        "rssMB": 95,
+        "freeGiB": 5.42,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021158704,
+        "rssMB": 95,
+        "freeGiB": 5.33,
+        "cpuOneCorePercent": 23,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021159704,
+        "rssMB": 96,
+        "freeGiB": 5.22,
+        "cpuOneCorePercent": 31,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021160704,
+        "rssMB": 96,
+        "freeGiB": 5.16,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021161704,
+        "rssMB": 96,
+        "freeGiB": 5.11,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021162704,
+        "rssMB": 95,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 13,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021163704,
+        "rssMB": 96,
+        "freeGiB": 5.07,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021164706,
+        "rssMB": 95,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 28,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021165706,
+        "rssMB": 96,
+        "freeGiB": 5.17,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021166706,
+        "rssMB": 96,
+        "freeGiB": 5.11,
+        "cpuOneCorePercent": 13,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021167708,
+        "rssMB": 95,
+        "freeGiB": 5.02,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021168708,
+        "rssMB": 96,
+        "freeGiB": 4.95,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021169708,
+        "rssMB": 96,
+        "freeGiB": 4.85,
+        "cpuOneCorePercent": 28,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021170708,
+        "rssMB": 96,
+        "freeGiB": 4.88,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021171709,
+        "rssMB": 95,
+        "freeGiB": 4.95,
+        "cpuOneCorePercent": 23,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021172709,
+        "rssMB": 95,
+        "freeGiB": 4.95,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021173709,
+        "rssMB": 142,
+        "freeGiB": 5.02,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021174710,
+        "rssMB": 159,
+        "freeGiB": 5.04,
+        "cpuOneCorePercent": 28,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021175718,
+        "rssMB": 159,
+        "freeGiB": 5.12,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 8
+      },
+      {
+        "at": 1789021176718,
+        "rssMB": 159,
+        "freeGiB": 5.15,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021177718,
+        "rssMB": 159,
+        "freeGiB": 5.18,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021178718,
+        "rssMB": 159,
+        "freeGiB": 5.22,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021179726,
+        "rssMB": 159,
+        "freeGiB": 5.31,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 8
+      },
+      {
+        "at": 1789021180727,
+        "rssMB": 161,
+        "freeGiB": 5.24,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021181727,
+        "rssMB": 161,
+        "freeGiB": 5.22,
+        "cpuOneCorePercent": 12,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021182727,
+        "rssMB": 162,
+        "freeGiB": 5.16,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021183731,
+        "rssMB": 162,
+        "freeGiB": 5.2,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 5
+      }
+    ],
+    [
+      {
+        "at": 1789021151792,
+        "rssMB": 85,
+        "freeGiB": 6.14,
+        "cpuOneCorePercent": 43,
+        "timerLagMs": 11
+      },
+      {
+        "at": 1789021152797,
+        "rssMB": 92,
+        "freeGiB": 5.94,
+        "cpuOneCorePercent": 12,
+        "timerLagMs": 5
+      },
+      {
+        "at": 1789021153800,
+        "rssMB": 95,
+        "freeGiB": 5.75,
+        "cpuOneCorePercent": 1,
+        "timerLagMs": 4
+      },
+      {
+        "at": 1789021154807,
+        "rssMB": 95,
+        "freeGiB": 5.69,
+        "cpuOneCorePercent": 5,
+        "timerLagMs": 7
+      },
+      {
+        "at": 1789021155807,
+        "rssMB": 95,
+        "freeGiB": 5.59,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021156807,
+        "rssMB": 95,
+        "freeGiB": 5.51,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021157809,
+        "rssMB": 95,
+        "freeGiB": 5.42,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021158809,
+        "rssMB": 96,
+        "freeGiB": 5.3,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021159810,
+        "rssMB": 96,
+        "freeGiB": 5.21,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021160810,
+        "rssMB": 96,
+        "freeGiB": 5.16,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021161810,
+        "rssMB": 96,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021162811,
+        "rssMB": 96,
+        "freeGiB": 5.08,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021163810,
+        "rssMB": 96,
+        "freeGiB": 5.07,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021164811,
+        "rssMB": 96,
+        "freeGiB": 5.08,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021165811,
+        "rssMB": 96,
+        "freeGiB": 5.17,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021166811,
+        "rssMB": 96,
+        "freeGiB": 5.08,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021167812,
+        "rssMB": 95,
+        "freeGiB": 5.02,
+        "cpuOneCorePercent": 9,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021168812,
+        "rssMB": 96,
+        "freeGiB": 4.94,
+        "cpuOneCorePercent": 28,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021169812,
+        "rssMB": 96,
+        "freeGiB": 4.84,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021170812,
+        "rssMB": 96,
+        "freeGiB": 4.91,
+        "cpuOneCorePercent": 22,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021171812,
+        "rssMB": 95,
+        "freeGiB": 4.95,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021172812,
+        "rssMB": 96,
+        "freeGiB": 4.96,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021173812,
+        "rssMB": 96,
+        "freeGiB": 5.02,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021174811,
+        "rssMB": 159,
+        "freeGiB": 5.06,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021175811,
+        "rssMB": 159,
+        "freeGiB": 5.12,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021176812,
+        "rssMB": 160,
+        "freeGiB": 5.15,
+        "cpuOneCorePercent": 12,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021177812,
+        "rssMB": 159,
+        "freeGiB": 5.19,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021178811,
+        "rssMB": 160,
+        "freeGiB": 5.21,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021179813,
+        "rssMB": 159,
+        "freeGiB": 5.3,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021180813,
+        "rssMB": 160,
+        "freeGiB": 5.24,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021181815,
+        "rssMB": 161,
+        "freeGiB": 5.21,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021182817,
+        "rssMB": 161,
+        "freeGiB": 5.18,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021183823,
+        "rssMB": 161,
+        "freeGiB": 5.2,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 6
+      }
+    ],
+    [
+      {
+        "at": 1789021151868,
+        "rssMB": 85,
+        "freeGiB": 6.12,
+        "cpuOneCorePercent": 44,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021152872,
+        "rssMB": 92,
+        "freeGiB": 5.9,
+        "cpuOneCorePercent": 8,
+        "timerLagMs": 4
+      },
+      {
+        "at": 1789021153877,
+        "rssMB": 95,
+        "freeGiB": 5.75,
+        "cpuOneCorePercent": 5,
+        "timerLagMs": 5
+      },
+      {
+        "at": 1789021154884,
+        "rssMB": 95,
+        "freeGiB": 5.68,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 7
+      },
+      {
+        "at": 1789021155888,
+        "rssMB": 95,
+        "freeGiB": 5.57,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 4
+      },
+      {
+        "at": 1789021156890,
+        "rssMB": 95,
+        "freeGiB": 5.5,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021157891,
+        "rssMB": 95,
+        "freeGiB": 5.4,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021158894,
+        "rssMB": 95,
+        "freeGiB": 5.3,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 3
+      },
+      {
+        "at": 1789021159894,
+        "rssMB": 96,
+        "freeGiB": 5.21,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021160896,
+        "rssMB": 96,
+        "freeGiB": 5.16,
+        "cpuOneCorePercent": 8,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021161895,
+        "rssMB": 96,
+        "freeGiB": 5.08,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021162897,
+        "rssMB": 96,
+        "freeGiB": 5.07,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021163896,
+        "rssMB": 96,
+        "freeGiB": 5.07,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021164900,
+        "rssMB": 96,
+        "freeGiB": 5.07,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 4
+      },
+      {
+        "at": 1789021165899,
+        "rssMB": 96,
+        "freeGiB": 5.16,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021166903,
+        "rssMB": 96,
+        "freeGiB": 5.09,
+        "cpuOneCorePercent": 12,
+        "timerLagMs": 4
+      },
+      {
+        "at": 1789021167905,
+        "rssMB": 96,
+        "freeGiB": 5.02,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021168905,
+        "rssMB": 96,
+        "freeGiB": 4.91,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021169904,
+        "rssMB": 96,
+        "freeGiB": 4.83,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021170913,
+        "rssMB": 96,
+        "freeGiB": 4.91,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 9
+      },
+      {
+        "at": 1789021171912,
+        "rssMB": 96,
+        "freeGiB": 4.93,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021172913,
+        "rssMB": 96,
+        "freeGiB": 5,
+        "cpuOneCorePercent": 19,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021173913,
+        "rssMB": 96,
+        "freeGiB": 5.01,
+        "cpuOneCorePercent": 17,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021174917,
+        "rssMB": 159,
+        "freeGiB": 5.06,
+        "cpuOneCorePercent": 8,
+        "timerLagMs": 4
+      },
+      {
+        "at": 1789021175917,
+        "rssMB": 159,
+        "freeGiB": 5.1,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021176918,
+        "rssMB": 160,
+        "freeGiB": 5.15,
+        "cpuOneCorePercent": 12,
+        "timerLagMs": 1
+      },
+      {
+        "at": 1789021177917,
+        "rssMB": 159,
+        "freeGiB": 5.18,
+        "cpuOneCorePercent": 16,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021178921,
+        "rssMB": 160,
+        "freeGiB": 5.23,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 4
+      },
+      {
+        "at": 1789021179923,
+        "rssMB": 160,
+        "freeGiB": 5.28,
+        "cpuOneCorePercent": 11,
+        "timerLagMs": 2
+      },
+      {
+        "at": 1789021180922,
+        "rssMB": 160,
+        "freeGiB": 5.25,
+        "cpuOneCorePercent": 20,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021181923,
+        "rssMB": 161,
+        "freeGiB": 5.2,
+        "cpuOneCorePercent": 14,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021182922,
+        "rssMB": 162,
+        "freeGiB": 5.17,
+        "cpuOneCorePercent": 25,
+        "timerLagMs": 0
+      },
+      {
+        "at": 1789021183931,
+        "rssMB": 161,
+        "freeGiB": 5.2,
+        "cpuOneCorePercent": 6,
+        "timerLagMs": 8
+      }
+    ]
+  ],
+  "freeGiBAtEnd": 5.160419464111328,
+  "measurementNotes": {
+    "brokerPublishEventLatencyMs": "Timestamp at Aedes publish event after fanout, not ingress. Original field name corrected; values unchanged.",
+    "browserScope": "20 real React hook fixtures plus 980 MQTT.js protocol subscribers",
+    "cpuUnits": "100 percent is one fully used logical CPU core"
+  }
+}

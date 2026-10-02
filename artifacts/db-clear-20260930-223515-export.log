@@ -1,0 +1,12 @@
+
+ ⛅️ wrangler 4.129.0 (update available 4.145.0)
+───────────────────────────────────────────────
+Resource location: remote 
+
+🌀 Executing on remote database aion2web-db (506fb168-4216-41e0-a9a5-0fc957fb9c8c):
+├ Creating export
+│
+You can also download your export from the following URL manually. This link will be valid for one hour: https://1ad59b064bfa3690063414a9906129e4.r2.cloudflarestorage.com/d1-sqlio-outgoing-prod/506fb168-4216-41e0-a9a5-0fc957fb9c8c-000001e5-00000000-000050f6-8e128fc7e170877a3b1b17d394c2f0e7.sql?X-Amz-Expires=3600&X-Amz-Date=20260930T143556Z&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f591b8dcd0794c54409cf0613171d42b%2F20260930%2Fauto%2Fs3%2Faws4_request&X-Amz-SignedHeaders=host&X-Amz-Signature=1c0d86cd4b9ddbc598e0fd39713222c25c03b90dad1ccc95ed111ae100236a28
+├ Downloading SQL to E:\project\aion2web-backups\aion2web-db-before-clear-20260930-223515.sql
+│
+🌀 Downloaded to E:\project\aion2web-backups\aion2web-db-before-clear-20260930-223515.sql successfully!

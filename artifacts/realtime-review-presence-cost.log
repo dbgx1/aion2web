@@ -1,0 +1,1 @@
+PASS: presence poll backoff survives scrolling; offline pauses; wake refreshes; permanent saves stop; transient retries are delayed and bounded

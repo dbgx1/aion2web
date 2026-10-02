@@ -1,0 +1,65 @@
+{
+  "at": "2026-09-10T02:34:59.406Z",
+  "machine": {
+    "cpu": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "ramGB": 32
+  },
+  "scope": "Loopback Aedes broker + real Python WebRtcRelay/Paho + real browser useAionConsole. Game HTTP replaced with 20ms success; mitmproxy host stubbed. No game, public broker, production API/DB, AI, account authorization, or full console page load.",
+  "stages": [
+    {
+      "clients": 200,
+      "consoles": 5,
+      "messagesPerClientPerSecond": 2,
+      "trafficSeconds": 60,
+      "elapsedSeconds": 61.568,
+      "generated": 24000,
+      "brokerReceivedChat": 24000,
+      "expectedDeliveries": 120000,
+      "receivedDeliveries": 120000,
+      "drained": true,
+      "chatLatencyMs": {
+        "count": 120000,
+        "p50": 213.5,
+        "p95": 401.9,
+        "p99": 577.1,
+        "max": 659.1
+      },
+      "commandLatencyMs": {
+        "count": 3085,
+        "p50": 232.8,
+        "p95": 454.8,
+        "p99": 629.4,
+        "max": 744.2
+      },
+      "commandStatuses": {
+        "confirmed": 3085
+      },
+      "clientStats": {
+        "executed": 3085,
+        "ready": 200,
+        "outbox": 0
+      },
+      "longTasks": {
+        "count": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "browserHeapMB": [
+        53,
+        50,
+        50,
+        39,
+        50
+      ],
+      "offlineQueueProbe": {
+        "offlineSubmitted": 600,
+        "offlineRetained": 500
+      },
+      "duplicateExecutions": 2,
+      "errors": []
+    }
+  ]
+}

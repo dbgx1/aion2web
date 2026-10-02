@@ -59,6 +59,7 @@ test('exact byte boundary accounts for envelope, JSON escapes and non-ASCII iden
 test('message API cancels an oversize stream without Content-Length before any database access',async()=>{
   const routeExports={}
   const deps={
+    '#/server/server-access.server':{canAccessServer:()=>assert.fail('Oversize input must not reach permission queries'),canAccessServers:()=>assert.fail('Oversize input must not reach permission queries')},
     '@tanstack/react-router':{createFileRoute:()=>options=>options},
     '#/server/admin-auth.server':{currentAdminPrincipal:async()=>({userKey:'test'})},
     '#/server/api-auth.server':{jsonError:(error,status)=>Response.json({error},{status})},

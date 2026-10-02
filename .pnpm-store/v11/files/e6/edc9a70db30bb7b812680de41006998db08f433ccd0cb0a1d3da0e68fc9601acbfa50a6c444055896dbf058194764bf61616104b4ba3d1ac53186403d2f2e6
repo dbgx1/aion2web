@@ -1,0 +1,50 @@
+export type OpenRouterPkceChallengeMethod = 'S256';
+export interface OpenRouterPkcePending {
+    codeVerifier: string;
+    codeChallengeMethod: OpenRouterPkceChallengeMethod;
+    callbackUrl: string;
+}
+export interface OpenRouterAuthUrlOptions {
+    callbackUrl: string;
+    codeChallenge?: string;
+    codeChallengeMethod?: OpenRouterPkceChallengeMethod;
+}
+export interface StartOpenRouterPkceOptions {
+    callbackUrl?: string;
+    navigate?: (url: string) => void;
+}
+export interface ExchangeOpenRouterCodeOptions {
+    code: string;
+    codeVerifier?: string;
+    codeChallengeMethod?: OpenRouterPkceChallengeMethod;
+    fetchImpl?: typeof fetch;
+}
+export interface CompleteOpenRouterPkceFromUrlOptions {
+    url?: string;
+    fetchImpl?: typeof fetch;
+    clearPending?: boolean;
+    cleanUrl?: boolean;
+}
+/**
+ * Duck-typed BYOK store. `ByokClient.update` matches this. The slug is always
+ * {@link openrouterByok.id}.
+ */
+export interface OpenRouterByokStore {
+    update: (provider: string, key: string) => void | Promise<void>;
+}
+export declare function generateCodeVerifier(length?: number): string;
+export declare function createS256CodeChallenge(codeVerifier: string): Promise<string>;
+export declare function buildOpenRouterAuthUrl(options: OpenRouterAuthUrlOptions): string;
+export declare function storeOpenRouterPkcePending(pending: OpenRouterPkcePending): void;
+export declare function loadOpenRouterPkcePending(): OpenRouterPkcePending | null;
+export declare function clearOpenRouterPkcePending(): void;
+export declare function defaultOpenRouterCallbackUrl(): string;
+export declare function startOpenRouterPkceLogin(options?: StartOpenRouterPkceOptions): Promise<void>;
+export declare function exchangeOpenRouterCode(options: ExchangeOpenRouterCodeOptions): Promise<string>;
+export declare function stripOpenRouterCodeFromUrl(href?: string): void;
+export declare function completeOpenRouterPkceFromUrl(options?: CompleteOpenRouterPkceFromUrlOptions): Promise<string | null>;
+/**
+ * Finish the OpenRouter PKCE callback and save the key under
+ * {@link openrouterByok.id}.
+ */
+export declare function completeOpenRouterPkceIntoByok(byok: OpenRouterByokStore, options?: CompleteOpenRouterPkceFromUrlOptions): Promise<string | null>;

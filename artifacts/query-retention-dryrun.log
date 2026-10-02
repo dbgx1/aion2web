@@ -1,0 +1,12 @@
+
+ ⛅️ wrangler 4.144.0
+────────────────────
+Total Upload: 757.14 KiB / gzip: 118.09 KiB
+Your Worker has access to the following bindings:
+Binding                                  Resource                  
+env.POOL (QueryPool)                     Durable Object            
+env.DB (aion2web-db)                     D1 Database               
+env.SERVICE_ID ("aion2web")              Environment Variable      
+env.DAILY_QUERY_LIMIT ("20000")          Environment Variable      
+
+--dry-run: exiting now.

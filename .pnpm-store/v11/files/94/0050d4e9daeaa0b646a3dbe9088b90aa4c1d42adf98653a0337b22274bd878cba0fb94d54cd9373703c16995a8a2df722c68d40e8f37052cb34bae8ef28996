@@ -1,0 +1,192 @@
+import { arrayBufferToBase64 } from "@tanstack/ai-utils";
+//#region src/audio-recorder.ts
+/**
+* Framework-agnostic browser audio recorder. Wraps `getUserMedia` +
+* `MediaRecorder`, returns the recorder's native output (no transcode), and
+* builds a plug-and-play {@link AudioRecording.part}.
+*/
+var AudioRecorder = class {
+	options;
+	recorder = null;
+	stream = null;
+	chunks = [];
+	startedAt = 0;
+	_state = "idle";
+	starting = false;
+	pendingCancel = false;
+	listeners = /* @__PURE__ */ new Set();
+	stopResolve = null;
+	stopReject = null;
+	constructor(options = {}) {
+		this.options = options;
+	}
+	/** Feature-detect the browser media APIs. SSR/Worker-safe. */
+	static isSupported() {
+		return typeof navigator !== "undefined" && typeof navigator.mediaDevices !== "undefined" && typeof navigator.mediaDevices.getUserMedia === "function" && typeof MediaRecorder !== "undefined";
+	}
+	get state() {
+		return this._state;
+	}
+	subscribe(cb) {
+		this.listeners.add(cb);
+		return () => {
+			this.listeners.delete(cb);
+		};
+	}
+	setState(state) {
+		this._state = state;
+		for (const cb of this.listeners) cb(state);
+	}
+	async start() {
+		if (this._state !== "idle" || this.starting) return;
+		this.starting = true;
+		try {
+			const stream = await navigator.mediaDevices.getUserMedia({ audio: this.options.audio ?? true });
+			if (this.pendingCancel) {
+				stream.getTracks().forEach((t) => t.stop());
+				return;
+			}
+			this.stream = stream;
+			const wanted = this.options.mimeType;
+			const useMimeType = wanted && typeof MediaRecorder.isTypeSupported === "function" && MediaRecorder.isTypeSupported(wanted) ? wanted : void 0;
+			const recorder = useMimeType ? new MediaRecorder(stream, { mimeType: useMimeType }) : new MediaRecorder(stream);
+			this.chunks = [];
+			recorder.ondataavailable = (e) => {
+				if (e.data.size > 0) this.chunks.push(e.data);
+			};
+			recorder.onstop = () => {
+				this.finalize();
+			};
+			recorder.onerror = (event) => {
+				const detail = "error" in event && event.error instanceof Error ? event.error : /* @__PURE__ */ new Error("Audio recording failed");
+				this.handleError(detail);
+			};
+			this.recorder = recorder;
+			this.startedAt = Date.now();
+			recorder.start();
+			this.setState("recording");
+		} catch (err) {
+			this.releaseStream();
+			this.recorder = null;
+			const error = err instanceof Error ? err : /* @__PURE__ */ new Error("Failed to start recording");
+			this.setState("idle");
+			this.notifyError(error);
+			throw error;
+		} finally {
+			this.starting = false;
+			this.pendingCancel = false;
+		}
+	}
+	stop() {
+		if (this._state !== "recording" || !this.recorder) return Promise.reject(/* @__PURE__ */ new Error("AudioRecorder.stop() called while not recording"));
+		this.setState("stopping");
+		const recorder = this.recorder;
+		return new Promise((resolve, reject) => {
+			const watchdog = setTimeout(() => {
+				if (this._state !== "stopping") return;
+				this.detachRecorder();
+				if (this.chunks.length > 0) this.finalize();
+				else this.handleError(/* @__PURE__ */ new Error("Recording stop timed out after 10s with no audio"));
+			}, 1e4);
+			this.stopResolve = (rec) => {
+				clearTimeout(watchdog);
+				resolve(rec);
+			};
+			this.stopReject = (err) => {
+				clearTimeout(watchdog);
+				reject(err);
+			};
+			recorder.stop();
+		});
+	}
+	cancel() {
+		if (this.starting) {
+			this.pendingCancel = true;
+			return;
+		}
+		if (this._state === "idle") return;
+		const recorder = this.recorder;
+		if (recorder) {
+			this.detachRecorder();
+			try {
+				recorder.stop();
+			} catch (err) {
+				if (!(err instanceof DOMException && err.name === "InvalidStateError")) this.notifyError(err instanceof Error ? err : /* @__PURE__ */ new Error("Failed to stop recorder"));
+			}
+		}
+		this.releaseStream();
+		this.recorder = null;
+		this.chunks = [];
+		const reject = this.stopReject;
+		this.stopResolve = null;
+		this.stopReject = null;
+		this.setState("idle");
+		reject?.(/* @__PURE__ */ new Error("Recording cancelled"));
+	}
+	async finalize() {
+		const mimeType = this.recorder?.mimeType || "audio/webm";
+		const durationMs = Date.now() - this.startedAt;
+		try {
+			const blob = new Blob(this.chunks, { type: mimeType });
+			const base64 = arrayBufferToBase64(await blob.arrayBuffer());
+			const recording = {
+				blob,
+				base64,
+				mimeType,
+				durationMs,
+				part: {
+					type: "audio",
+					source: {
+						type: "data",
+						value: base64,
+						mimeType
+					}
+				}
+			};
+			this.releaseStream();
+			this.recorder = null;
+			this.chunks = [];
+			const resolve = this.stopResolve;
+			this.stopResolve = null;
+			this.stopReject = null;
+			this.setState("idle");
+			resolve?.(recording);
+		} catch (err) {
+			this.handleError(err instanceof Error ? err : /* @__PURE__ */ new Error("Failed to finalize recording"));
+		}
+	}
+	handleError(error) {
+		this.releaseStream();
+		this.recorder = null;
+		this.chunks = [];
+		const reject = this.stopReject;
+		this.stopResolve = null;
+		this.stopReject = null;
+		this.setState("idle");
+		reject?.(error);
+		this.notifyError(error);
+	}
+	/** Invoke the user onError callback, isolating a throw so it can't disrupt
+	* internal state teardown or strand a pending promise. */
+	notifyError(error) {
+		try {
+			this.options.onError?.(error);
+		} catch {}
+	}
+	releaseStream() {
+		this.stream?.getTracks().forEach((t) => t.stop());
+		this.stream = null;
+	}
+	/** Detach all event handlers so a stale recorder can't mutate our state. */
+	detachRecorder() {
+		const recorder = this.recorder;
+		if (!recorder) return;
+		recorder.onstop = null;
+		recorder.onerror = null;
+		recorder.ondataavailable = null;
+	}
+};
+//#endregion
+export { AudioRecorder };
+
+//# sourceMappingURL=audio-recorder.js.map

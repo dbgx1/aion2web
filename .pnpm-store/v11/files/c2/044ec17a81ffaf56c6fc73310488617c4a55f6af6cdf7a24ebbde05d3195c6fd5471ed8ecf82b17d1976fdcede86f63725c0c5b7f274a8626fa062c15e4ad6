@@ -1,0 +1,76 @@
+import { AudioPart } from '@tanstack/ai/client';
+/** Lifecycle state of an {@link AudioRecorder}. */
+export type AudioRecorderState = 'idle' | 'recording' | 'stopping';
+export interface AudioRecorderOptions {
+    /** Constraints forwarded to `getUserMedia({ audio })`. Defaults to `true`. */
+    audio?: MediaTrackConstraints | boolean;
+    /**
+     * Preferred recorder mime type. Used only when
+     * `MediaRecorder.isTypeSupported` reports it; otherwise the browser default
+     * is used.
+     */
+    mimeType?: string;
+    /** Fired on `getUserMedia` rejection (permission denied) or recorder error. */
+    onError?: (error: Error) => void;
+}
+/**
+ * Resolves the value `stop()` produces from a recorder transform callback.
+ *
+ * - If the callback returns a value — sync or async — that value's awaited type
+ *   is used (a returned `null` is a real value and is preserved).
+ * - If the callback returns nothing (`void`/`undefined`), or is absent, falls
+ *   back to {@link AudioRecording}.
+ *
+ * @template TFn - The transform callback type (or undefined if not provided)
+ */
+export type InferAudioRecordingOutput<TFn> = TFn extends (recording: AudioRecording) => infer R ? [Exclude<Awaited<R>, void | undefined>] extends [never] ? AudioRecording : Exclude<Awaited<R>, void | undefined> : AudioRecording;
+export interface AudioRecording {
+    /** The raw recorded media blob. */
+    blob: Blob;
+    /** Base64 of the recorded bytes (no `data:` prefix). */
+    base64: string;
+    /** The recorder's native mime type, e.g. `audio/webm;codecs=opus`. */
+    mimeType: string;
+    /** Recording length in milliseconds. */
+    durationMs: number;
+    /**
+     * Ready-to-use audio content part for `sendMessage`/generation prompts:
+     * `{ type: 'audio', source: { type: 'data', value: base64, mimeType } }`.
+     */
+    part: AudioPart;
+}
+/**
+ * Framework-agnostic browser audio recorder. Wraps `getUserMedia` +
+ * `MediaRecorder`, returns the recorder's native output (no transcode), and
+ * builds a plug-and-play {@link AudioRecording.part}.
+ */
+export declare class AudioRecorder {
+    private readonly options;
+    private recorder;
+    private stream;
+    private chunks;
+    private startedAt;
+    private _state;
+    private starting;
+    private pendingCancel;
+    private readonly listeners;
+    private stopResolve;
+    private stopReject;
+    constructor(options?: AudioRecorderOptions);
+    /** Feature-detect the browser media APIs. SSR/Worker-safe. */
+    static isSupported(): boolean;
+    get state(): AudioRecorderState;
+    subscribe(cb: (state: AudioRecorderState) => void): () => void;
+    private setState;
+    start(): Promise<void>;
+    stop(): Promise<AudioRecording>;
+    cancel(): void;
+    private finalize;
+    private handleError;
+    /** Invoke the user onError callback, isolating a throw so it can't disrupt
+     * internal state teardown or strand a pending promise. */
+    private notifyError;
+    private releaseStream;
+    /** Detach all event handlers so a stale recorder can't mutate our state. */
+    private detachRecorder;
+}

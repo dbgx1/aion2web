@@ -1,0 +1,548 @@
+[
+  {
+    "results": [
+      {
+        "table_name": "admin_users",
+        "rows": 14
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.4869
+      },
+      "duration": 0.4869,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 14,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "ai_personas",
+        "rows": 3
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.1032
+      },
+      "duration": 0.1032,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 3,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "character_presence",
+        "rows": 36681
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 24.4541
+      },
+      "duration": 24.4541,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 36681,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "character_tracking",
+        "rows": 15
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.1527
+      },
+      "duration": 0.1527,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 15,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "character_tracking_conflict_archive",
+        "rows": 1
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.1171
+      },
+      "duration": 0.1171,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 1,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "chat_conversations",
+        "rows": 3649
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 2.6055
+      },
+      "duration": 2.6055,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 3649,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "chat_messages",
+        "rows": 22021
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 7.4131
+      },
+      "duration": 7.4131,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 22021,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "client_locks",
+        "rows": 1
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0908
+      },
+      "duration": 0.0908,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 1,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "game_characters",
+        "rows": 125379
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 6.312
+      },
+      "duration": 6.312,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 125379,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "guild_tracking",
+        "rows": 0
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0965
+      },
+      "duration": 0.0965,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 1,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "guild_tracking_events",
+        "rows": 0
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0708
+      },
+      "duration": 0.0708,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 1,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "presence_jobs",
+        "rows": 2
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0664
+      },
+      "duration": 0.0664,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 2,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "presence_request_results",
+        "rows": 75141
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 137.7961
+      },
+      "duration": 137.7961,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 75141,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "presence_requests",
+        "rows": 1632
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 2.2789
+      },
+      "duration": 2.2789,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 1632,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "presence_tasks",
+        "rows": 1539
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 3.2096
+      },
+      "duration": 3.2096,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 1539,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "reception_profiles",
+        "rows": 0
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.1108
+      },
+      "duration": 0.1108,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 1,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "reception_settings",
+        "rows": 0
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0906
+      },
+      "duration": 0.0906,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 1,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "reception_turns",
+        "rows": 0
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0993
+      },
+      "duration": 0.0993,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 1,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "server_assignment_audit",
+        "rows": 32
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0789
+      },
+      "duration": 0.0789,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 32,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "server_assignment_membership_audit",
+        "rows": 1
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0772
+      },
+      "duration": 0.0772,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 1,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "table_name": "server_assignments",
+        "rows": 13
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.1423
+      },
+      "duration": 0.1423,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 13,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

@@ -1,0 +1,164 @@
+[
+  {
+    "id": "19067d12-75fa-48f6-86f3-1fe9d3040d9f",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "13a239e8-362c-4074-97ff-c612c9adbfd0",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-21T07:07:24.778246Z"
+  },
+  {
+    "id": "1e1a3c06-d032-4168-9f5b-6c9586daec8f",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/message": "Store raw legion position values 0-3",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "a995809e-3971-47f2-a223-df449020b5e4",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-22T01:17:08.885511Z"
+  },
+  {
+    "id": "6c58dee1-e125-4f35-aa55-5cb656d340fa",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/message": "Update API docs to match character and presence endpoints",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "45134cfe-c7b5-46e1-85af-94b8124da819",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-22T01:25:49.564159Z"
+  },
+  {
+    "id": "6a440e86-2c73-4b6a-b901-a6d8cbd636c0",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "4d3456c5-7219-429d-aaa8-9f02d2a4ca28",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-24T08:05:36.422504Z"
+  },
+  {
+    "id": "d2033880-520a-481e-9654-7ce9d15db504",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "31acf627-92a1-436f-a15b-2d732f8edc11",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-30T09:32:52.238813Z"
+  },
+  {
+    "id": "1e4a5f9b-c45d-463a-a58f-b0b3e24d126e",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "4cec3496-228f-4714-8501-0efdde49d22b",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-30T11:23:52.004138Z"
+  },
+  {
+    "id": "de6cea25-470c-4fb4-8863-c3580630ef8d",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "41383d59-d8c0-45a1-a726-73984da8af88",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-30T11:24:56.599329Z"
+  },
+  {
+    "id": "801a4cb4-72fc-40db-8b32-156512db076b",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "15533745-21fd-45d6-9036-9cf8e780f579",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-30T11:31:21.190567Z"
+  },
+  {
+    "id": "47ad49ed-4a6d-4616-8d63-51fa285ef081",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "06c0e787-f0c7-4553-a454-8be0d7bcf91b",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-30T12:17:49.996349Z"
+  },
+  {
+    "id": "57a10af5-110d-410f-98ac-7397a827b26f",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "df5c08d6-4fc7-4497-9000-5de3d7a882a7",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-30T12:26:08.200137Z"
+  }
+]

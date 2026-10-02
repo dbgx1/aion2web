@@ -1,0 +1,642 @@
+{
+  "ok": true,
+  "found": true,
+  "source": "ncsoft",
+  "region": "GLOBAL",
+  "subRegion": "naw",
+  "partial": false,
+  "warnings": [],
+  "profile": {
+    "characterId": "9PO8eUjDa8pGlEbVzGrXcNK-rydJuNEnuILI_u6vDuM%3D",
+    "name": "wangjw98",
+    "race": 2,
+    "pcId": 15,
+    "level": 11,
+    "serverId": "2201",
+    "serverName": "Israphel",
+    "profileImageUrl": "https://profileimg.plaync.com/game_profile_images/aion2global/images?gameServerKey=2201&charKey=619526423740403720",
+    "region": "naw",
+    "profileUrl": "https://shugo.gg/character?id=9PO8eUjDa8pGlEbVzGrXcNK-rydJuNEnuILI_u6vDuM%3D&server=2201&region=GLOBAL&name=wangjw98",
+    "className": "Ranger",
+    "combatPower": 5106,
+    "genderName": "Male",
+    "raceName": "Asmodians",
+    "titleName": "",
+    "itemLevel": 48,
+    "stats": [
+      {
+        "name": "Might",
+        "type": "STR",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "Dexterity",
+        "type": "DEX",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "Intelligence",
+        "type": "INT",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "Constitution",
+        "type": "CON",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "Precision",
+        "type": "AGI",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "Willpower",
+        "type": "WIS",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "Justice [Nezekan]",
+        "type": "Justice",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "Freedom [Vaizel]",
+        "type": "Freedom",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "Illusion [Kaisinel]",
+        "type": "Illusion",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "Life [Yustiel]",
+        "type": "Life",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "Time [Siel]",
+        "type": "Time",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "Destruction [Zikel]",
+        "type": "Destruction",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "Death [Triniel]",
+        "type": "Death",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "Wisdom [Lumiel]",
+        "type": "Wisdom",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "Destiny [Marchutan]",
+        "type": "Destiny",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "Space [Israphel]",
+        "type": "Space",
+        "value": 0,
+        "details": []
+      },
+      {
+        "name": "아이템레벨",
+        "type": "ItemLevel",
+        "value": 48,
+        "details": []
+      }
+    ],
+    "titles": {
+      "ownedCount": 1,
+      "totalCount": 297,
+      "categories": [
+        {
+          "category": "Etc",
+          "ownedCount": 0,
+          "totalCount": 99
+        },
+        {
+          "category": "Attack",
+          "ownedCount": 1,
+          "totalCount": 103
+        },
+        {
+          "category": "Defense",
+          "ownedCount": 0,
+          "totalCount": 95
+        }
+      ]
+    },
+    "daevanion": [
+      {
+        "id": 31,
+        "name": "Nezekan",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/UT_Weapon_Sword_1H.png",
+        "open": false,
+        "openNodeCount": 0,
+        "totalNodeCount": 88
+      },
+      {
+        "id": 32,
+        "name": "Zikel",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/UT_Weapon_Mace.png",
+        "open": false,
+        "openNodeCount": 0,
+        "totalNodeCount": 88
+      },
+      {
+        "id": 33,
+        "name": "Vaizel",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/UT_Weapon_Sword_1H.png",
+        "open": false,
+        "openNodeCount": 0,
+        "totalNodeCount": 88
+      },
+      {
+        "id": 34,
+        "name": "Triniel",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/UT_Weapon_Mace.png",
+        "open": false,
+        "openNodeCount": 0,
+        "totalNodeCount": 116
+      },
+      {
+        "id": 36,
+        "name": "Azphel",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/UT_Weapon_Mace.png",
+        "open": false,
+        "openNodeCount": 0,
+        "totalNodeCount": 152
+      }
+    ],
+    "equipment": [
+      {
+        "id": 110450035,
+        "name": "Strange Karma Bow",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/Icon_WP_BW_0014_T03.png",
+        "grade": "Rare",
+        "enchantLevel": 0,
+        "exceedLevel": 0,
+        "slot": "MainHand"
+      },
+      {
+        "id": 115060028,
+        "name": "Strange Karma Guard",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/Icon_Weapon_Guarder_C_012.png",
+        "grade": "Common",
+        "enchantLevel": 0,
+        "exceedLevel": 0,
+        "slot": "SubHand"
+      },
+      {
+        "id": 210160027,
+        "name": "Strange Karma Breastplate",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/Icon_GM_0063_T03_Torso.png",
+        "grade": "Common",
+        "enchantLevel": 0,
+        "exceedLevel": 0,
+        "slot": "Torso"
+      },
+      {
+        "id": 210260027,
+        "name": "Strange Karma Greaves",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/Icon_GM_0063_T03_Pants.png",
+        "grade": "Common",
+        "enchantLevel": 0,
+        "exceedLevel": 0,
+        "slot": "Pants"
+      },
+      {
+        "id": 210360027,
+        "name": "Strange Karma Helm",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/Icon_GM_0063_T03_Helmet.png",
+        "grade": "Common",
+        "enchantLevel": 0,
+        "exceedLevel": 0,
+        "slot": "Helmet"
+      },
+      {
+        "id": 210460027,
+        "name": "Strange Karma Pauldrons",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/Icon_GM_0063_T03_Shoulder.png",
+        "grade": "Common",
+        "enchantLevel": 0,
+        "exceedLevel": 0,
+        "slot": "Shoulder"
+      },
+      {
+        "id": 210560027,
+        "name": "Strange Karma Gloves",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/Icon_GM_0063_T03_Gloves.png",
+        "grade": "Common",
+        "enchantLevel": 0,
+        "exceedLevel": 0,
+        "slot": "Gloves"
+      },
+      {
+        "id": 210660027,
+        "name": "Strange Karma Boots",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/Icon_GM_0063_T03_Boots.png",
+        "grade": "Common",
+        "enchantLevel": 0,
+        "exceedLevel": 0,
+        "slot": "Boots"
+      },
+      {
+        "id": 210760027,
+        "name": "Strange Karma Cloak",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/Icon_GM_0063_T03_Cape.png",
+        "grade": "Common",
+        "enchantLevel": 0,
+        "exceedLevel": 0,
+        "slot": "Cape"
+      }
+    ],
+    "pet": {
+      "id": 1046,
+      "name": "Armadon",
+      "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/UT_Vehicle_Portrait_Mole_01.png",
+      "level": 1
+    },
+    "wing": {
+      "id": 40200601,
+      "name": "Lesser Daeva Wings",
+      "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/Icon_WingB_006A.png",
+      "grade": "Common",
+      "enchantLevel": 0
+    },
+    "skills": [
+      {
+        "id": 14020000,
+        "name": "Snipe",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_001.png",
+        "category": "Active",
+        "acquired": true,
+        "equipped": true,
+        "needLevel": 1,
+        "skillLevel": 2
+      },
+      {
+        "id": 14340000,
+        "name": "Tempest Shot",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_034.png",
+        "category": "Active",
+        "acquired": true,
+        "equipped": true,
+        "needLevel": 1,
+        "skillLevel": 1
+      },
+      {
+        "id": 14130000,
+        "name": "Snare Shot",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_013.png",
+        "category": "Active",
+        "acquired": true,
+        "equipped": true,
+        "needLevel": 1,
+        "skillLevel": 1
+      },
+      {
+        "id": 14090000,
+        "name": "Marking Shot",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_031.png",
+        "category": "Active",
+        "acquired": true,
+        "equipped": true,
+        "needLevel": 3,
+        "skillLevel": 1
+      },
+      {
+        "id": 14050000,
+        "name": "Drill Dart",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_005.png",
+        "category": "Active",
+        "acquired": true,
+        "equipped": true,
+        "needLevel": 4,
+        "skillLevel": 1
+      },
+      {
+        "id": 14330000,
+        "name": "Arrow Scattershot",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_033.png",
+        "category": "Active",
+        "acquired": true,
+        "equipped": true,
+        "needLevel": 5,
+        "skillLevel": 1
+      },
+      {
+        "id": 14110000,
+        "name": "Gale Arrow",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_011.png",
+        "category": "Active",
+        "acquired": true,
+        "equipped": true,
+        "needLevel": 7,
+        "skillLevel": 1
+      },
+      {
+        "id": 14170000,
+        "name": "Explosion Trap",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_017.png",
+        "category": "Active",
+        "acquired": true,
+        "equipped": true,
+        "needLevel": 8,
+        "skillLevel": 1
+      },
+      {
+        "id": 14080000,
+        "name": "Burst Arrow",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_008.png",
+        "category": "Active",
+        "acquired": true,
+        "equipped": true,
+        "needLevel": 10,
+        "skillLevel": 1
+      },
+      {
+        "id": 14070000,
+        "name": "Suppressing Arrow",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_007.png",
+        "category": "Active",
+        "acquired": false,
+        "equipped": true,
+        "needLevel": 12,
+        "skillLevel": 0
+      },
+      {
+        "id": 14010000,
+        "name": "Deadshot",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_002.png",
+        "category": "Active",
+        "acquired": false,
+        "equipped": true,
+        "needLevel": 14,
+        "skillLevel": 0
+      },
+      {
+        "id": 14260000,
+        "name": "Defiance",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_CO_SKILL_002.png",
+        "category": "Active",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 16,
+        "skillLevel": 0
+      },
+      {
+        "id": 14710000,
+        "name": "Vigilant Eye",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_Passive_004.png",
+        "category": "Passive",
+        "acquired": true,
+        "equipped": false,
+        "needLevel": 1,
+        "skillLevel": 1
+      },
+      {
+        "id": 14720000,
+        "name": "Concentrated Fire",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_Passive_003.png",
+        "category": "Passive",
+        "acquired": true,
+        "equipped": false,
+        "needLevel": 6,
+        "skillLevel": 1
+      },
+      {
+        "id": 14730000,
+        "name": "Wind Vigor",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_Passive_006.png",
+        "category": "Passive",
+        "acquired": true,
+        "equipped": false,
+        "needLevel": 9,
+        "skillLevel": 1
+      },
+      {
+        "id": 14740000,
+        "name": "Focused Eye",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_Passive_001.png",
+        "category": "Passive",
+        "acquired": true,
+        "equipped": false,
+        "needLevel": 11,
+        "skillLevel": 1
+      },
+      {
+        "id": 14750000,
+        "name": "Hunter's Resolve",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_Passive_011.png",
+        "category": "Passive",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 13,
+        "skillLevel": 0
+      },
+      {
+        "id": 14760000,
+        "name": "Unyielding Resolve",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_Passive_012.png",
+        "category": "Passive",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 15,
+        "skillLevel": 0
+      },
+      {
+        "id": 14770000,
+        "name": "Rooting Eye",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_Passive_008.png",
+        "category": "Passive",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 17,
+        "skillLevel": 0
+      },
+      {
+        "id": 14780000,
+        "name": "Melee Fire",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_Passive_013.png",
+        "category": "Passive",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 21,
+        "skillLevel": 0
+      },
+      {
+        "id": 14790000,
+        "name": "Revitalization Contract",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_AS_SKILL_Passive_009.png",
+        "category": "Passive",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 23,
+        "skillLevel": 0
+      },
+      {
+        "id": 14800000,
+        "name": "Hunter's Soul",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_Passive_007.png",
+        "category": "Passive",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 25,
+        "skillLevel": 0
+      },
+      {
+        "id": 14270000,
+        "name": "Arrow Storm",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_026.png",
+        "category": "Dp",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 22,
+        "skillLevel": 0
+      },
+      {
+        "id": 14310000,
+        "name": "Vaizel's Authority",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_022.png",
+        "category": "Dp",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 22,
+        "skillLevel": 0
+      },
+      {
+        "id": 14220000,
+        "name": "Bow of Blessing",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_030.png",
+        "category": "Dp",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 22,
+        "skillLevel": 0
+      },
+      {
+        "id": 14120000,
+        "name": "Ambush Kick",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_012.png",
+        "category": "Dp",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 22,
+        "skillLevel": 0
+      },
+      {
+        "id": 14180000,
+        "name": "Ensnaring Trap",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_018.png",
+        "category": "Dp",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 22,
+        "skillLevel": 0
+      },
+      {
+        "id": 14150000,
+        "name": "Illusory Arrow",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_015.png",
+        "category": "Dp",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 22,
+        "skillLevel": 0
+      },
+      {
+        "id": 14190000,
+        "name": "Stealth",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_019.png",
+        "category": "Dp",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 22,
+        "skillLevel": 0
+      },
+      {
+        "id": 14160000,
+        "name": "Sealing Arrow",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_016.png",
+        "category": "Dp",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 22,
+        "skillLevel": 0
+      },
+      {
+        "id": 14350000,
+        "name": "Mother Nature's Breath",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_035.png",
+        "category": "Dp",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 22,
+        "skillLevel": 0
+      },
+      {
+        "id": 14060000,
+        "name": "Griffon Arrow",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_006.png",
+        "category": "Dp",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 22,
+        "skillLevel": 0
+      },
+      {
+        "id": 14360000,
+        "name": "Explosive Arrow",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_023.png",
+        "category": "Dp",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 22,
+        "skillLevel": 0
+      },
+      {
+        "id": 14700000,
+        "name": "Assault Smite",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_CO_SKILL_003.png",
+        "category": "Dp",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 22,
+        "skillLevel": 0
+      },
+      {
+        "id": 14380000,
+        "name": "Supporting Fire",
+        "icon": "https://assets.playnccdn.com/static-aion2-gamedata/resources/ICON_RA_SKILL_038.png",
+        "category": "Dp",
+        "acquired": false,
+        "equipped": false,
+        "needLevel": 22,
+        "skillLevel": 0
+      }
+    ]
+  }
+}

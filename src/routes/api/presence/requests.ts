@@ -1,3 +1,4 @@
+import { canAccessServers } from '#/server/server-access.server'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { currentAdminPrincipal } from '#/server/admin-auth.server'
@@ -13,6 +14,7 @@ export const Route = createFileRoute('/api/presence/requests')({
       if (!principal) return jsonError('未登录', 401)
       const parsed = inputSchema.safeParse(await request.json().catch(() => null))
       if (!parsed.success) return jsonError('每批需要 1-50 个有效角色', 400)
+      if (!await canAccessServers(principal, parsed.data.characters.map(item => String(item.serverId)))) return jsonError('无权访问该区服', 403)
       try {
         return Response.json({ ok: true, query: await createPresenceRequest(parsed.data.characters, principal) })
       } catch (cause) {

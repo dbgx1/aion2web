@@ -1,0 +1,550 @@
+import { AnyClientTool, InterruptDefinition, ModelMessage, RunAgentResumeItem, StreamChunk } from '@tanstack/ai/client';
+import { ByokClient } from './byok.js';
+import { ConnectionAdapter } from './connection-adapters.js';
+import { BoundInterrupts, ChatClientOptions, ChatClientState, ChatFetcher, ChatInterruptState, ResolvableChatInterrupt, ChatResumeState, ConnectionStatus, MultimodalContent, QueueOption, QueueStrategy, QueuedMessage, SendMessageOptions, UIMessage, WhenBusy } from './types.js';
+type ChatClientUpdateOptionsWithoutContext<TTools extends ReadonlyArray<AnyClientTool>, TInterrupts extends ReadonlyArray<InterruptDefinition<any, any, any, any>> = readonly []> = {
+    connection?: ConnectionAdapter;
+    fetcher?: ChatFetcher;
+    /** @deprecated Use `forwardedProps` instead. */
+    body?: Record<string, any>;
+    forwardedProps?: Record<string, any>;
+    byok?: ByokClient;
+    byokProvider?: () => string | undefined;
+    tools?: TTools;
+    interrupts?: TInterrupts;
+    queue?: QueueOption;
+    onResponse?: (response?: Response) => void | Promise<void>;
+    onChunk?: (chunk: StreamChunk) => void;
+    onFinish?: (message: UIMessage) => void;
+    onError?: (error: Error) => void;
+    onSubscriptionChange?: (isSubscribed: boolean) => void;
+    onConnectionStatusChange?: (status: ConnectionStatus) => void;
+    onSessionGeneratingChange?: (isGenerating: boolean) => void;
+    onQueueChange?: (queue: Array<QueuedMessage>) => void;
+    onResumeStateChange?: (resumeState: ChatResumeState | null, pendingInterrupts: BoundInterrupts<TTools, TInterrupts>) => void;
+    /**
+     * Fires whenever the id of the run in flight changes: the new id when a run
+     * starts (including a rejoin), `null` when it settles.
+     */
+    onRunIdChange?: (runId: string | null) => void;
+    onInterruptStateChange?: (state: ChatInterruptState<TTools, TInterrupts>, context: {
+        source: 'hydrate' | 'live';
+    }) => void;
+    onCustomEvent?: (eventType: string, data: unknown, context: {
+        toolCallId?: string;
+    }) => void;
+};
+type ClientToolResult = {
+    toolCallId: string;
+    tool: string;
+    output: any;
+    state?: 'output-available' | 'output-error';
+    errorText?: string;
+};
+export interface NormalizedQueueConfig {
+    whenBusy: WhenBusy;
+    drain: 'fifo' | 'batch';
+    onOverflow: 'reject' | 'drop-oldest';
+    maxSize?: number;
+    strategy?: QueueStrategy;
+}
+export declare function normalizeQueueOption(option: QueueOption | undefined): NormalizedQueueConfig;
+export declare class ChatClient<TTools extends ReadonlyArray<AnyClientTool> = any, TContext = unknown, TInterrupts extends ReadonlyArray<InterruptDefinition<any, any, any, any>> = any> {
+    private readonly processor;
+    private connection;
+    private uniqueId;
+    private threadId;
+    private readonly persistor?;
+    private readonly clearedStreamTracker;
+    private currentRunId;
+    private lastResume;
+    private rejoinedRunId;
+    private readonly interruptManager;
+    private activeInterruptSubmission;
+    private interruptSubmissionFailure;
+    private readonly joinedRunWaiters;
+    private pendingResumeParentRunId;
+    private pendingResumeThreadId;
+    private pendingResumeItems;
+    private activeResumeThreadId;
+    private activeResumeRunId;
+    private bodyOption;
+    private forwardedPropsOption;
+    private byok;
+    private byokProvider;
+    private context;
+    private pendingMessageBody;
+    private queueConfig;
+    private messageQueue;
+    /**
+     * True from the moment `sendMessage` claims the client until its
+     * `streamResponse` settles. Closes the race where concurrent callers both
+     * see `isLoading === false`, both append a user message, and only one stream
+     * actually runs (leaving stranded user messages with no reply).
+     */
+    private sendInFlight;
+    /**
+     * True while `drainQueue` is delivering queued messages. Concurrent
+     * `sendMessage` calls during a drain are treated as busy and follow
+     * `whenBusy` (default: queue).
+     */
+    private messageQueueDraining;
+    /**
+     * Set by `whenBusy: 'interrupt'` so an in-progress FIFO drain loop stops
+     * before starting the next queued item (the interrupting send owns the client).
+     */
+    private stopMessageQueueDrain;
+    /**
+     * Sync claim held for the duration of `deliverMessage` so concurrent
+     * deliverers cannot both append a user message before only one stream runs.
+     */
+    private deliverClaim;
+    private isLoading;
+    private isSubscribed;
+    private error;
+    private status;
+    private connectionStatus;
+    private abortController;
+    private readonly clientToolsRef;
+    private readonly devtoolsBridge;
+    /**
+     * Alias for `this.events`. The bridge installs an
+     * emitter that auto-attaches run/thread context and auto-emits a
+     * snapshot after every event, so chat-client only ever calls
+     * `this.events.X(...)` exactly like it did before devtools landed.
+     */
+    private readonly events;
+    private currentStreamId;
+    private currentMessageId;
+    private readonly postStreamActions;
+    private readonly pendingToolExecutions;
+    private activeClientTools;
+    private activeContext;
+    private continuationPending;
+    private subscriptionAbortController;
+    private processingResolve;
+    /**
+     * `connect()` adapters push the full HTTP body into the subscribe queue, then
+     * wait until that queue is idle. After `send()` returns, every chunk from this
+     * request has been processed. Subscribe/send sockets do not drain that way.
+     */
+    private connectionDrainsOnSend;
+    private errorReportedGeneration;
+    private streamGeneration;
+    private continuationGeneration;
+    private streamContinuationGeneration;
+    private continuationSkipped;
+    private draining;
+    private sessionGenerating;
+    private readonly activeRunIds;
+    /** Latched by `dispose()`; stops any late async callback starting new work. */
+    private disposed;
+    /** Whether a view is currently watching. See `attach` / `detach`. */
+    private tailing;
+    /** Constructor inputs `attach()` needs on every re-attach, not just the first. */
+    private readonly rejoinRunId;
+    private readonly cachesMessages;
+    private devtoolsMounted;
+    private readonly callbacksRef;
+    constructor(options: ChatClientOptions<TTools, TContext, TInterrupts>);
+    /**
+     * START TAILING: re-attach to an in-flight run so its chunks arrive here.
+     *
+     * Called by the constructor, and again by a UI wrapper every time its view
+     * mounts. Idempotent — attaching while already attached does nothing — so the
+     * constructor call and a wrapper's first mount cost one attach between them.
+     *
+     * Pairs with {@link detach}. The pair exists because tailing used to begin ONLY
+     * in the constructor, which meant a view could never stop tailing and then
+     * resume: unmount had to either keep the connection open or lose it for good.
+     * Keeping it open is what starved the page — a browser allows ~6 connections per
+     * origin, and one long-lived stream per view reaches that after a handful of
+     * views, after which every other request queues (measured: an in-page fetch took
+     * over two minutes while the same request from outside the browser took 17ms).
+     */
+    attach(): void;
+    /**
+     * STOP TAILING: drop the connection, keep everything else.
+     *
+     * Called by a UI wrapper when its view unmounts. The transcript, the resume
+     * pointer and the run id all stay, so a later {@link attach} repaints instantly
+     * and re-tails from the durable log — nothing is lost, because the run keeps
+     * going server-side and its log holds every chunk.
+     *
+     * Deliberately NOT `dispose()`: this client is expected back. And deliberately
+     * not `stop()`, which means "the user ended this run" — detaching says only that
+     * nobody is watching right now.
+     *
+     * `rejoinedRunId` is cleared so the next `attach` can re-join the same run;
+     * without that reset the guard in {@link maybeRejoinInFlight} would treat the
+     * run as already joined and the view would come back silent.
+     */
+    detach(): void;
+    private applyResumeSnapshot;
+    /**
+     * Apply a resume snapshot read from durable storage. Restores interrupt state,
+     * and for a bare in-flight run (no pending interrupts) also rejoins it. This is
+     * the async-store counterpart to the synchronous rejoin in the constructor:
+     * `applyResumeSnapshot` alone only handles interrupts, so an async store
+     * (`indexedDBPersistence`) would otherwise never rejoin a mid-stream run.
+     */
+    private applyPersistedResume;
+    /**
+     * Rejoin a persisted in-flight run, guarded so it fires at most once and never
+     * while another run is already active. Skipped when the connection is not
+     * resumable (`joinRun` absent), so a non-durable transport is a no-op.
+     */
+    private maybeRejoinInFlight;
+    /**
+     * Server-authoritative mount hydration (`persistence: true`). The client holds
+     * no transcript and no run pointer; on mount it asks the server — keyed by the
+     * stable threadId — for the stored transcript and whether a run is still
+     * generating. The transcript repaints immediately; an in-flight run is tailed
+     * through the same durability rejoin as a reload. Best-effort and
+     * non-blocking: a failure leaves the client empty rather than throwing, and a
+     * send that starts first owns the client (hydration then backs off).
+     */
+    private hydrateFromServer;
+    mountDevtools(): void;
+    private ensureThreadId;
+    /**
+     * Drain a runId-less RUN_ERROR that belongs to a cleared run the client is
+     * still tracking. The persistor owns the cleared-run bookkeeping; the client
+     * owns the active-run / session / processing state.
+     */
+    private drainIgnoredRunlessChunk;
+    private retireIgnoredClearedTerminalChunk;
+    private updateRunLifecycle;
+    /**
+     * Track interrupt state off the stream's terminal events. A RUN_FINISHED with
+     * an interrupt outcome records the pending interrupts + the run/thread to
+     * resume; any other terminal event for the tracked/current run clears that
+     * state. This is interrupt (state) resume — there is no delivery cursor.
+     */
+    private observeInterruptState;
+    /**
+     * The interrupt-resume state for the active/interrupted run (its run/thread
+     * ids), or null when there is nothing to resume. Apps can persist this to
+     * resume interrupts across a full reload.
+     */
+    getResumeState(): ChatResumeState | null;
+    /**
+     * The id of the run this client has in flight — one it started via a send or
+     * rejoined via `joinRun` — or null when there is none. Unlike
+     * {@link getResumeState}, this tracks ordinary runs too, not only one that is
+     * interrupted or being resumed. A run another client started and that arrives
+     * over a live subscription is not this client's run and is not reported here.
+     */
+    getCurrentRunId(): string | null;
+    private setCurrentRunId;
+    getInterruptState(): ChatInterruptState<TTools, TInterrupts>;
+    getInterrupts(): BoundInterrupts<TTools, TInterrupts>;
+    /** @deprecated Use getInterrupts(). */
+    getPendingInterrupts(): BoundInterrupts<TTools, TInterrupts>;
+    resolveInterrupts(approved: boolean): void;
+    resolveInterrupts(resolver: (interrupt: ResolvableChatInterrupt<TTools, TInterrupts>) => undefined): void;
+    cancelInterrupts(): void;
+    retryInterrupts(): void;
+    /** Unsafe low-level resume escape hatch. Prefer bound interrupt methods. */
+    resumeInterruptsUnsafe(resume: Array<RunAgentResumeItem>, state?: ChatResumeState): Promise<boolean>;
+    private resumeInterruptsUnsafeForGeneration;
+    /** @deprecated Use bound interrupt methods or resumeInterruptsUnsafe(). */
+    resumeInterrupts(resume: Array<RunAgentResumeItem>, state?: ChatResumeState): Promise<boolean>;
+    private submitInterruptBatch;
+    private takeInterruptSubmissionFailure;
+    private interruptGeneration;
+    private generateUniqueId;
+    private setIsLoading;
+    private setStatus;
+    private setIsSubscribed;
+    private setConnectionStatus;
+    private setSessionGenerating;
+    private notifyResumeStateChange;
+    /**
+     * Build the durable resume snapshot from the current resume state + pending
+     * interrupt descriptors and hand it to the persistor (null clears it).
+     */
+    private persistResumeSnapshot;
+    private resetSessionGenerating;
+    private setError;
+    private buildDevtoolsBridgeOptions;
+    private getDevtoolsSnapshot;
+    private findMessageIdForToolCall;
+    private abortSubscriptionLoop;
+    private resolveProcessing;
+    private cancelInFlightStream;
+    private reportStreamError;
+    /**
+     * Start the background subscription loop.
+     */
+    private startSubscription;
+    /**
+     * Consume chunks from the connection subscription.
+     */
+    private consumeSubscription;
+    /**
+     * Re-attach to an in-flight run after a full page reload, replaying its stream
+     * from the server's delivery-durability log via `joinRun` (which returns the
+     * whole run so far, then tails live to completion).
+     *
+     * The log is the single source of truth for the run, so we rebuild the
+     * in-flight assistant bubble from it rather than trying to reconcile the
+     * server-hydrated partial with the replay: on the first chunk that actually
+     * (re)builds a message we drop the hydrated in-flight assistant, and the
+     * replay reconstructs one clean bubble. Dropping only on real content (not on
+     * `RUN_STARTED`) means a rejoin that connects but delivers nothing can never
+     * leave an empty bubble behind.
+     *
+     * Bounded connect: a durable backend keeps a from-start join open waiting for
+     * a producer, so a stale pointer to an unknown/evicted run would otherwise pin
+     * the UI in a loading state for the backend's full first-chunk deadline. We
+     * give up after {@link REJOIN_CONNECT_DEADLINE_MS} if no chunk arrives and
+     * clear the dead pointer so it does not retry on the next load.
+     *
+     * Replay chunks are processed WITHOUT the per-chunk yield the live path uses,
+     * so the buffered prefix snaps in and only the genuinely-live tail streams at
+     * network speed — a reload looks like the run continued, not like it re-typed.
+     */
+    private resumeInFlightRun;
+    /**
+     * Drop a hydrated, still-in-flight assistant turn so a resume replay can
+     * rebuild it cleanly. Only touches a trailing assistant message (the shape a
+     * reload-mid-stream leaves); a thread whose last turn is a user message (run
+     * never produced, or already settled) is left untouched.
+     */
+    private dropTrailingInFlightAssistant;
+    private processIncomingChunk;
+    private isActiveInterruptSubmissionFailure;
+    private resolveJoinedRun;
+    /**
+     * Ensure subscription loop is running, starting it if needed.
+     */
+    private ensureSubscription;
+    /**
+     * Create a promise that resolves when onStreamEnd fires.
+     * Used by streamResponse to await processing completion.
+     */
+    private waitForProcessing;
+    /**
+     * Send a message and stream the response.
+     * Supports both simple string content and multimodal content (images, audio, video, documents).
+     *
+     * @param content - The message content. Can be:
+     *   - A simple string for text-only messages
+     *   - A MultimodalContent object with content array and optional custom ID
+     * @param body - Optional body parameters to merge with the client's base body for this request.
+     *               Uses shallow merge with per-message body taking priority.
+     * @param sendOptions - Per-call overrides. `{ whenBusy }` overrides the
+     *                      queue policy for this one send. `{ body }`
+     *                      shallow-merges with `body` and with the chat-level
+     *                      `body` / `forwardedProps`. `sendOptions.body` wins
+     *                      on key collisions. Framework hooks forward this
+     *                      object as their second argument.
+     *
+     * @example
+     * ```ts
+     * // Simple text message
+     * await client.sendMessage('Hello!')
+     *
+     * // Text message with custom body params
+     * await client.sendMessage('Hello!', { temperature: 0.7 })
+     *
+     * // Per-call whenBusy override
+     * await client.sendMessage('Urgent', undefined, { whenBusy: 'interrupt' })
+     *
+     * // Per-call body via options. Same effect as the positional arg.
+     * // This is the shape the framework hooks (`useChat`, `injectChat`) forward.
+     * await client.sendMessage('Hello!', undefined, { body: { temperature: 0.7 } })
+     *
+     * // Multimodal message with image
+     * await client.sendMessage({
+     *   content: [
+     *     { type: 'text', content: 'What is in this image?' },
+     *     { type: 'image', source: { type: 'url', value: 'https://example.com/photo.jpg' } }
+     *   ]
+     * })
+     *
+     * // Multimodal message with custom ID and body params
+     * await client.sendMessage(
+     *   {
+     *     content: [
+     *       { type: 'text', content: 'Describe this audio' },
+     *       { type: 'audio', source: { type: 'data', value: 'base64...' } }
+     *     ],
+     *     id: 'custom-message-id'
+     *   },
+     *   { model: 'gpt-5.5' }
+     * )
+     * ```
+     */
+    sendMessage(content: string | MultimodalContent, body?: Record<string, any>, sendOptions?: SendMessageOptions): Promise<void>;
+    /** True while interrupt descriptors still own continuation. */
+    private hasPendingInterrupts;
+    /** True while an interrupt batch owns the next user turn. */
+    private hasBlockingInterrupts;
+    /** True while a stream is active, a send is claiming the client, or the queue is draining. */
+    private isSendBusy;
+    private resolveBusyReason;
+    /**
+     * Append a user message and run the stream. Used by both direct sends and
+     * queue drains — callers are responsible for busy/queue policy.
+     *
+     * Claims delivery synchronously before appending so concurrent callers
+     * cannot both add a user message when only one stream can run.
+     */
+    private deliverMessage;
+    /**
+     * Resolve the effective action for a send that arrives while busy.
+     * The returned `id` is the id that will be stored if the action is `queue`.
+     */
+    private decideWhenBusy;
+    private enqueueMessage;
+    /**
+     * Normalize the message input to extract content, optional id, and
+     * optional metadata. String form has no metadata. Trims string content.
+     */
+    private normalizeMessageInput;
+    /**
+     * Append a message and stream the response
+     */
+    append(message: UIMessage | ModelMessage): Promise<void>;
+    /**
+     * Stream a response from the LLM.
+     * Returns true if the stream completed successfully, false on abort or error.
+     */
+    private streamResponse;
+    /**
+     * Start the client subscription loop.
+     * This controls the connection lifecycle independently from request lifecycle.
+     */
+    subscribe(options?: {
+        restart?: boolean;
+    }): void;
+    /**
+     * Unsubscribe and fully tear down live behavior.
+     * This aborts an in-flight request and the subscription loop.
+     */
+    unsubscribe(): void;
+    /**
+     * Reload the last assistant message
+     */
+    reload(): Promise<void>;
+    /**
+     * Stop the current stream
+     */
+    stop(): void;
+    /**
+     * Clear all messages
+     */
+    clear(): void;
+    /**
+     * Add the result of a client-side tool execution
+     */
+    addToolResult(result: ClientToolResult): Promise<void>;
+    private addToolResultForClientTool;
+    private validateClientToolOutput;
+    /**
+     * Respond to a tool approval request
+     */
+    addToolApprovalResponse(response: {
+        id: string;
+        approved: boolean;
+    }): Promise<void>;
+    /**
+     * Queue an action to be executed after the current stream ends
+     */
+    private queuePostStreamAction;
+    /**
+     * Drain and execute all queued post-stream actions
+     */
+    private drainPostStreamActions;
+    /**
+     * Check if we should continue the flow and do so if needed
+     */
+    private checkForContinuation;
+    /**
+     * Check if all tool calls are complete and we should auto-send.
+     * Requires that there is at least one tool call in the last assistant message;
+     * a text-only response has nothing to auto-send.
+     */
+    private shouldAutoSend;
+    /**
+     * Get current messages
+     */
+    getMessages(): Array<UIMessage<TTools>>;
+    /**
+     * True when an interrupt (or another direct send) claimed the client during
+     * a drain. Read via a method so cross-await mutations are not constant-folded
+     * by control-flow analysis.
+     */
+    private shouldAbortMessageQueueDrain;
+    /**
+     * Deliver queued messages after a successful settle.
+     * - `batch`: merge everything currently queued into one send, looping so
+     *   messages enqueued during that batch stream are not stranded.
+     * - `fifo`: walk the queue in a loop, one stream at a time, until empty
+     *   (or until another send claims the client via interrupt).
+     *
+     * Uses `deliverMessage` directly so drains do not re-enter `sendMessage`'s
+     * busy/queue policy (which would re-queue items and strand the rest).
+     */
+    private drainQueue;
+    /**
+     * Drop any in-flight send claim and discard pending queued messages
+     * (stop / error / clear / unsubscribe / reload).
+     */
+    private discardPendingSends;
+    /**
+     * Get the current send queue (messages held while a stream was in flight).
+     */
+    getQueue(): Array<QueuedMessage>;
+    private emitQueueChange;
+    /**
+     * Remove a queued message by id before it drains.
+     */
+    cancelQueued(id: string): void;
+    /**
+     * Discard all pending queued messages (stop / error / clear / unsubscribe /
+     * reload). Does not send them. Emits `onQueueChange([])` when anything was
+     * removed.
+     */
+    private flushQueue;
+    /**
+     * Get loading state
+     */
+    getIsLoading(): boolean;
+    /**
+     * Get current status
+     */
+    getStatus(): ChatClientState;
+    /**
+     * Get whether the subscription loop is active
+     */
+    getIsSubscribed(): boolean;
+    /**
+     * Get current connection lifecycle status
+     */
+    getConnectionStatus(): ConnectionStatus;
+    /**
+     * Whether the shared session is actively generating.
+     * Derived from stream run events (RUN_STARTED / RUN_FINISHED / RUN_ERROR).
+     * Unlike `isLoading` (request-local), this reflects shared generation
+     * activity visible to all subscribers (e.g. across tabs/devices).
+     */
+    getSessionGenerating(): boolean;
+    /**
+     * Get current error
+     */
+    getError(): Error | undefined;
+    /**
+     * Manually set messages
+     */
+    setMessagesManually(messages: Array<UIMessage<TTools>>): void;
+    /**
+     * Update options refs (for use in React hooks to avoid recreating client)
+     */
+    updateOptions(options: ChatClientUpdateOptionsWithoutContext<TTools>): void;
+    updateOptions(options: ChatClientUpdateOptionsWithoutContext<TTools> & Pick<ChatClientOptions<TTools, TContext>, 'context'>): void;
+    dispose(): void;
+}
+export {};

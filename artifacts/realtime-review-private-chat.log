@@ -1,0 +1,18 @@
+✔ command, receipt and echo form one bubble regardless of arrival order and clock skew (1.7651ms)
+✔ actual repeated sends, incoming messages and separate clients are preserved (2.2568ms)
+✔ history enrichment survives a live copy and GUIDs retain all digits (0.5388ms)
+✔ message replay performs no application-row writes and keeps account-scoped deduplication (34.2955ms)
+✔ private game events save missing peers without creating the sender or overwriting directory data (37.4668ms)
+✔ real history SQL correlates across pages within the account/character/client, and API retains GUID only (33.4802ms)
+✔ private chat requires explicit channel evidence, not direction or sender (0.2467ms)
+✔ outgoing chat payloads are detected independently from private channel evidence (0.188ms)
+✔ old clients cannot persist public chat as private history (10.8896ms)
+✔ history excludes previously stored public chat without deleting records or breaking the cursor (15.5777ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 144.6102

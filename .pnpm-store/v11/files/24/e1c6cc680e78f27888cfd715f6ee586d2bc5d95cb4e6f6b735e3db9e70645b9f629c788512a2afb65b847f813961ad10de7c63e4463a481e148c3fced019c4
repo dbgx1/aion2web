@@ -1,0 +1,85 @@
+//#region src/generation-reconstruct.ts
+/**
+* Per-activity `reconstructResult` mappers. On mount restore the generic
+* `GenerationClient` hands each specialized hook a {@link GenerationRestoredResult}
+* (the metadata that survived persistence plus the durable artifact refs, each
+* carrying its serve `url`); the mapper rebuilds the concrete typed result so
+* `result` repaints as if the run had just finished, with media resolved to the
+* durable serve route rather than the provider's expired link.
+*
+* A mapper returns `null` when the snapshot cannot rebuild a valid result; then
+* `result` stays null while `status` / `error` / `resumeState` still repaint.
+*/
+/** Output artifact refs of a given media type that carry a durable serve URL. */
+function mediaUrls(restored, mediaType) {
+	return restored.artifacts.filter((a) => a.role === "output" && a.source.mediaType === mediaType && a.url != null).map((a) => a.url);
+}
+/** image → `{ id, model, images: [{ url }], artifacts }`. */
+function reconstructImageResult(restored) {
+	const urls = mediaUrls(restored, "image");
+	if (urls.length === 0) return null;
+	return {
+		id: restored.id ?? "",
+		model: restored.model ?? "",
+		images: urls.map((url) => ({ url })),
+		...restored.artifacts.length > 0 ? { artifacts: restored.artifacts } : {}
+	};
+}
+/**
+* tts → `{ id, model, audio: '', format, contentType, artifacts }`.
+*
+* Unlike {@link reconstructAudioResult}, `TTSResult.audio` is a bare base64
+* string with no URL slot, and server-driven persistence never stores the raw
+* bytes — only the durable serve URL on the artifact ref. So the restored
+* result surfaces the audio through `artifacts` (each carrying `url`); consumers
+* play the restored clip from `result.artifacts[0].url` and fall back to the
+* live base64 `audio` only for a just-finished (non-restored) run.
+*/
+function reconstructSpeechResult(restored) {
+	const ref = restored.artifacts.find((a) => a.role === "output" && a.source.mediaType === "audio" && a.url != null);
+	if (!ref) return null;
+	const contentType = ref.mimeType || void 0;
+	return {
+		id: restored.id ?? "",
+		model: restored.model ?? "",
+		audio: "",
+		format: contentType?.split("/")[1] ?? "",
+		...contentType ? { contentType } : {},
+		artifacts: restored.artifacts
+	};
+}
+/** audio → `{ id, model, audio: { url }, artifacts }`. */
+function reconstructAudioResult(restored) {
+	const [url] = mediaUrls(restored, "audio");
+	if (!url) return null;
+	return {
+		id: restored.id ?? "",
+		model: restored.model ?? "",
+		audio: { url },
+		...restored.artifacts.length > 0 ? { artifacts: restored.artifacts } : {}
+	};
+}
+/** transcription → `{ id, model, text, artifacts }`. */
+function reconstructTranscriptionResult(restored) {
+	if (restored.text === void 0) return null;
+	return {
+		id: restored.id ?? "",
+		model: restored.model ?? "",
+		text: restored.text,
+		...restored.artifacts.length > 0 ? { artifacts: restored.artifacts } : {}
+	};
+}
+/** summarize → `{ id, model, summary, usage }` (needs persisted `usage`). */
+function reconstructSummarizeResult(restored) {
+	if (restored.text === void 0 || restored.usage === void 0) return null;
+	return {
+		id: restored.id ?? "",
+		model: restored.model ?? "",
+		summary: restored.text,
+		usage: restored.usage
+	};
+}
+//#endregion
+export { reconstructAudioResult, reconstructImageResult, reconstructSpeechResult, reconstructSummarizeResult, reconstructTranscriptionResult };
+
+//# sourceMappingURL=generation-reconstruct.js.map

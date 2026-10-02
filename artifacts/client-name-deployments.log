@@ -1,0 +1,92 @@
+
+ ⛅️ wrangler 4.129.0 (update available 4.131.0)
+───────────────────────────────────────────────
+Created:     2026-09-09T08:04:24.238Z
+Author:      cc328496536@gmail.com
+Source:      Unknown (deployment)
+Message:     -
+Version(s):  (100%) 17f92c39-d04b-4ead-a334-9f3aeea08fe4
+                 Created:  2026-09-09T08:04:22.531Z
+                     Tag:  -
+                 Message:  -
+
+Created:     2026-09-09T16:37:35.288Z
+Author:      cc328496536@gmail.com
+Source:      Unknown (deployment)
+Message:     -
+Version(s):  (100%) 2e23e750-50da-4fcf-8e49-e63586b5d1f2
+                 Created:  2026-09-09T16:37:33.463Z
+                     Tag:  -
+                 Message:  -
+
+Created:     2026-09-10T04:08:59.473Z
+Author:      cc328496536@gmail.com
+Source:      Unknown (deployment)
+Message:     MQTT command deadlines and reliable execution receipt statuses
+Version(s):  (100%) bc59d1b8-6996-4978-be23-e68863f9592e
+                 Created:  2026-09-10T04:08:57.894Z
+                     Tag:  -
+                 Message:  MQTT command deadlines and reliable execution receipt statuses
+
+Created:     2026-09-10T09:40:08.684Z
+Author:      cc328496536@gmail.com
+Source:      Unknown (deployment)
+Message:     -
+Version(s):  (100%) 9e8a2a70-1abf-4514-95cf-e71b0514f3af
+                 Created:  2026-09-10T09:40:07.346Z
+                     Tag:  -
+                 Message:  -
+
+Created:     2026-09-10T10:05:25.152Z
+Author:      cc328496536@gmail.com
+Source:      Unknown (deployment)
+Message:     -
+Version(s):  (100%) 9f8b5abf-f539-47de-b7ea-369dd16a6680
+                 Created:  2026-09-10T10:05:23.760Z
+                     Tag:  -
+                 Message:  -
+
+Created:     2026-09-10T15:01:03.848Z
+Author:      cc328496536@gmail.com
+Source:      Unknown (deployment)
+Message:     -
+Version(s):  (100%) 865a1697-ee8d-4674-bf4a-5a9bd91143e5
+                 Created:  2026-09-10T15:01:01.534Z
+                     Tag:  -
+                 Message:  -
+
+Created:     2026-09-11T02:43:28.464Z
+Author:      cc328496536@gmail.com
+Source:      Unknown (deployment)
+Message:     Remove client occupancy; allow assigned server clients directly
+Version(s):  (100%) 3493b14c-59de-47a9-9cf8-ef1a4c40151e
+                 Created:  2026-09-11T02:43:26.976Z
+                     Tag:  -
+                 Message:  Remove client occupancy; allow assigned server clients directly
+
+Created:     2026-09-11T03:28:46.370Z
+Author:      cc328496536@gmail.com
+Source:      Unknown (deployment)
+Message:     Restrict console navigation and page access to admins
+Version(s):  (100%) c551995e-13e9-4177-b04a-ed32bddba698
+                 Created:  2026-09-11T03:28:45.054Z
+                     Tag:  -
+                 Message:  Restrict console navigation and page access to admins
+
+Created:     2026-09-11T06:02:30.440Z
+Author:      cc328496536@gmail.com
+Source:      Unknown (deployment)
+Message:     Add chatted/uncontacted character filters and message list power sorting
+Version(s):  (100%) d77d668b-b9a0-4832-88b4-c9c0e81251f7
+                 Created:  2026-09-11T06:02:28.889Z
+                     Tag:  -
+                 Message:  Add chatted/uncontacted character filters and message list power sorting
+
+Created:     2026-09-11T06:17:36.276Z
+Author:      cc328496536@gmail.com
+Source:      Unknown (deployment)
+Message:     Display current character name in the client list
+Version(s):  (100%) 716f5a87-e405-43c7-a2ac-6f642068dbac
+                 Created:  2026-09-11T06:17:35.043Z
+                     Tag:  -
+                 Message:  Display current character name in the client list

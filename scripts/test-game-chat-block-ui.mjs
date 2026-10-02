@@ -6,7 +6,7 @@ import {fileURLToPath} from 'node:url'
 import {build} from 'esbuild'
 const {chromium}=createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE_PATH||'playwright')
 const root=fileURLToPath(new URL('../',import.meta.url))
-const source=readFileSync(root+'src/routes/index.tsx','utf8').replace('const consoleApi = useAionConsole()','const consoleApi = useAionConsole(); window.fixtureApi = consoleApi')
+const source=readFileSync(root+'src/routes/index.tsx','utf8').replace('const connectionApi = useAionConsole()','const connectionApi = useAionConsole(); window.fixtureApi = connectionApi')
 const fixture=`import {createRoot} from 'react-dom/client';createRoot(document.getElementById('root')).render(<AuthenticatedHome section="messages" user={{userKey:'a',username:'Alice',role:'agent'}} onLogout={()=>{}}/>);`
 const bundle=await build({stdin:{contents:source+fixture,resolveDir:root+'src/routes',loader:'tsx'},bundle:true,write:false,outdir:'fixture',platform:'browser',format:'iife',jsx:'automatic',alias:{'#':root+'src'},define:{'process.env.NODE_ENV':'"production"','import.meta.env.DEV':'false'},logLevel:'silent',plugins:[{name:'fixture',setup(b){
  b.onResolve({filter:/^(@tanstack\/react-router|mqtt)$/},args=>({path:args.path,namespace:'fixture'}))
@@ -22,7 +22,7 @@ const characters=Array.from({length:3},(_,i)=>({id:i+1,characterId:String(i+1),c
 const server=createServer(async(req,res)=>{
  if(req.url==='/bundle.js'){res.setHeader('Content-Type','text/javascript');res.end(bundle.outputFiles.find(x=>x.path.endsWith('.js')).text);return}
  if(req.url.startsWith('/api/')){
-  let body={ok:true,characters,servers:[],messages:[],nextCursor:null,totalCount:3,locks:[{agentId:'A1',userKey:'a',username:'Alice',acquiredAt:100,expiresAt:0}]}
+  let body={ok:true,characters,entries:[],servers:[{serverId:'1001',serverName:'Test',legions:[],characterCount:3}],messages:[],nextCursor:null,totalCount:3}
   if(req.url==='/api/messages'&&req.method==='POST'){let raw='';for await(const part of req)raw+=part;body={ok:true,conversations:JSON.parse(raw).conversations.map(c=>({ok:true,serverId:c.serverId,characterId:c.characterId,received:c.messages.length}))}}
   res.setHeader('Content-Type','application/json');res.end(JSON.stringify(body));return
  }

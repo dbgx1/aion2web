@@ -6,10 +6,11 @@ import type { ManagedScope } from '#/lib/managed-chat'
 
 export function ManagedChatSetup(props: {
   controller: ManagedChatController; canStart: boolean; selected?: GameCharacter; count: number
-  start: (scope: ManagedScope, instruction: string, intervalMs: number, proactiveMs: number) => void
+  start: (scope: ManagedScope, instruction: string, intervalMs: number, proactiveMs: number, reception: boolean) => void
 }) {
   const [scope, setScope] = useState<ManagedScope>('single')
-  const [instruction, setInstruction] = useState('结合最近聊天自然交流，收到回复就接着聊，适当主动开启新话题。')
+  const [instruction, setInstruction] = useState('理解玩家需求，提供相关帮助，合适时推荐攻略或 Discord，出现明确商业意图并同意后交给真人。')
+  const [reception, setReception] = useState(true)
   const [interval, setInterval] = useState('30')
   const [proactive, setProactive] = useState('10')
   const intervalMs = Number(interval) * 1000
@@ -21,6 +22,8 @@ export function ManagedChatSetup(props: {
   return <details className="managed-chat-setup" ref={details}>
     <summary><Bot size={16} aria-hidden="true" />持续托管模式</summary>
     <div>
+      <label>接待方式<select aria-label="接待方式" value={reception ? 'reception' : 'legacy'} disabled={busy} onChange={event => setReception(event.target.value === 'reception')}><option value="reception">智能接待 · 需求识别与真人交接</option><option value="legacy">自由托管 · 按目标主动聊天</option></select></label>
+      {reception && <p>收到玩家消息后回应；不定时追问。使用“AI 接待台”的内容库与真人队列，拒绝、交接和发送记录持久保存。</p>}
       <label>托管范围<select aria-label="托管范围" value={scope} disabled={busy} onChange={event => setScope(event.target.value as ManagedScope)}>
         <option value="single">当前会话{props.selected ? ` · ${props.selected.name}` : '（请先选角色）'}</option>
         <option value="online">筛选后的在线角色</option>
@@ -29,16 +32,16 @@ export function ManagedChatSetup(props: {
       <label>聊天目标<textarea aria-label="托管聊天目标" value={instruction} disabled={busy} maxLength={2000} onChange={event => setInstruction(event.target.value)} /></label>
       <div className="managed-chat-intervals">
         <label>全局发送间隔（秒）<input aria-label="托管发送间隔秒" type="number" step="any" value={interval} disabled={busy} onChange={event => setInterval(event.target.value)} /></label>
-        <label>每人主动聊天间隔（分钟）<input aria-label="托管主动聊天间隔分钟" type="number" step="any" value={proactive} disabled={busy} onChange={event => setProactive(event.target.value)} /></label>
+        {!reception && <label>每人主动聊天间隔（分钟）<input aria-label="托管主动聊天间隔分钟" type="number" step="any" value={proactive} disabled={busy} onChange={event => setProactive(event.target.value)} /></label>}
       </div>
       {!intervalValid && <p role="alert">全局发送间隔请输入有效的非负数字。</p>}
       {!proactiveValid && <p role="alert">每人主动聊天间隔请输入有效的非负数字。</p>}
-      <p>两个间隔均支持小数，无上限；0 表示不额外等待，仍按顺序处理查询、AI 生成和发送。</p>
+      <p>发送间隔支持小数；0 表示不额外等待，仍按顺序处理 AI 生成和发送。</p>
       <p>新回复优先，每人独立上下文。在线模式自动分批查询筛选角色，确认在线后聊天；结果超过 3 分钟重新查询，离线或未知先跳过。筛选变化不会更改已启动任务。</p>
       <p>{scope === 'single' ? '单独会话收到私聊后直接回复，不查询在线状态。' : 'AI 可发送私聊和群发、编辑草稿、读取会话历史、查询在线状态及查看托管上下文。'}</p>
       <p>请保持此网页打开。切换会话或功能页继续运行，关闭或刷新网页结束托管。每轮 AI 调用会产生费用，批量按队列依次执行。</p>
       <button type="button" className="primary-button compact" disabled={busy || !props.canStart || (scope === 'single' && !props.selected) || !intervalValid || !proactiveValid}
-        onClick={() => { props.start(scope, instruction.trim(), intervalMs, proactiveMs); if (details.current) details.current.open = false }}><Play size={14} aria-hidden="true" />开启持续托管</button>
+        onClick={() => { props.start(scope, instruction.trim(), intervalMs, proactiveMs, reception); if (details.current) details.current.open = false }}><Play size={14} aria-hidden="true" />开启持续托管</button>
     </div>
   </details>
 }

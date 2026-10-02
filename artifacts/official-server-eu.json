@@ -1,0 +1,100 @@
+{
+  "serverList": [
+    {
+      "raceId": 1,
+      "serverId": 1301,
+      "serverName": "Siel",
+      "serverShortName": "Sie"
+    },
+    {
+      "raceId": 1,
+      "serverId": 1302,
+      "serverName": "Nezekan",
+      "serverShortName": "Nez"
+    },
+    {
+      "raceId": 1,
+      "serverId": 1303,
+      "serverName": "Vaizel",
+      "serverShortName": "Vai"
+    },
+    {
+      "raceId": 1,
+      "serverId": 1304,
+      "serverName": "Kaisinel",
+      "serverShortName": "Kai"
+    },
+    {
+      "raceId": 1,
+      "serverId": 1305,
+      "serverName": "Yustiel",
+      "serverShortName": "Yus"
+    },
+    {
+      "raceId": 1,
+      "serverId": 1306,
+      "serverName": "Ariel",
+      "serverShortName": "Ari"
+    },
+    {
+      "raceId": 1,
+      "serverId": 1307,
+      "serverName": "Fregion",
+      "serverShortName": "Fre"
+    },
+    {
+      "raceId": 1,
+      "serverId": 1308,
+      "serverName": "Meslamtaeda",
+      "serverShortName": "Mes"
+    },
+    {
+      "raceId": 2,
+      "serverId": 2301,
+      "serverName": "Israphel",
+      "serverShortName": "Isr"
+    },
+    {
+      "raceId": 2,
+      "serverId": 2302,
+      "serverName": "Zikel",
+      "serverShortName": "Zik"
+    },
+    {
+      "raceId": 2,
+      "serverId": 2303,
+      "serverName": "Triniel",
+      "serverShortName": "Tri"
+    },
+    {
+      "raceId": 2,
+      "serverId": 2304,
+      "serverName": "Lumiel",
+      "serverShortName": "Lum"
+    },
+    {
+      "raceId": 2,
+      "serverId": 2305,
+      "serverName": "Marchutan",
+      "serverShortName": "Mar"
+    },
+    {
+      "raceId": 2,
+      "serverId": 2306,
+      "serverName": "Azphel",
+      "serverShortName": "Azp"
+    },
+    {
+      "raceId": 2,
+      "serverId": 2307,
+      "serverName": "Ereshkigal",
+      "serverShortName": "Ere"
+    },
+    {
+      "raceId": 2,
+      "serverId": 2308,
+      "serverName": "Beritra",
+      "serverShortName": "Ber"
+    }
+  ]
+}

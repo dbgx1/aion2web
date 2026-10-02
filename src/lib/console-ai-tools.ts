@@ -33,6 +33,8 @@ export const sendPrivateChatDef = toolDefinition({
   }),
   outputSchema: z.object({
     sent: z.boolean(),
+    status: z.enum(['confirmed', 'failed', 'unknown', 'not_sent']).optional(),
+    requestId: z.string().optional(),
     message: z.string(),
   }),
 })
@@ -59,6 +61,10 @@ export const sendGroupChatDef = toolDefinition({
   outputSchema: z.object({
     sent: z.boolean(),
     sentCount: z.number(),
+    status: z.enum(['confirmed', 'partial', 'unknown', 'not_sent']).optional(),
+    confirmedCount: z.number().optional(),
+    failedCount: z.number().optional(),
+    unknownCount: z.number().optional(),
     totalCount: z.number(),
     varied: z.boolean(),
     message: z.string(),

@@ -1,0 +1,50 @@
+import { useGeneration } from "./use-generation.js";
+import { reconstructAudioResult } from "@tanstack/ai-client";
+//#region src/use-generate-audio.ts
+/**
+* React hook for generating audio (music, sound effects) using AI models.
+*
+* Supports two transport modes:
+* - **ConnectConnectionAdapter** — Streaming transport (SSE, HTTP stream, custom)
+* - **Fetcher** — Direct async function call
+*
+* @example
+* ```tsx
+* import { useGenerateAudio } from '@tanstack/ai-react'
+* import { fetchServerSentEvents } from '@tanstack/ai-client'
+*
+* function AudioGenerator() {
+*   const { generate, result, isLoading, error, reset } = useGenerateAudio({
+*     connection: fetchServerSentEvents('/api/generate/audio'),
+*   })
+*
+*   return (
+*     <div>
+*       <button onClick={() => generate({ prompt: 'An upbeat electronic track', duration: 10 })}>
+*         Generate
+*       </button>
+*       {isLoading && <p>Generating...</p>}
+*       {error && <p>Error: {error.message}</p>}
+*       {result?.audio.url && <audio src={result.audio.url} controls />}
+*     </div>
+*   )
+* }
+* ```
+*/
+function useGenerateAudio(options) {
+	const devtools = {
+		...options.devtools,
+		framework: "react",
+		hookName: "useGenerateAudio",
+		outputKind: "audio"
+	};
+	return useGeneration({
+		...options,
+		devtools,
+		reconstructResult: reconstructAudioResult
+	});
+}
+//#endregion
+export { useGenerateAudio };
+
+//# sourceMappingURL=use-generate-audio.js.map

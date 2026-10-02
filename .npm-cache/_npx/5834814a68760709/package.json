@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@tanstack/intent": "^0.4.0"
+  },
+  "_npx": {
+    "packages": [
+      "@tanstack/intent@latest"
+    ]
+  }
+}

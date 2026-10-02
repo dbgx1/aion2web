@@ -5,6 +5,13 @@ const EMPTY = { servers: [] as CharacterDirectoryServer[], loading: true, error:
 let snapshot = EMPTY
 let pending: Promise<void> | null = null
 let forcedRefresh: Promise<void> | null = null
+let generation = 0
+export function resetDirectoryResource() {
+  generation++
+  pending = null
+  forcedRefresh = null
+  publish(EMPTY)
+}
 const listeners = new Set<() => void>()
 function publish(value: typeof EMPTY) {
   snapshot = value
@@ -25,15 +32,16 @@ export function refreshDirectory(force = false): Promise<void> {
   }
   if (!force && snapshot.fetchedAt && Date.now() - snapshot.fetchedAt < 60_000) return Promise.resolve()
   publish({ ...snapshot, loading: true, error: '' })
+  const current = generation
   pending = (async () => {
     try {
       const response = await fetch('/api/characters?directory=1', { signal: AbortSignal.timeout(15_000), cache: 'no-store' })
       const result = await response.json() as { ok?: boolean; servers?: CharacterDirectoryServer[] }
       if (!response.ok || !result.ok || !Array.isArray(result.servers)) throw new Error(`目录加载失败 (${response.status})`)
-      publish({ servers: result.servers, loading: false, error: '', fetchedAt: Date.now() })
+      if (current === generation) publish({ servers: result.servers, loading: false, error: '', fetchedAt: Date.now() })
     } catch (cause) {
-      publish({ ...snapshot, loading: false, error: cause instanceof Error ? cause.message : '目录加载失败' })
-    } finally { pending = null }
+      if (current === generation) publish({ ...EMPTY, loading: false, error: cause instanceof Error ? cause.message : '目录加载失败' })
+    } finally { if (current === generation) pending = null }
   })()
   return pending
 }

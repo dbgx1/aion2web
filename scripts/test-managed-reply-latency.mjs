@@ -3,7 +3,7 @@ import { build } from 'esbuild'
 const bundle=await build({entryPoints:['src/lib/managed-chat.ts'],bundle:true,write:false,format:'esm',platform:'node'})
 const {ManagedChatRunner,managedKey}=await import('data:text/javascript;base64,'+Buffer.from(bundle.outputFiles[0].text).toString('base64'))
 const roles=[1,2].map(id=>({characterId:String(id),serverKey:'1001',name:'Role '+id}))
-const config={agentId:'A',room:'r',acquiredAt:1,scope:'single',intervalMs:0,proactiveMs:600000}
+const config={agentId:'A',room:'r',serverId: '1001',scope:'single',intervalMs:0,proactiveMs:600000}
 let now=1000000, sends=[], queries=0, run, query, send, activeSignal
 const runner=new ManagedChatRunner({now:()=>now,changed:()=>{},guard:()=>null,verify:async()=>{},
  queryOnline:async(roles,signal)=>{queries++;return query(roles,signal)},

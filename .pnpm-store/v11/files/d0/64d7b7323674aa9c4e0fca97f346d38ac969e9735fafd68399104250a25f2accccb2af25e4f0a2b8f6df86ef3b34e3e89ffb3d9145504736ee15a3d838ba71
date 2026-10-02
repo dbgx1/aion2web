@@ -1,0 +1,84 @@
+import { ChatClientEventEmitter } from "./events.js";
+//#region src/devtools-noop.ts
+var NoOpChatClientEventEmitter = class extends ChatClientEventEmitter {
+	emitEvent() {}
+};
+var NoOpChatDevtoolsBridge = class {
+	events;
+	constructor(options) {
+		this.events = new NoOpChatClientEventEmitter(options.clientId);
+	}
+	emitRegistered() {}
+	emitUpdated() {}
+	emitSnapshot() {}
+	emitToolsRegistered() {}
+	emitRunLifecycle(_eventType, _runId, _status, _options) {}
+	deactivate() {}
+	supersede() {}
+	dispose() {}
+	mountWithTools(_initialMessageCount) {}
+	notifyToolsChanged() {}
+	setCurrentStreamId(_streamId) {}
+	recordStreamId(_streamId) {}
+	getCurrentStreamId() {
+		return null;
+	}
+	getLastStreamId() {
+		return null;
+	}
+	resolveStreamId() {
+		return "";
+	}
+	observeChunk(_chunk) {}
+	recordMemoryState(_value) {}
+	recordCompactionEvent(_eventType, _value) {}
+	recordCompactionState(_value) {}
+	recordSkillsState(_value) {}
+	beginRun(_runId, _threadId) {}
+	getCurrentRunEventContext() {}
+	getCurrentOrLastRunEventContext() {}
+	findToolCallContext(toolCallId) {
+		return { toolCallId };
+	}
+	async applyFixture(_fixture) {}
+};
+var NoOpGenerationDevtoolsBridge = class {
+	constructor(_options) {}
+	emitRegistered() {}
+	emitUpdated() {}
+	emitSnapshot() {}
+	emitToolsRegistered() {}
+	emitRunLifecycle() {}
+	deactivate() {}
+	supersede() {}
+	dispose() {}
+	beginRun(_input) {
+		return `noop-run-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+	}
+	ensureRunStarted(_runId) {}
+	finishRun(_runId, _eventType, _status, _error) {}
+	getActiveRunId() {
+		return null;
+	}
+	resetRuns() {}
+	recordResultChange() {}
+	recordLoadingChange() {}
+	recordErrorChange(_error) {}
+	recordStatusChange() {}
+	recordProgressChange() {}
+	emitState() {}
+};
+var NoOpVideoDevtoolsBridge = class extends NoOpGenerationDevtoolsBridge {
+	constructor(options) {
+		super(options);
+	}
+	recordJobIdChange() {}
+	recordVideoStatusChange() {}
+};
+var createNoOpChatDevtoolsBridge = (options) => new NoOpChatDevtoolsBridge(options);
+var createNoOpGenerationDevtoolsBridge = (options) => new NoOpGenerationDevtoolsBridge(options);
+var createNoOpVideoDevtoolsBridge = (options) => new NoOpVideoDevtoolsBridge(options);
+//#endregion
+export { NoOpChatDevtoolsBridge, NoOpGenerationDevtoolsBridge, NoOpVideoDevtoolsBridge, createNoOpChatDevtoolsBridge, createNoOpGenerationDevtoolsBridge, createNoOpVideoDevtoolsBridge };
+
+//# sourceMappingURL=devtools-noop.js.map

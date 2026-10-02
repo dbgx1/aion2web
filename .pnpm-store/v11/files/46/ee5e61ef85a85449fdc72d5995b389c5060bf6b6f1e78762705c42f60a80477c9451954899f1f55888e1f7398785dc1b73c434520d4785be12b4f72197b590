@@ -1,0 +1,46 @@
+import { useGeneration } from "./use-generation.js";
+import { reconstructSpeechResult } from "@tanstack/ai-client";
+//#region src/use-generate-speech.ts
+/**
+* React hook for generating speech (text-to-speech) using AI models.
+*
+* @example
+* ```tsx
+* import { useGenerateSpeech } from '@tanstack/ai-react'
+* import { fetchServerSentEvents } from '@tanstack/ai-client'
+*
+* function SpeechGenerator() {
+*   const { generate, result, isLoading } = useGenerateSpeech({
+*     connection: fetchServerSentEvents('/api/generate/speech'),
+*   })
+*
+*   return (
+*     <div>
+*       <button onClick={() => generate({ text: 'Hello world', voice: 'alloy' })}>
+*         Generate Speech
+*       </button>
+*       {result && (
+*         <audio src={`data:audio/${result.format};base64,${result.audio}`} controls />
+*       )}
+*     </div>
+*   )
+* }
+* ```
+*/
+function useGenerateSpeech(options) {
+	const devtools = {
+		...options.devtools,
+		framework: "react",
+		hookName: "useGenerateSpeech",
+		outputKind: "audio"
+	};
+	return useGeneration({
+		...options,
+		devtools,
+		reconstructResult: reconstructSpeechResult
+	});
+}
+//#endregion
+export { useGenerateSpeech };
+
+//# sourceMappingURL=use-generate-speech.js.map

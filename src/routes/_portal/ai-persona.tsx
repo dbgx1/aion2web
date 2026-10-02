@@ -1,9 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_portal/ai-persona')({
-  component: EmptyPortalPage,
+  beforeLoad: () => { throw redirect({ to: '/reception', hash: 'config', replace: true }) },
 })
-
-function EmptyPortalPage() {
-  return null
-}

@@ -1,0 +1,18 @@
+[RELAY] agent=7IEAK94Z-ec21ed78796f room=aion2-local mqtt=127.0.0.1:61468
+[RELAY] MQTT connected, ready for console commands
+[RELAY] MQTT disconnected: Normal disconnection
+[RELAY] agent=7IEAK94Z-ec21ed78796f room=aion2-local mqtt=127.0.0.1:61474
+[RELAY] MQTT connection failed; automatic retry in 1-15 seconds
+[RELAY] MQTT connected, ready for console commands
+[RELAY] MQTT disconnected: Unspecified error
+[RELAY] MQTT connected, ready for console commands
+[RELAY] MQTT disconnected: Keep alive timeout
+[RELAY] MQTT disconnected: Keep alive timeout
+[RELAY] MQTT connected, ready for console commands
+[RELAY] MQTT disconnected: Normal disconnection
+[RELAY] MQTT connected, ready for console commands
+.................
+----------------------------------------------------------------------
+Ran 17 tests in 11.512s
+
+OK

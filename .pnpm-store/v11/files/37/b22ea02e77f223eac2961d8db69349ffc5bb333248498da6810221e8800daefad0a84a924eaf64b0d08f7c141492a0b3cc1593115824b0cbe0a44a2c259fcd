@@ -1,0 +1,46 @@
+import { resolveMarkdownPlugins } from "./markdown-plugins.js";
+import { jsx } from "react/jsx-runtime";
+import ReactMarkdown from "react-markdown";
+//#region src/chat-ui/text-part.tsx
+/**
+* TextPart component - renders markdown text with syntax highlighting.
+*
+* @example Standalone usage
+* ```tsx
+* <TextPart
+*   content="Hello **world**!"
+*   role="user"
+*   className="p-4 rounded"
+*   userClassName="bg-blue-500"
+*   assistantClassName="bg-gray-500"
+* />
+* ```
+*
+* @example Add a markdown plugin (e.g. CJK bold/emphasis support)
+* ```tsx
+* import remarkCjkFriendly from 'remark-cjk-friendly'
+*
+* <TextPart content={content} remarkPlugins={[remarkCjkFriendly]} />
+* ```
+*/
+function TextPart({ content, role, className = "", userClassName = "", assistantClassName = "", remarkPlugins, rehypePlugins, components, disableDefaultPlugins }) {
+	const combinedClassName = [className, role === "user" ? userClassName : role === "assistant" ? assistantClassName : ""].filter(Boolean).join(" ");
+	const resolved = resolveMarkdownPlugins({
+		remarkPlugins,
+		rehypePlugins,
+		disableDefaultPlugins
+	});
+	return /* @__PURE__ */ jsx("div", {
+		className: combinedClassName || void 0,
+		children: /* @__PURE__ */ jsx(ReactMarkdown, {
+			remarkPlugins: resolved.remarkPlugins,
+			rehypePlugins: resolved.rehypePlugins,
+			components,
+			children: content
+		})
+	});
+}
+//#endregion
+export { TextPart };
+
+//# sourceMappingURL=text-part.js.map

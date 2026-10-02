@@ -1,0 +1,368 @@
+import { convertSchemaToJsonSchema } from "@tanstack/ai/client";
+//#region src/realtime-client.ts
+var TOKEN_REFRESH_BUFFER_MS = 6e4;
+/**
+* Client for managing realtime voice conversations.
+*
+* Handles connection lifecycle, audio I/O, message state,
+* and tool execution for realtime voice-to-voice AI interactions.
+*
+* @example
+* ```typescript
+* import { RealtimeClient } from '@tanstack/ai-client'
+* import { openaiRealtime } from '@tanstack/ai-openai'
+*
+* const client = new RealtimeClient({
+*   getToken: () => fetch('/api/realtime-token').then(r => r.json()),
+*   adapter: openaiRealtime(),
+*   tools: [myTool.client(handler)],
+*   onMessage: (msg) => console.log('Message:', msg),
+* })
+*
+* await client.connect()
+* ```
+*/
+var RealtimeClient = class {
+	options;
+	connection = null;
+	token = null;
+	tokenRefreshTimeout = null;
+	clientTools;
+	stateChangeCallbacks = /* @__PURE__ */ new Set();
+	unsubscribers = [];
+	state = {
+		status: "idle",
+		mode: "idle",
+		messages: [],
+		pendingUserTranscript: null,
+		pendingAssistantTranscript: null,
+		error: null
+	};
+	constructor(options) {
+		this.options = {
+			autoPlayback: true,
+			autoCapture: true,
+			vadMode: "server",
+			...options
+		};
+		this.clientTools = /* @__PURE__ */ new Map();
+		if (options.tools) for (const tool of options.tools) this.clientTools.set(tool.name, tool);
+	}
+	/**
+	* Connect to the realtime session.
+	* Fetches a token and establishes the connection.
+	*/
+	async connect() {
+		if (this.state.status === "connected") return;
+		this.updateState({
+			status: "connecting",
+			error: null
+		});
+		try {
+			this.token = await this.options.getToken();
+			this.scheduleTokenRefresh();
+			const toolsList = this.clientTools.size > 0 ? Array.from(this.clientTools.values()) : void 0;
+			this.connection = await this.options.adapter.connect(this.token, toolsList);
+			this.subscribeToConnectionEvents();
+			this.applySessionConfig();
+			if (this.options.autoCapture) await this.connection.startAudioCapture();
+			this.updateState({
+				status: "connected",
+				mode: "listening"
+			});
+			this.options.onConnect?.();
+		} catch (error) {
+			const err = error instanceof Error ? error : new Error(String(error));
+			this.updateState({
+				status: "error",
+				error: err
+			});
+			this.options.onError?.(err);
+			throw err;
+		}
+	}
+	/**
+	* Disconnect from the realtime session.
+	*/
+	async disconnect() {
+		if (this.tokenRefreshTimeout) {
+			clearTimeout(this.tokenRefreshTimeout);
+			this.tokenRefreshTimeout = null;
+		}
+		for (const unsub of this.unsubscribers) unsub();
+		this.unsubscribers = [];
+		if (this.connection) {
+			await this.connection.disconnect();
+			this.connection = null;
+		}
+		this.token = null;
+		this.updateState({
+			status: "idle",
+			mode: "idle",
+			pendingUserTranscript: null,
+			pendingAssistantTranscript: null
+		});
+		this.options.onDisconnect?.();
+	}
+	/**
+	* Start listening for voice input.
+	* Only needed when vadMode is 'manual'.
+	*/
+	startListening() {
+		if (!this.connection || this.state.status !== "connected") return;
+		this.connection.startAudioCapture();
+		this.updateState({ mode: "listening" });
+	}
+	/**
+	* Stop listening for voice input.
+	* Only needed when vadMode is 'manual'.
+	*/
+	stopListening() {
+		if (!this.connection) return;
+		this.connection.stopAudioCapture();
+		this.updateState({ mode: "idle" });
+	}
+	/**
+	* Interrupt the current assistant response.
+	*/
+	interrupt() {
+		if (!this.connection) return;
+		this.connection.interrupt();
+	}
+	/**
+	* Send a text message instead of voice.
+	*/
+	sendText(text) {
+		if (!this.connection || this.state.status !== "connected") return;
+		const userMessage = {
+			id: this.generateId(),
+			role: "user",
+			timestamp: Date.now(),
+			parts: [{
+				type: "text",
+				content: text
+			}]
+		};
+		this.addMessage(userMessage);
+		this.connection.sendText(text);
+	}
+	/**
+	* Send an image to the conversation.
+	* @param imageData - Base64-encoded image data or a URL
+	* @param mimeType - MIME type of the image (e.g., 'image/png', 'image/jpeg')
+	*/
+	sendImage(imageData, mimeType) {
+		if (!this.connection || this.state.status !== "connected") return;
+		const userMessage = {
+			id: this.generateId(),
+			role: "user",
+			timestamp: Date.now(),
+			parts: [{
+				type: "image",
+				data: imageData,
+				mimeType
+			}]
+		};
+		this.addMessage(userMessage);
+		this.connection.sendImage(imageData, mimeType);
+	}
+	/** Get current connection status */
+	get status() {
+		return this.state.status;
+	}
+	/** Get current mode */
+	get mode() {
+		return this.state.mode;
+	}
+	/** Get conversation messages */
+	get messages() {
+		return this.state.messages;
+	}
+	/** Get current error, if any */
+	get error() {
+		return this.state.error;
+	}
+	/** Get pending user transcript (while user is speaking) */
+	get pendingUserTranscript() {
+		return this.state.pendingUserTranscript;
+	}
+	/** Get pending assistant transcript (while assistant is speaking) */
+	get pendingAssistantTranscript() {
+		return this.state.pendingAssistantTranscript;
+	}
+	/** Get audio visualization data */
+	get audio() {
+		return this.connection?.getAudioVisualization() ?? null;
+	}
+	/**
+	* Update the session configuration.
+	* This applies changes to the active connection and persists them for future reconnections.
+	*/
+	updateSession(config) {
+		const o = this.options;
+		if (config.instructions !== void 0) o.instructions = config.instructions;
+		if (config.voice !== void 0) o.voice = config.voice;
+		if (config.vadMode !== void 0) o.vadMode = config.vadMode;
+		if (config.outputModalities !== void 0) o.outputModalities = config.outputModalities;
+		if (config.temperature !== void 0) o.temperature = config.temperature;
+		if (config.maxOutputTokens !== void 0) o.maxOutputTokens = config.maxOutputTokens;
+		if (config.semanticEagerness !== void 0) o.semanticEagerness = config.semanticEagerness;
+		if (config.providerOptions !== void 0) o.providerOptions = config.providerOptions;
+		if (this.connection) this.applySessionConfig();
+	}
+	/**
+	* Subscribe to state changes.
+	* @returns Unsubscribe function
+	*/
+	onStateChange(callback) {
+		this.stateChangeCallbacks.add(callback);
+		return () => {
+			this.stateChangeCallbacks.delete(callback);
+		};
+	}
+	/**
+	* Clean up resources.
+	* Call this when disposing of the client.
+	*/
+	destroy() {
+		this.disconnect();
+		this.stateChangeCallbacks.clear();
+	}
+	updateState(updates) {
+		this.state = {
+			...this.state,
+			...updates
+		};
+		for (const callback of this.stateChangeCallbacks) callback(this.state);
+		if ("status" in updates && updates.status !== void 0) this.options.onStatusChange?.(updates.status);
+		if ("mode" in updates && updates.mode !== void 0) this.options.onModeChange?.(updates.mode);
+	}
+	addMessage(message) {
+		this.updateState({ messages: [...this.state.messages, message] });
+		this.options.onMessage?.(message);
+	}
+	scheduleTokenRefresh() {
+		if (!this.token) return;
+		const timeUntilExpiry = this.token.expiresAt - Date.now();
+		const refreshIn = Math.max(0, timeUntilExpiry - TOKEN_REFRESH_BUFFER_MS);
+		this.tokenRefreshTimeout = setTimeout(() => {
+			this.refreshToken();
+		}, refreshIn);
+	}
+	async refreshToken() {
+		try {
+			this.token = await this.options.getToken();
+			this.scheduleTokenRefresh();
+			this.connection?.updateToken?.(this.token);
+		} catch (error) {
+			const err = error instanceof Error ? error : new Error(String(error));
+			this.updateState({ error: err });
+			this.options.onError?.(err);
+		}
+	}
+	subscribeToConnectionEvents() {
+		if (!this.connection) return;
+		this.unsubscribers.push(this.connection.on("status_change", ({ status }) => {
+			this.updateState({ status });
+		}));
+		this.unsubscribers.push(this.connection.on("mode_change", ({ mode }) => {
+			this.updateState({ mode });
+		}));
+		this.unsubscribers.push(this.connection.on("transcript", ({ role, transcript, isFinal }) => {
+			if (role === "user") {
+				this.updateState({ pendingUserTranscript: isFinal ? null : transcript });
+				if (isFinal && transcript) this.addMessage({
+					id: this.generateId(),
+					role: "user",
+					timestamp: Date.now(),
+					parts: [{
+						type: "audio",
+						transcript,
+						durationMs: 0
+					}]
+				});
+			} else this.updateState({ pendingAssistantTranscript: isFinal ? null : transcript });
+		}));
+		this.unsubscribers.push(this.connection.on("tool_call", ({ toolCallId, toolName, input }) => {
+			if (!toolCallId) {
+				console.error("[RealtimeClient] tool_call missing toolCallId", toolName);
+				return;
+			}
+			const execute = this.clientTools.get(toolName)?.execute;
+			if (execute) (async () => {
+				try {
+					const output = await execute(input);
+					this.connection?.sendToolResult(toolCallId, typeof output === "string" ? output : JSON.stringify(output));
+				} catch (error) {
+					const errMsg = error instanceof Error ? error.message : String(error);
+					this.connection?.sendToolResult(toolCallId, JSON.stringify({ error: errMsg }));
+				}
+			})();
+			else this.connection?.sendToolResult(toolCallId, JSON.stringify({ error: `Unknown or non-executable tool: ${String(toolName)}` }));
+		}));
+		this.unsubscribers.push(this.connection.on("message_complete", ({ message }) => {
+			const existingIndex = this.state.messages.findIndex((m) => m.id === message.id);
+			if (existingIndex >= 0) {
+				const newMessages = [...this.state.messages];
+				newMessages[existingIndex] = message;
+				this.updateState({ messages: newMessages });
+			} else this.addMessage(message);
+		}));
+		this.unsubscribers.push(this.connection.on("interrupted", ({ messageId }) => {
+			if (messageId) {
+				const newMessages = this.state.messages.map((m) => m.id === messageId ? {
+					...m,
+					interrupted: true
+				} : m);
+				this.updateState({ messages: newMessages });
+			}
+			this.updateState({
+				mode: "listening",
+				pendingAssistantTranscript: null
+			});
+			this.options.onInterrupted?.();
+		}));
+		this.unsubscribers.push(this.connection.on("error", ({ error }) => {
+			this.updateState({ error });
+			this.options.onError?.(error);
+		}));
+		this.unsubscribers.push(this.connection.on("go_away", ({ timeLeft }) => {
+			this.options.onGoAway?.(timeLeft);
+		}));
+		this.unsubscribers.push(this.connection.on("usage", (usage) => {
+			this.options.onUsage?.(usage);
+		}));
+	}
+	applySessionConfig() {
+		if (!this.connection) return;
+		const { instructions, voice, vadMode, tools, outputModalities, temperature, maxOutputTokens, semanticEagerness } = this.options;
+		if (!(instructions || voice || vadMode || tools && tools.length > 0 || outputModalities || temperature !== void 0 || maxOutputTokens !== void 0 || semanticEagerness)) return;
+		const toolsConfig = tools ? Array.from(this.clientTools.values()).map((t) => {
+			const inputSchema = t.inputSchema ? convertSchemaToJsonSchema(t.inputSchema) : void 0;
+			const outputSchema = t.outputSchema ? convertSchemaToJsonSchema(t.outputSchema) : void 0;
+			return {
+				name: t.name,
+				description: t.description,
+				...inputSchema ? { inputSchema } : {},
+				...outputSchema ? { outputSchema } : {}
+			};
+		}) : void 0;
+		this.connection.updateSession({
+			...instructions !== void 0 ? { instructions } : {},
+			...voice !== void 0 ? { voice } : {},
+			...vadMode !== void 0 ? { vadMode } : {},
+			...toolsConfig !== void 0 ? { tools: toolsConfig } : {},
+			...outputModalities !== void 0 ? { outputModalities } : {},
+			...temperature !== void 0 ? { temperature } : {},
+			...maxOutputTokens !== void 0 ? { maxOutputTokens } : {},
+			...semanticEagerness !== void 0 ? { semanticEagerness } : {}
+		});
+	}
+	generateId() {
+		return `msg-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+	}
+};
+//#endregion
+export { RealtimeClient };
+
+//# sourceMappingURL=realtime-client.js.map

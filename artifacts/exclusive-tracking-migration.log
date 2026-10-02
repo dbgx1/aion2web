@@ -1,0 +1,22 @@
+
+ ⛅️ wrangler 4.129.0 (update available 4.132.0)
+───────────────────────────────────────────────
+Resource location: remote 
+
+Migrations to be applied:
+┌───────────────────────────────────────┐
+│ name                                  │
+├───────────────────────────────────────┤
+│ 0018_exclusive_character_tracking.sql │
+└───────────────────────────────────────┘
+? About to apply 1 migration(s)
+Your database may not be available to serve requests during the migration, continue?
+🤖 Using fallback value in non-interactive context: yes
+🌀 Executing on remote database aion2web-db (506fb168-4216-41e0-a9a5-0fc957fb9c8c):
+🌀 To execute on your local development database, remove the --remote flag from your wrangler command.
+🚣 Executed 4 commands in 0.85ms
+┌───────────────────────────────────────┬────────┐
+│ name                                  │ status │
+├───────────────────────────────────────┼────────┤
+│ 0018_exclusive_character_tracking.sql │ ✅     │
+└───────────────────────────────────────┴────────┘

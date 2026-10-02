@@ -1,0 +1,40 @@
+{
+  "serverList": [
+    {
+      "raceId": 1,
+      "serverId": 1501,
+      "serverName": "Siel",
+      "serverShortName": "Sie"
+    },
+    {
+      "raceId": 1,
+      "serverId": 1502,
+      "serverName": "Nezekan",
+      "serverShortName": "Nez"
+    },
+    {
+      "raceId": 1,
+      "serverId": 1503,
+      "serverName": "Vaizel",
+      "serverShortName": "Vai"
+    },
+    {
+      "raceId": 2,
+      "serverId": 2501,
+      "serverName": "Israphel",
+      "serverShortName": "Isr"
+    },
+    {
+      "raceId": 2,
+      "serverId": 2502,
+      "serverName": "Zikel",
+      "serverShortName": "Zik"
+    },
+    {
+      "raceId": 2,
+      "serverId": 2503,
+      "serverName": "Triniel",
+      "serverShortName": "Tri"
+    }
+  ]
+}

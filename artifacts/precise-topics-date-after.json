@@ -1,0 +1,168 @@
+[
+  {
+    "id": "2638cf1b-13f0-4b46-926e-45d60f53a649",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "865a1697-ee8d-4674-bf4a-5a9bd91143e5",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-10T15:01:03.848514Z"
+  },
+  {
+    "id": "382ccb90-052d-4f3d-946a-85ab6d1af67b",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/message": "Remove client occupancy; allow assigned server clients directly",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "3493b14c-59de-47a9-9cf8-ef1a4c40151e",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-11T02:43:28.464362Z"
+  },
+  {
+    "id": "8198b679-2060-45bc-8689-897a3a9e432d",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/message": "Restrict console navigation and page access to admins",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "c551995e-13e9-4177-b04a-ed32bddba698",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-11T03:28:46.370044Z"
+  },
+  {
+    "id": "c7fa421f-d0ea-4070-993a-fc089b190a89",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/message": "Add chatted/uncontacted character filters and message list power sorting",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "d77d668b-b9a0-4832-88b4-c9c0e81251f7",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-11T06:02:30.440259Z"
+  },
+  {
+    "id": "d601be9f-5f00-4f6b-ad89-d2473cb98778",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/message": "Display current character name in the client list",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "716f5a87-e405-43c7-a2ac-6f642068dbac",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-11T06:17:36.276122Z"
+  },
+  {
+    "id": "e510b360-032f-4cfd-82f1-9b580e9d2496",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "d2893e67-0e6f-4cb5-9d7f-2edaecb9c49b",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-11T08:53:39.513099Z"
+  },
+  {
+    "id": "6d5e42db-39fb-4271-84aa-8c5a7c023f43",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/message": "Remove character name column from client list",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "7c6cb198-6bcc-4f55-b5d4-9548d734a297",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-11T08:55:12.960072Z"
+  },
+  {
+    "id": "6dcbe9a4-7834-4cf2-9855-5f0cf1ca488e",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "secret"
+    },
+    "versions": [
+      {
+        "version_id": "dab5b1ee-060c-418f-93b3-596be800f598",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-12T06:27:14.520353Z"
+  },
+  {
+    "id": "b2621b09-3771-4d5c-8c73-2bdf84b30fbb",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "f1a1cd50-9b57-42f2-b15c-8301ae36b241",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-12T06:27:42.94226Z"
+  },
+  {
+    "id": "31695d95-8cf4-41a4-b26e-78e23cb5f444",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/message": "Precise client subscriptions, separate command receipts, and full chat timestamps",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "bb324622-722a-4aca-ba73-94c8e14088ea",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-14T05:58:54.053563Z"
+  }
+]

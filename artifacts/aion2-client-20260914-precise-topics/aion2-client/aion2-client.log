@@ -1,0 +1,5 @@
+2026-09-14T14:08:52 [AION2] installing mitmproxy certificate for 当前用户...
+2026-09-14T14:08:53 [AION2] mitmproxy certificate installed for 当前用户.
+2026-09-14T14:08:53 [AION2] build=2026-09-02.0100-auto-cert
+2026-09-14T14:08:53 [AION2] tool=mitmweb mode=local:Aion2.exe addon=E:\project\aion2web\artifacts\aion2-client-20260914-precise-topics\aion2-client\_internal\mitm_ws_message_monitor.py
+2026-09-14T14:08:53 [AION2] local mode may require running this client as Administrator.

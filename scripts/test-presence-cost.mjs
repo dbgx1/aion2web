@@ -10,7 +10,7 @@ const bundle=await build({stdin:{resolveDir:process.cwd(),loader:'tsx',contents:
   import {usePresenceQuery} from './src/lib/use-presence-query'
   function Fixture(){
     const [lookups,setLookups]=useState([{serverId:'1001',characterId:'1'}])
-    const api=usePresenceQuery(async (targets,receive)=>receive({type:'presence_result',requestId:'test',results:targets.map(c=>({...c,status:'online',checkedAt:Date.now()}))}),lookups)
+    const api=usePresenceQuery(async (targets,receive)=>receive({type:'presence_result',requestId:'test',results:targets.map(c=>({...c,status:window.queryStatus||'online',checkedAt:Date.now()}))}),lookups)
     window.api=api; window.changeRole=()=>setLookups([{serverId:'1001',characterId:String(Math.random())}])
     return <output>{JSON.stringify({loading:api.presenceLoading,queueing:api.presenceQueueing,message:api.presenceMessage})}</output>
   }
@@ -97,6 +97,12 @@ try{
   await page.clock.runFor(untilBoundary)
   assert.equal(await page.evaluate(()=>window.api.presenceByCharacter.get('1001\u00001').status),'online')
   await page.clock.runFor(2)
+  await page.waitForFunction(()=>window.api.presenceByCharacter.get('1001\u00001').status==='stale')
+  await page.evaluate(()=>{window.queryStatus='offline'})
+  await query()
+  await page.waitForFunction(()=>!window.api.presenceQueueing)
+  assert.equal(await page.evaluate(()=>window.api.presenceByCharacter.get('1001\u00001').status),'offline')
+  await page.clock.runFor(180_002)
   await page.waitForFunction(()=>window.api.presenceByCharacter.get('1001\u00001').status==='stale')
   assert.equal(reads,readsBeforeExpiry,'Expiration adds no API requests')
   assert.deepEqual(errors,[])

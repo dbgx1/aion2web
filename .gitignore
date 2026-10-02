@@ -13,5 +13,9 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
+/artifacts/client-build-env/
+/artifacts/client-pyinstaller-work/
+/artifacts/client-pyinstaller-spec/
+/artifacts/client-release/
 docs/ACCESS.local.md
 docs/API.md

@@ -1,0 +1,8 @@
+import { StreamChunk } from '@tanstack/ai/client';
+/**
+ * Parse a Response body as Server-Sent Events, yielding StreamChunks.
+ *
+ * Used by GenerationClient to parse SSE Responses returned from fetchers
+ * (e.g., TanStack Start server functions using `toServerSentEventsResponse()`).
+ */
+export declare function parseSSEResponse(response: Response, abortSignal?: AbortSignal): AsyncGenerator<StreamChunk>;

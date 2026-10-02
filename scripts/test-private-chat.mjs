@@ -6,6 +6,10 @@ import ts from 'typescript'
 import { DatabaseSync } from 'node:sqlite'
 
 function load(path, dependencies = {}) {
+  // These SQL tests isolate permissions; denial is covered below and the real
+  // assignment rules are exercised by test-server-access.mjs.
+  dependencies = { './server-access.server': { canAccessServer: async () => true },
+    '#/server/server-access.server': { canAccessServer: async () => true, canAccessServers: async () => true }, ...dependencies }
   const { outputText } = ts.transpileModule(readFileSync(new URL(path, import.meta.url), 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   })
@@ -214,7 +218,9 @@ test('real history SQL correlates across pages within the account/character/clie
     assert.equal(second.nextCursor, 2)
     assert.match(historyPlan, /idx_messages_request/)
     assert.match(historyPlan, /idx_messages_conversation_cursor/)
-    assert.ok(!historyPlan.includes('TEMP B-TREE'), historyPlan)
+    // Shared history merges several account conversations. Each conversation
+    // and receipt lookup must still use indexes rather than scanning messages.
+    assert.ok(!historyPlan.includes('SCAN chat_messages'), historyPlan)
     const merged = timeline.mergePrivateChatTimeline([...first.messages, ...second.messages].map(row => ({ ...row, id: row.sourceMessageId, time: new Date(row.sentAt).toISOString() })))
     assert.equal(merged.length, 1)
     assert.equal(merged[0].requestId, 'request-a')
@@ -234,6 +240,9 @@ test('real history SQL correlates across pages within the account/character/clie
     assert.equal(failedPage.messages[0].errorMessage,'game rejected')
     assert.ok(!JSON.stringify(body).includes('must-not-return'))
     assert.ok(!Object.hasOwn(body.messages[0], 'raw_json'))
+    db.prepare("UPDATE chat_messages SET raw_json=? WHERE source_message_id='receipt'").run(JSON.stringify({status:'unknown',error:'timeout'}))
+    assert.equal((await service.listMessages({...input,beforeId:3})).messages[0].status,'pending','An unconfirmed receipt cannot become a failed command on reload')
+    assert.equal((await service.listMessages({...input,beforeId:2})).messages[0].status,'pending','Old unconfirmed receipts retain their meaning without a data rewrite')
   } finally { db.close() }
 })
 test('private chat requires explicit channel evidence, not direction or sender', () => {

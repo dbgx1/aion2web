@@ -6,6 +6,8 @@ import { managedContextDef, managedHistoryDef, managedPresenceDef, setControlCom
 import type { ManagedLine, ManagedTurn } from './managed-chat'
 import { ManagedPresenceUnavailableError } from './managed-chat'
 import { PRESENCE_TIMEOUT_MS } from './presence-mqtt'
+import { aiErrorDetails, aiErrorMessage } from './ai-error-details'
+import { runReceptionTurn } from './reception-client'
 
 export async function runManagedAiTurn(turn: ManagedTurn, deps: {
   history: () => Promise<ManagedLine[]>
@@ -15,12 +17,14 @@ export async function runManagedAiTurn(turn: ManagedTurn, deps: {
 }) {
   const history = await deps.history()
   turn.signal.throwIfAborted()
+  if (turn.config.reception) return runReceptionTurn(turn, history, deps.notice)
   let failure: Error | undefined, acted = false, active = true, delivered = false
   let actionAttempted = false, corrected = false, requests = 0
+  let providerFailure: Error | undefined
   const startedAt = Date.now(), calledTools = new Set<string>()
   let presenceResult: Promise<string> | undefined
   const requireActive = () => { turn.signal.throwIfAborted(); if (!active) throw new Error('本轮托管已结束') }
-  const context = { surface: 'managed', agentId: turn.config.agentId, acquiredAt: turn.config.acquiredAt,
+  const context = { surface: 'managed', agentId: turn.config.agentId, serverId: turn.config.serverId,
     task: turn.config, selectedCharacter: turn.recipient, reason: turn.reason,
     recentPrivateMessages: [...new Map([...history, ...turn.history].map(line => [line.id, line])).values()].slice(-12) }
   const tools = clientTools(
@@ -61,8 +65,13 @@ export async function runManagedAiTurn(turn: ManagedTurn, deps: {
   const client = new ChatClient({
     threadId: `managed-${crypto.randomUUID()}`,
     connection: fetchServerSentEvents('/api/ai/chat'), tools,
-    onError: error => { failure = error },
+    onError: error => { failure = providerFailure ?? error },
     onChunk: chunk => {
+      if (chunk.type === 'RUN_ERROR') {
+        providerFailure = new Error(aiErrorMessage(chunk))
+        failure = providerFailure
+        console.error('[managed-ai-error]', JSON.stringify(aiErrorDetails(chunk)))
+      }
       if (chunk.type === 'RUN_STARTED') requests++
       if (chunk.type === 'TOOL_CALL_START' && tools.some(tool => tool.name === chunk.toolCallName)) calledTools.add(chunk.toolCallName)
     },

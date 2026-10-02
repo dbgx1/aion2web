@@ -5,9 +5,10 @@ import { ManagedPresence } from './managed-presence'
 export type ManagedScope = 'single' | 'online' | 'all'
 export type ManagedLine = { id: string; direction: 'incoming' | 'outgoing'; content: string; time: string }
 export type ManagedConfig = {
-  agentId: string; agentName: string; room: string; acquiredAt: number
+  agentId: string; agentName: string; room: string; serverId: string
   scope: ManagedScope; label: string; instruction: string
   intervalMs: number; proactiveMs: number
+  reception?: boolean
 }
 export type ManagedSnapshot = {
   status: 'idle' | 'loading' | 'running' | 'paused' | 'waiting'
@@ -57,6 +58,7 @@ export class ManagedChatRunner {
   private nextAt = 0
   private failures = 0
   private generation = 0
+  private taskGeneration = 0
   private groupQueued = false
   private presence?: ManagedPresence
   private nextPresenceAt = 0
@@ -90,13 +92,14 @@ export class ManagedChatRunner {
     this.presenceController?.abort(); this.presenceController = undefined
     this.emit({ status: 'paused', notice, retryAt: 0 })
   }
-  resume(acquiredAt?: number) {
+  resume() {
     if (!this.order.length || !this.snapshot.config) return
     this.failures = 0; this.nextAt = this.now() + 5000
     this.emit({ status: 'running', notice: '已恢复持续监听', retryAt: 0,
-      config: acquiredAt === undefined ? this.snapshot.config : { ...this.snapshot.config, acquiredAt } })
+      config: this.snapshot.config })
   }
   stop() {
+    ++this.taskGeneration
     ++this.generation; this.controller?.abort(); this.controller = undefined
     this.presenceController?.abort(); this.presenceController = undefined; this.activeTurn = undefined
     this.incomingAt.clear(); this.presenceFailures = 0
@@ -172,7 +175,7 @@ export class ManagedChatRunner {
         } catch (error) {
           if (generation !== this.generation || controller.signal.aborted) return
           const message = error instanceof Error ? error.message : '在线查询失败'
-          if (/占用|封禁|未登录|权限/.test(message)) this.pause(message)
+          if (/封禁|未登录|权限/.test(message)) this.pause(message)
           else {
             this.nextPresenceAt = this.now() + Math.min(900000, 60000 * 2 ** Math.min(this.presenceFailures++, 4))
             if (!this.busy && !this.snapshot.retryAt) this.emit({ status: 'waiting', notice: `在线查询失败，将退避后重试：${message}` })
@@ -187,7 +190,7 @@ export class ManagedChatRunner {
     const eligible = (key: string) => !this.presence || this.presence.online(key, now)
     let key = readyReply
     const reason = key ? 'reply' : 'proactive'
-    if (!key) for (let index = 0; index < this.order.length; index++) {
+    if (!key && !config.reception) for (let index = 0; index < this.order.length; index++) {
       const candidate = this.order[this.cursor++ % this.order.length]
       if (!this.pending.has(candidate) && (this.due.get(candidate) || 0) <= now && eligible(candidate)) { key = candidate; break }
     }
@@ -196,7 +199,7 @@ export class ManagedChatRunner {
       return
     }
     const chosen = key, recipient = this.recipients.get(chosen)!
-    const generation = this.generation, revision = this.revision.get(chosen) || 0
+    const generation = this.generation, taskGeneration = this.taskGeneration, revision = this.revision.get(chosen) || 0
     const controller = new AbortController(); this.controller = controller; this.busy = true
     const activeTurn = { key: chosen, reason, published: false, controller }; this.activeTurn = activeTurn
     let published = false, sendClaimed = false, sendFailure: Error | undefined
@@ -216,7 +219,7 @@ export class ManagedChatRunner {
       if (!content.trim()) throw new Error('AI 返回了空消息')
       sendClaimed = true
       try { await this.deps.verify(config, controller.signal) }
-      catch (error) { if (!controller.signal.aborted) this.pause(error instanceof Error ? error.message : '无法确认客户端占用'); throw error }
+      catch (error) { if (!controller.signal.aborted) this.pause(error instanceof Error ? error.message : '无法确认区服权限'); throw error }
       valid()
       if ((this.revision.get(chosen) || 0) !== revision) return false
       const freshReply = reason === 'reply' && this.now() - (this.incomingAt.get(chosen) ?? -Infinity) <= 180000
@@ -234,7 +237,9 @@ export class ManagedChatRunner {
       catch (error) {
         sendFailure = error instanceof Error ? error : new Error('发送失败')
         const block = this.deps.guard(config)
-        if (!block || !/封禁/.test(block.message)) {
+        // Pausing retains this task's uncertain send for explicit resume.
+        // Stopping/restarting discards it, including late transport failures.
+        if (!config.reception && taskGeneration === this.taskGeneration && (!block || !/封禁/.test(block.message))) {
           this.drafts.set(chosen, outgoing)
           this.retrying.add(chosen)
         }
@@ -256,9 +261,9 @@ export class ManagedChatRunner {
         queueGroup: (content, variants) => {
           valid()
           if (this.groupQueued) return 0
+          const texts = (variants?.length ? variants : [content]).map(item => item.trim()).filter(Boolean)
+          if (!texts.length) throw new Error('AI 返回了空群发消息')
           this.groupQueued = true
-          const texts = (variants?.length ? variants : [content]).filter(item => item.trim())
-          if (!texts.length) return 0
           this.order.forEach((id, index) => { this.drafts.set(id, texts[index % texts.length]); this.due.set(id, 0) })
           return this.order.length
         },
@@ -278,7 +283,7 @@ export class ManagedChatRunner {
       if (generation !== this.generation || controller.signal.aborted) return
       const message = error instanceof Error ? error.message : 'AI 请求失败'
       const block = this.deps.guard(config)
-      if (block?.permanent || (!published && /占用|未登录|权限/.test(message))) {
+      if (block?.permanent || (!published && /未登录|权限/.test(message))) {
         if (block && /封禁/.test(block.message)) {
           this.drafts.delete(chosen)
           this.retrying.delete(chosen)

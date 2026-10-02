@@ -1,0 +1,17 @@
+[
+  {
+    "path": "/docs",
+    "status": 200,
+    "verified": true
+  },
+  {
+    "path": "/presence-provider-guide.json",
+    "status": 200,
+    "verified": true
+  },
+  {
+    "path": "/assets/index-C6k4bwRR.js",
+    "status": 200,
+    "verified": true
+  }
+]

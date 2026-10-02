@@ -1,0 +1,36 @@
+{
+  "base": "https://aion2web.cc328496536.workers.dev",
+  "checkedAt": "2026-09-14T05:59:30.252Z",
+  "pages": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/messages",
+      "status": 200
+    },
+    {
+      "path": "/api/mqtt/connection",
+      "status": 401
+    }
+  ],
+  "assets": [
+    {
+      "name": "index-BvXROlNY.css",
+      "matches": true
+    },
+    {
+      "name": "index-DC0NWrgm.js",
+      "matches": true
+    },
+    {
+      "name": "routes-BfKb1HbC.js",
+      "matches": true
+    },
+    {
+      "name": "styles-nM8Iffg2.css",
+      "matches": true
+    }
+  ]
+}

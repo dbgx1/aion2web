@@ -1,0 +1,2 @@
+PASS: MQTT import/reconnect/unmount races, out-of-order discovery, obsolete callbacks; history double-click and cancellation on recipient change
+PASS: failed older-page retry retains loaded history; repeating cursor is rejected and remains retryable

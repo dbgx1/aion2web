@@ -1,0 +1,10 @@
+{
+  "at": "2026-09-10T04:11:17.152Z",
+  "clientSha256": "4be70c24b3b44a691265e38b344b458602cacf4424e83ef598f04482e5046df2",
+  "consoleSha256": "27391468664a9933b77c5aa7defa59781ae8f5b14157580cbcaba0463850a4ed",
+  "reportFiles": [
+    "artifacts/optimized-client-console-release.json",
+    "artifacts/optimized-single-client-release-slow.json"
+  ],
+  "allChecksPassed": true
+}

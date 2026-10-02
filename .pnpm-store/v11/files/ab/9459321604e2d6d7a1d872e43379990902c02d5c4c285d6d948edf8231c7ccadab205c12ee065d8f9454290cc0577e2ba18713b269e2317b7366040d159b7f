@@ -1,0 +1,889 @@
+import { INTERRUPT_BINDING_METADATA_KEY, INTERRUPT_BINDING_VERSION, canonicalInterruptJson, canonicalizeInterruptResolutions, cloneAndDeepFreezeJson, digestInterruptJson, genericInterruptContinuationFromDescriptor, hashInterruptDefinitionSchema, hashSchemaInput, isStandardSchema, normalizeApprovalSchema, readInterruptBinding, wrapGenericInterruptContinuation } from "@tanstack/ai/client";
+//#region src/interrupt-manager.ts
+function isClientOwnedInterrupt(item) {
+	return item.resumable;
+}
+function resolutionWithContinuation(item, resolution) {
+	const continuation = genericInterruptContinuationFromDescriptor(item.descriptor);
+	if (!continuation) return resolution;
+	return {
+		...resolution,
+		metadata: wrapGenericInterruptContinuation(continuation)
+	};
+}
+function isRootResolvableInterrupt(interrupt) {
+	return "cancel" in interrupt && "clearResolution" in interrupt;
+}
+var itemErrorCodes = /* @__PURE__ */ new Set([
+	"invalid-payload",
+	"invalid-edited-args",
+	"invalid-tool-output",
+	"invalid-response-schema",
+	"unknown-interrupt",
+	"expired",
+	"stale",
+	"conflict",
+	"legacy-unsupported"
+]);
+var batchErrorCodes = /* @__PURE__ */ new Set([
+	"incomplete-batch",
+	"item-validation-failed",
+	"unsupported-bulk-operation",
+	"async-resolver",
+	"inactive-transaction",
+	"mixed-provenance",
+	"transport",
+	"server",
+	"protocol",
+	"invalid-response-schema",
+	"expired",
+	"stale",
+	"conflict",
+	"legacy-submit-failed"
+]);
+function isUnknownObject(value) {
+	return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+function isLegacyApprovalMetadata(value) {
+	return isUnknownObject(value) && value["kind"] === "approval" && typeof value["toolName"] === "string" && "input" in value;
+}
+function isLegacyClientToolMetadata(value) {
+	return isUnknownObject(value) && value["kind"] === "client_tool" && typeof value["toolName"] === "string" && "input" in value;
+}
+/**
+* Does this descriptor carry the pre-binding TanStack metadata marker?
+*
+* Descriptors emitted before the resume binding existed are still ours to
+* resume, so they must not be mistaken for another producer's interrupt.
+*/
+function isLegacyInterruptMetadata(interrupt) {
+	return isLegacyApprovalMetadata(interrupt.metadata) || isLegacyClientToolMetadata(interrupt.metadata);
+}
+function getDescriptorBinding(interrupt) {
+	return readInterruptBinding(interrupt);
+}
+function hasReservedFirstPartyBindingMarker(interrupt) {
+	if (!isUnknownObject(interrupt.metadata)) return false;
+	const binding = interrupt.metadata[INTERRUPT_BINDING_METADATA_KEY];
+	if (!isUnknownObject(binding)) return false;
+	if (binding["v"] !== void 0 && binding["v"] !== INTERRUPT_BINDING_VERSION) return false;
+	return binding["kind"] === "generic" || binding["kind"] === "tool-approval" || binding["kind"] === "client-tool-execution" || "definitionId" in binding || "key" in binding || "batchIndex" in binding || "payloadSchemaHash" in binding;
+}
+function hasFirstPartyGenericMarker(interrupt) {
+	if (!isUnknownObject(interrupt.metadata)) return false;
+	const binding = interrupt.metadata[INTERRUPT_BINDING_METADATA_KEY];
+	if (!isUnknownObject(binding) || binding["kind"] !== "generic") return false;
+	return "definitionId" in binding || "key" in binding || "batchIndex" in binding || "payloadSchemaHash" in binding;
+}
+function getInterruptPayload(interrupt) {
+	return interrupt.metadata?.["tanstack:interruptPayload"];
+}
+/**
+* Only used to route *legacy* (pre-binding) descriptors, which have no binding
+* to classify off. Current descriptors are classified by their binding alone.
+*/
+function isClientToolExecutionReason(reason) {
+	return reason === "tanstack:client_tool_execution" || reason === "client_tool_input";
+}
+function responseSchemaHash(interrupt) {
+	if (interrupt.responseSchema === void 0) return void 0;
+	try {
+		return digestInterruptJson(canonicalInterruptJson(interrupt.responseSchema));
+	} catch {
+		return;
+	}
+}
+function definitionSchemaHash(schema) {
+	if (schema === void 0) return void 0;
+	try {
+		return hashInterruptDefinitionSchema(schema);
+	} catch {
+		return;
+	}
+}
+function isPromiseLike(value) {
+	return value !== null && (typeof value === "object" || typeof value === "function") && "then" in value && typeof value.then === "function";
+}
+function validateWithSchema(schema, value, code) {
+	if (schema === void 0) return {
+		valid: true,
+		payload: value
+	};
+	if (isStandardSchema(schema)) {
+		const result = schema["~standard"].validate(value);
+		const normalize = (validation) => {
+			if (!validation.issues) return {
+				valid: true,
+				payload: validation.value
+			};
+			return {
+				code,
+				message: validation.issues[0]?.message ?? "Schema validation failed."
+			};
+		};
+		return isPromiseLike(result) ? Promise.resolve(result).then(normalize) : normalize(result);
+	}
+	return {
+		valid: true,
+		payload: value
+	};
+}
+function isItemErrorCode(value) {
+	for (const code of itemErrorCodes) if (code === value) return true;
+	return false;
+}
+function isBatchErrorCode(value) {
+	for (const code of batchErrorCodes) if (code === value) return true;
+	return false;
+}
+function isSubmissionError(value) {
+	if (!isUnknownObject(value)) return false;
+	const scope = value["scope"];
+	const code = value["code"];
+	if (!(typeof code === "string" && typeof value["message"] === "string" && typeof value["retryable"] === "boolean" && typeof value["threadId"] === "string" && typeof value["interruptedRunId"] === "string" && typeof value["generation"] === "number")) return false;
+	if (scope === "item") return isItemErrorCode(code) && typeof value["interruptId"] === "string" && (value["source"] === "client" || value["source"] === "server");
+	return scope === "batch" && isBatchErrorCode(code) && Array.isArray(value["interruptIds"]) && value["interruptIds"].every((id) => typeof id === "string") && (value["source"] === "client" || value["source"] === "server" || value["source"] === "transport");
+}
+function readSubmissionErrors(error) {
+	if (isSubmissionError(error)) return [error];
+	if (!isUnknownObject(error) || !Array.isArray(error["errors"])) return [];
+	return error["errors"].every(isSubmissionError) ? error["errors"] : [];
+}
+function haveSameInterruptIds(left, right) {
+	if (left.length !== right.length) return false;
+	const sortedLeft = [...left].sort();
+	const sortedRight = [...right].sort();
+	return sortedLeft.every((id, index) => id === sortedRight[index]);
+}
+function haveSameBatchCorrelation(left, right) {
+	return left.threadId === right.threadId && left.interruptedRunId === right.interruptedRunId && left.generation === right.generation && haveSameInterruptIds(left.interruptIds, right.interruptIds);
+}
+function mergeSubmissionBatchErrors(current, previousSubmission, incoming) {
+	const replaceableIncoming = incoming.filter((error) => error.source !== "transport");
+	const isSuperseded = (candidate) => previousSubmission.includes(candidate) && replaceableIncoming.some((error) => haveSameBatchCorrelation(candidate, error));
+	const retainedRootErrors = current.filter((candidate) => !isSuperseded(candidate));
+	const retainedSubmissionRootErrors = previousSubmission.filter((candidate) => !replaceableIncoming.some((error) => haveSameBatchCorrelation(candidate, error)));
+	return Object.freeze({
+		rootErrors: Object.freeze([...retainedRootErrors, ...incoming]),
+		submissionRootErrors: Object.freeze([...retainedSubmissionRootErrors, ...replaceableIncoming])
+	});
+}
+function submissionErrorMatchesActiveBatch(error, submission) {
+	if (error.threadId !== submission.threadId || error.interruptedRunId !== submission.interruptedRunId || error.generation !== submission.generation) return false;
+	const interruptIds = submission.resolutions.map((resolution) => resolution.interruptId);
+	return error.scope === "item" ? interruptIds.includes(error.interruptId) : haveSameInterruptIds(error.interruptIds, interruptIds);
+}
+function genericBinding(interrupt, hydration, candidate) {
+	const schemaHash = responseSchemaHash(interrupt) ?? candidate?.responseSchemaHash;
+	return cloneAndDeepFreezeJson({
+		v: INTERRUPT_BINDING_VERSION,
+		kind: "generic",
+		interruptId: interrupt.id,
+		interruptedRunId: hydration.interruptedRunId,
+		generation: hydration.generation,
+		...schemaHash !== void 0 ? { responseSchemaHash: schemaHash } : {},
+		...interrupt.expiresAt !== void 0 ? { expiresAt: interrupt.expiresAt } : {}
+	});
+}
+function baseSnapshot(item, hydration) {
+	const descriptor = cloneAndDeepFreezeJson(item.descriptor);
+	const errors = item.error === void 0 ? Object.freeze([]) : Object.freeze([cloneAndDeepFreezeJson(item.error)]);
+	const error = errors[0];
+	return {
+		id: descriptor.id,
+		interruptId: descriptor.id,
+		reason: descriptor.reason,
+		...descriptor.message !== void 0 ? { message: descriptor.message } : {},
+		...descriptor.responseSchema !== void 0 ? { responseSchema: descriptor.responseSchema } : {},
+		...descriptor.expiresAt !== void 0 ? { expiresAt: descriptor.expiresAt } : {},
+		...descriptor.metadata !== void 0 ? { metadata: descriptor.metadata } : {},
+		threadId: hydration.threadId,
+		interruptedRunId: hydration.interruptedRunId,
+		generation: hydration.generation,
+		status: item.status,
+		errors,
+		...error !== void 0 ? { error } : {},
+		canResolve: item.canResolve
+	};
+}
+var InterruptManager = class {
+	options;
+	hydration;
+	items = [];
+	snapshot = Object.freeze([]);
+	rootErrors = Object.freeze([]);
+	submissionRootErrors = Object.freeze([]);
+	state = Object.freeze({
+		interrupts: this.snapshot,
+		pendingInterrupts: this.snapshot,
+		interruptErrors: this.rootErrors,
+		resuming: false
+	});
+	activeTransaction;
+	activeSubmissionOperation;
+	retrySubmission;
+	resuming = false;
+	tools;
+	interruptDefinitions;
+	constructor(options) {
+		this.options = options;
+		this.tools = options.tools;
+		const definitions = /* @__PURE__ */ new Map();
+		for (const definition of options.interrupts ?? []) {
+			if (definitions.has(definition.id)) throw new Error(`Duplicate interrupt definition id: ${definition.id}`);
+			definitions.set(definition.id, definition);
+		}
+		this.interruptDefinitions = definitions;
+	}
+	updateTools(tools) {
+		this.tools = tools;
+	}
+	hydrate(hydration, source = "live") {
+		this.activeSubmissionOperation = void 0;
+		this.hydration = {
+			threadId: hydration.threadId,
+			interruptedRunId: hydration.interruptedRunId,
+			generation: hydration.generation,
+			interrupts: cloneAndDeepFreezeJson(hydration.interrupts)
+		};
+		const firstPartyIndexes = /* @__PURE__ */ new Map();
+		for (const interrupt of hydration.interrupts) {
+			const binding = getDescriptorBinding(interrupt);
+			if (binding?.kind === "generic" && binding.definitionId !== void 0 && binding.key !== void 0 && binding.batchIndex !== void 0) firstPartyIndexes.set(binding.batchIndex, (firstPartyIndexes.get(binding.batchIndex) ?? 0) + 1);
+		}
+		this.items = hydration.interrupts.map((interrupt) => this.hydrateInterrupt(interrupt, hydration, firstPartyIndexes));
+		this.rootErrors = Object.freeze([]);
+		this.submissionRootErrors = Object.freeze([]);
+		this.retrySubmission = void 0;
+		this.resuming = false;
+		this.publish(source);
+	}
+	getInterrupts() {
+		return this.snapshot;
+	}
+	getState() {
+		return this.state;
+	}
+	getDescriptors() {
+		return this.hydration?.interrupts ?? Object.freeze([]);
+	}
+	hasValidatedFirstPartyGenericBatch() {
+		return this.items.some((item) => item.kind === "generic" && item.definition !== void 0);
+	}
+	reset(options) {
+		this.activeSubmissionOperation = void 0;
+		this.hydration = void 0;
+		this.items = [];
+		this.snapshot = Object.freeze([]);
+		if (options?.preserveRootErrors !== true) {
+			this.rootErrors = Object.freeze([]);
+			this.submissionRootErrors = Object.freeze([]);
+		}
+		this.retrySubmission = void 0;
+		this.resuming = false;
+		this.state = Object.freeze({
+			interrupts: this.snapshot,
+			pendingInterrupts: this.snapshot,
+			interruptErrors: this.rootErrors,
+			resuming: false
+		});
+		this.options.onChange?.(options?.source ?? "live");
+	}
+	getInterruptErrors() {
+		return this.rootErrors;
+	}
+	getResuming() {
+		return this.resuming;
+	}
+	resolve(resolution) {
+		this.assertRootMutable();
+		if (typeof resolution === "boolean") {
+			this.resolveBooleanBulk(resolution);
+			return;
+		}
+		this.resolveTransaction(resolution);
+	}
+	cancel() {
+		this.assertRootMutable();
+		this.invalidateRetry();
+		for (const item of this.items) {
+			if (!isClientOwnedInterrupt(item)) continue;
+			item.validationGeneration++;
+			item.resolution = Object.freeze(resolutionWithContinuation(item, {
+				interruptId: item.descriptor.id,
+				status: "cancelled"
+			}));
+			item.status = "staged";
+			item.error = void 0;
+		}
+		this.publish();
+		this.maybeSubmit();
+	}
+	retry() {
+		if (this.resuming) throw new Error("Interrupt submission is already active.");
+		const submission = this.retrySubmission;
+		if (!submission) {
+			this.addRootError("transport", "There is no retryable interrupt submission.", false);
+			return;
+		}
+		this.submitBatch(submission);
+	}
+	resolveClientToolOutput(toolCallId, output) {
+		const item = this.items.find((candidate) => candidate.kind === "client-tool-execution" && candidate.binding?.kind === "client-tool-execution" && candidate.binding.toolCallId === toolCallId || candidate.kind === "generic" && isClientToolExecutionReason(candidate.descriptor.reason) && candidate.descriptor.toolCallId === toolCallId && isLegacyClientToolMetadata(candidate.descriptor.metadata));
+		if (!item) return false;
+		this.resolveItem(item.descriptor.id, output);
+		return true;
+	}
+	resolveToolApprovalDecision(interruptId, approved) {
+		const item = this.items.find((candidate) => candidate.descriptor.id === interruptId && (candidate.kind === "tool-approval" || candidate.kind === "generic" && candidate.descriptor.reason === "approval_required" && isLegacyApprovalMetadata(candidate.descriptor.metadata)));
+		if (!item) return false;
+		this.resolveItem(item.descriptor.id, { approved });
+		return true;
+	}
+	hydrateInterrupt(descriptor, hydration, firstPartyIndexes) {
+		const interrupt = cloneAndDeepFreezeJson(descriptor);
+		const candidate = getDescriptorBinding(interrupt);
+		const legacyResumable = candidate === void 0 && isLegacyInterruptMetadata(interrupt);
+		if (candidate === void 0 && !legacyResumable) {
+			if (hasReservedFirstPartyBindingMarker(interrupt)) return {
+				descriptor: interrupt,
+				binding: genericBinding(interrupt, hydration, void 0),
+				kind: "generic",
+				status: "error",
+				canResolve: false,
+				resumable: false,
+				error: this.itemError(interrupt.id, "stale", "The interrupt binding is invalid or incomplete."),
+				validationGeneration: 0
+			};
+			return {
+				descriptor: interrupt,
+				binding: void 0,
+				kind: "unbound",
+				status: "pending",
+				canResolve: false,
+				resumable: false,
+				validationGeneration: 0
+			};
+		}
+		const correlated = candidate !== void 0 && candidate.interruptId === interrupt.id && candidate.interruptedRunId === hydration.interruptedRunId && candidate.generation === hydration.generation && responseSchemaHash(interrupt) === candidate.responseSchemaHash;
+		const structurallyCorrelated = candidate !== void 0 && candidate.interruptId === interrupt.id && candidate.interruptedRunId === hydration.interruptedRunId && candidate.generation === hydration.generation && candidate.responseSchemaHash === (responseSchemaHash(interrupt) ?? candidate.responseSchemaHash);
+		if (candidate !== void 0 && hasFirstPartyGenericMarker(interrupt) && (!structurallyCorrelated || candidate.kind !== "generic" || candidate.definitionId === void 0 || candidate.key === void 0 || candidate.batchIndex === void 0)) return {
+			descriptor: interrupt,
+			binding: genericBinding(interrupt, hydration, candidate),
+			kind: "generic",
+			status: "error",
+			canResolve: false,
+			resumable: false,
+			error: this.itemError(interrupt.id, "stale", "The interrupt binding does not match this interrupted run."),
+			validationGeneration: 0
+		};
+		if (structurallyCorrelated && candidate.kind === "tool-approval") {
+			const tool = this.tools?.find((configured) => configured.name === candidate.toolName);
+			if (tool?.needsApproval === true && interrupt.toolCallId === candidate.toolCallId) try {
+				const approval = normalizeApprovalSchema(tool.approvalSchema, tool.inputSchema);
+				if (hashSchemaInput(tool.inputSchema) === candidate.inputSchemaHash && approval.approvalSchemaHash === candidate.approvalSchemaHash && approval.responseSchemaHash === candidate.responseSchemaHash) return {
+					descriptor: interrupt,
+					binding: cloneAndDeepFreezeJson(candidate),
+					kind: "tool-approval",
+					status: "pending",
+					canResolve: true,
+					resumable: true,
+					tool,
+					validationGeneration: 0
+				};
+			} catch {}
+		}
+		if (structurallyCorrelated && candidate.kind === "client-tool-execution") {
+			const tool = this.tools?.find((configured) => configured.name === candidate.toolName);
+			if (tool !== void 0 && interrupt.toolCallId === candidate.toolCallId && hashSchemaInput(tool.outputSchema) === candidate.outputSchemaHash) return {
+				descriptor: interrupt,
+				binding: cloneAndDeepFreezeJson(candidate),
+				kind: "client-tool-execution",
+				status: "pending",
+				canResolve: true,
+				resumable: true,
+				tool,
+				validationGeneration: 0
+			};
+		}
+		if (candidate !== void 0 && candidate.kind === "generic" && candidate.definitionId !== void 0 && candidate.key !== void 0 && candidate.batchIndex !== void 0 && candidate.key.length > 0 && firstPartyIndexes.get(candidate.batchIndex) !== 1) return {
+			descriptor: interrupt,
+			binding: cloneAndDeepFreezeJson(candidate),
+			kind: "generic",
+			status: "error",
+			canResolve: false,
+			resumable: false,
+			error: this.itemError(interrupt.id, "stale", "Generic interrupt batch contains a duplicate batchIndex."),
+			validationGeneration: 0
+		};
+		if (correlated && candidate.kind === "generic" && candidate.definitionId !== void 0 && candidate.key !== void 0 && candidate.batchIndex !== void 0 && candidate.key.length > 0 && firstPartyIndexes.get(candidate.batchIndex) === 1) {
+			const definition = this.interruptDefinitions.get(candidate.definitionId);
+			if (definition !== void 0 && definitionSchemaHash(definition.responseSchema) === candidate.responseSchemaHash && (definition.payloadSchema === void 0 ? candidate.payloadSchemaHash === void 0 : candidate.payloadSchemaHash === definitionSchemaHash(definition.payloadSchema))) {
+				const rawPayload = getInterruptPayload(interrupt);
+				return {
+					descriptor: interrupt,
+					binding: cloneAndDeepFreezeJson(candidate),
+					definition,
+					kind: "generic",
+					status: "pending",
+					canResolve: true,
+					resumable: true,
+					...rawPayload === void 0 ? {} : { payload: cloneAndDeepFreezeJson(rawPayload) },
+					validationGeneration: 0
+				};
+			}
+		}
+		const resumable = legacyResumable || candidate !== void 0 && candidate.interruptId === interrupt.id && candidate.interruptedRunId === hydration.interruptedRunId && candidate.generation === hydration.generation && (candidate.kind !== "generic" || responseSchemaHash(interrupt) === void 0 || candidate.responseSchemaHash === responseSchemaHash(interrupt));
+		return {
+			descriptor: interrupt,
+			binding: genericBinding(interrupt, hydration, candidate),
+			kind: "generic",
+			status: "pending",
+			canResolve: resumable,
+			resumable,
+			validationGeneration: 0
+		};
+	}
+	buildSnapshot(transaction) {
+		const hydration = this.requireHydration();
+		const next = this.items.filter((item) => item.kind !== "client-tool-execution" && item.status !== "submitting").map((item) => {
+			const base = baseSnapshot(item, hydration);
+			if (item.kind === "unbound" || item.binding === void 0) {
+				const snapshot = {
+					...base,
+					kind: "unbound",
+					canResolve: false
+				};
+				return Object.freeze(snapshot);
+			}
+			if (item.kind === "tool-approval" && item.binding.kind === "tool-approval") {
+				const binding = cloneAndDeepFreezeJson(item.binding);
+				const snapshot = {
+					...base,
+					kind: "tool-approval",
+					binding,
+					toolName: item.binding.toolName,
+					toolCallId: item.binding.toolCallId,
+					originalArgs: cloneAndDeepFreezeJson(item.binding.originalArgs),
+					cancel: () => this.cancelItem(item.descriptor.id, transaction),
+					clearResolution: () => this.clearItem(item.descriptor.id, transaction),
+					resolveInterrupt: (approved, options) => {
+						const details = isUnknownObject(options) ? options : void 0;
+						this.resolveItem(item.descriptor.id, {
+							approved,
+							...approved && details?.["editedArgs"] !== void 0 ? { editedArgs: details["editedArgs"] } : {},
+							...details?.["payload"] !== void 0 ? { payload: details["payload"] } : {}
+						}, transaction);
+					}
+				};
+				return Object.freeze(snapshot);
+			}
+			const boundGeneric = item.binding.kind === "generic" ? cloneAndDeepFreezeJson(item.binding) : cloneAndDeepFreezeJson({
+				v: INTERRUPT_BINDING_VERSION,
+				kind: "generic",
+				interruptId: item.descriptor.id,
+				interruptedRunId: hydration.interruptedRunId,
+				generation: hydration.generation,
+				...typeof item.binding.responseSchemaHash === "string" ? { responseSchemaHash: item.binding.responseSchemaHash } : {}
+			});
+			if (item.definition !== void 0 && item.binding.kind === "generic") {
+				const snapshot = {
+					...base,
+					kind: "generic",
+					definitionId: item.definition.id,
+					key: item.binding.key ?? "",
+					payload: item.payload,
+					binding: boundGeneric,
+					cancel: () => this.cancelItem(item.descriptor.id, transaction),
+					clearResolution: () => this.clearItem(item.descriptor.id, transaction),
+					resolveInterrupt: (response) => this.resolveItem(item.descriptor.id, response, transaction)
+				};
+				return Object.freeze(snapshot);
+			}
+			const snapshot = {
+				...base,
+				kind: "generic",
+				binding: boundGeneric,
+				cancel: () => this.cancelItem(item.descriptor.id, transaction),
+				clearResolution: () => this.clearItem(item.descriptor.id, transaction),
+				resolveInterrupt: (payload) => this.resolveItem(item.descriptor.id, payload, transaction)
+			};
+			return Object.freeze(snapshot);
+		});
+		return Object.freeze(next);
+	}
+	publish(source = "live") {
+		if (!this.hydration) {
+			this.snapshot = Object.freeze([]);
+			this.state = Object.freeze({
+				interrupts: this.snapshot,
+				pendingInterrupts: this.snapshot,
+				interruptErrors: this.rootErrors,
+				resuming: this.resuming
+			});
+			this.options.onChange?.(source);
+			return;
+		}
+		this.snapshot = this.buildSnapshot();
+		this.state = Object.freeze({
+			interrupts: this.snapshot,
+			pendingInterrupts: this.snapshot,
+			interruptErrors: this.rootErrors,
+			resuming: this.resuming
+		});
+		this.options.onChange?.(source);
+	}
+	resolveItem(interruptId, payload, transaction) {
+		this.assertItemMutable(transaction);
+		const item = this.findItem(interruptId);
+		this.invalidateRetry();
+		if (!item.canResolve) {
+			item.status = "error";
+			item.error = this.itemError(interruptId, "invalid-response-schema", "The interrupt response schema is invalid and cannot be resolved.");
+			if (!transaction) this.publish();
+			return;
+		}
+		const validationGeneration = ++item.validationGeneration;
+		const validation = this.validateCandidate(item, payload);
+		if (isPromiseLike(validation)) {
+			item.status = "validating";
+			item.error = void 0;
+			if (!transaction) this.publish();
+			Promise.resolve(validation).then((result) => {
+				if (validationGeneration !== item.validationGeneration) return;
+				this.applyValidation(item, result, transaction);
+			}).catch((error) => {
+				if (validationGeneration !== item.validationGeneration) return;
+				this.applyValidation(item, {
+					code: this.validationCode(item),
+					message: error instanceof Error ? error.message : String(error)
+				}, transaction);
+			});
+			return;
+		}
+		this.applyValidation(item, validation, transaction);
+	}
+	cancelItem(interruptId, transaction) {
+		this.assertItemMutable(transaction);
+		const item = this.findItem(interruptId);
+		this.invalidateRetry();
+		item.validationGeneration++;
+		item.resolution = Object.freeze(resolutionWithContinuation(item, {
+			interruptId,
+			status: "cancelled"
+		}));
+		item.status = "staged";
+		item.error = void 0;
+		if (!transaction) {
+			this.publish();
+			this.maybeSubmit();
+		}
+	}
+	clearItem(interruptId, transaction) {
+		this.assertItemMutable(transaction);
+		const item = this.findItem(interruptId);
+		this.invalidateRetry();
+		item.validationGeneration++;
+		item.resolution = void 0;
+		item.error = void 0;
+		item.status = "pending";
+		if (!transaction) this.publish();
+	}
+	maybeSubmit() {
+		const hasGeneric = this.items.some((item) => item.kind === "generic");
+		const ours = this.items.filter((item) => isClientOwnedInterrupt(item) && !(hasGeneric && item.kind === "client-tool-execution"));
+		if (ours.length === 0 || ours.some((item) => item.resolution === void 0 || item.status !== "staged")) return;
+		const hydration = this.requireHydration();
+		const canonical = canonicalizeInterruptResolutions(ours.map((item) => item.resolution).filter((item) => item !== void 0));
+		const submission = Object.freeze({
+			threadId: hydration.threadId,
+			interruptedRunId: hydration.interruptedRunId,
+			generation: hydration.generation,
+			resolutions: canonical.resolutions,
+			canonicalResolutions: canonical.canonicalResolutions,
+			fingerprint: canonical.fingerprint
+		});
+		this.submitBatch(submission);
+	}
+	applyValidation(item, result, transaction) {
+		if (!("valid" in result)) {
+			item.status = "error";
+			const itemError = this.itemError(item.descriptor.id, result.code, result.message, result.path);
+			item.error = itemError;
+			if (item.kind === "client-tool-execution") this.rootErrors = Object.freeze([...this.rootErrors.filter((error) => !(error.code === "item-validation-failed" && error.interruptIds.includes(item.descriptor.id))), Object.freeze({
+				scope: "batch",
+				code: "item-validation-failed",
+				message: itemError.message,
+				source: "client",
+				retryable: false,
+				interruptIds: Object.freeze([item.descriptor.id]),
+				threadId: itemError.threadId,
+				interruptedRunId: itemError.interruptedRunId,
+				generation: itemError.generation
+			})]);
+			if (!transaction) this.publish();
+			return;
+		}
+		item.resolution = cloneAndDeepFreezeJson(resolutionWithContinuation(item, {
+			interruptId: item.descriptor.id,
+			status: "resolved",
+			payload: result.payload
+		}));
+		item.status = "staged";
+		item.error = void 0;
+		if (!transaction) {
+			this.publish();
+			this.maybeSubmit();
+		}
+	}
+	validateCandidate(item, payload) {
+		if (item.kind === "generic") {
+			const validation = validateWithSchema(item.definition?.responseSchema ?? item.descriptor.responseSchema, payload, "invalid-payload");
+			if (item.definition === void 0) return validation;
+			const preserveInput = (result) => "valid" in result ? {
+				valid: true,
+				payload
+			} : result;
+			return isPromiseLike(validation) ? Promise.resolve(validation).then(preserveInput) : preserveInput(validation);
+		}
+		if (item.kind === "client-tool-execution") return validateWithSchema(item.tool?.outputSchema, payload, "invalid-tool-output");
+		return this.validateApprovalCandidate(item, payload);
+	}
+	validateApprovalCandidate(item, payload) {
+		if (!isUnknownObject(payload) || typeof payload["approved"] !== "boolean") return {
+			code: "invalid-payload",
+			message: "Tool approval resolutions require an approved boolean."
+		};
+		const approved = payload["approved"];
+		const editedArgs = payload["editedArgs"];
+		if (!approved && editedArgs !== void 0) return {
+			code: "invalid-edited-args",
+			message: "Rejected tool approvals cannot edit tool arguments."
+		};
+		if (approved && editedArgs !== void 0) {
+			const editedValidation = validateWithSchema(item.tool?.inputSchema, editedArgs, "invalid-edited-args");
+			if (isPromiseLike(editedValidation)) return Promise.resolve(editedValidation).then((result) => "valid" in result ? this.validateApprovalPayload(item, payload, result.payload) : result);
+			if (!("valid" in editedValidation)) return editedValidation;
+			return this.validateApprovalPayload(item, payload, editedValidation.payload);
+		}
+		return this.validateApprovalPayload(item, payload, void 0);
+	}
+	validateApprovalPayload(item, envelope, validatedEditedArgs) {
+		const approved = envelope["approved"] === true;
+		const schema = this.approvalBranchSchema(item.tool, approved);
+		const branchPayload = envelope["payload"];
+		if (schema === void 0 && branchPayload !== void 0) return {
+			code: "invalid-payload",
+			message: "This approval branch does not accept a payload."
+		};
+		if (schema !== void 0 && branchPayload === void 0) return {
+			code: "invalid-payload",
+			message: "This approval branch requires a payload."
+		};
+		const validation = validateWithSchema(schema, branchPayload, "invalid-payload");
+		const buildEnvelope = (result) => {
+			if (!("valid" in result)) return result;
+			return {
+				valid: true,
+				payload: {
+					approved,
+					...validatedEditedArgs !== void 0 ? { editedArgs: validatedEditedArgs } : {},
+					...schema !== void 0 ? { payload: result.payload } : {}
+				}
+			};
+		};
+		return isPromiseLike(validation) ? Promise.resolve(validation).then(buildEnvelope) : buildEnvelope(validation);
+	}
+	approvalBranchSchema(tool, approved) {
+		const approvalSchema = tool?.approvalSchema;
+		if (!isUnknownObject(approvalSchema)) return approvalSchema;
+		if (!("approve" in approvalSchema || "reject" in approvalSchema)) return approvalSchema;
+		return approved ? approvalSchema["approve"] : approvalSchema["reject"];
+	}
+	validationCode(item) {
+		return item.kind === "client-tool-execution" ? "invalid-tool-output" : "invalid-payload";
+	}
+	resolveBooleanBulk(approved) {
+		const resolvable = this.items.filter((item) => isClientOwnedInterrupt(item) && item.kind !== "client-tool-execution");
+		if (!resolvable.every((item) => item.kind === "tool-approval" && this.approvalBranchSchema(item.tool, approved) === void 0) || resolvable.length === 0) {
+			this.addRootError("unsupported-bulk-operation", "Boolean bulk resolution requires payloadless tool approvals.", false);
+			return;
+		}
+		this.invalidateRetry();
+		for (const item of resolvable) {
+			item.validationGeneration++;
+			item.resolution = cloneAndDeepFreezeJson({
+				interruptId: item.descriptor.id,
+				status: "resolved",
+				payload: { approved }
+			});
+			item.status = "staged";
+			item.error = void 0;
+		}
+		this.publish();
+		this.maybeSubmit();
+	}
+	resolveTransaction(resolver) {
+		const checkpoints = this.items.map((item) => ({
+			status: item.status,
+			...item.resolution !== void 0 ? { resolution: item.resolution } : {},
+			...item.error !== void 0 ? { error: item.error } : {},
+			validationGeneration: item.validationGeneration
+		}));
+		const token = { active: true };
+		this.activeTransaction = token;
+		const stable = this.buildSnapshot(token).filter(isRootResolvableInterrupt);
+		let failure;
+		try {
+			for (const interrupt of stable) {
+				const result = resolver(interrupt);
+				if (result !== void 0) {
+					failure = {
+						code: isPromiseLike(result) ? "async-resolver" : "inactive-transaction",
+						message: isPromiseLike(result) ? "Interrupt transaction resolvers must be synchronous." : "Interrupt transaction resolvers must return literal undefined."
+					};
+					break;
+				}
+			}
+			if (failure === void 0 && this.items.some((item) => isClientOwnedInterrupt(item) && item.kind !== "client-tool-execution" && (item.resolution === void 0 || item.status !== "staged"))) failure = {
+				code: "incomplete-batch",
+				message: "Interrupt transaction did not resolve every item."
+			};
+		} catch (error) {
+			failure = {
+				code: "item-validation-failed",
+				message: error instanceof Error ? error.message : String(error)
+			};
+		} finally {
+			token.active = false;
+			this.activeTransaction = void 0;
+		}
+		if (failure) {
+			this.restoreCheckpoints(checkpoints);
+			this.addRootError(failure.code, failure.message, false);
+			return;
+		}
+		this.publish();
+		this.maybeSubmit();
+	}
+	restoreCheckpoints(checkpoints) {
+		this.items.forEach((item, index) => {
+			const checkpoint = checkpoints[index];
+			if (!checkpoint) return;
+			item.status = checkpoint.status;
+			item.resolution = checkpoint.resolution;
+			item.error = checkpoint.error;
+			item.validationGeneration = checkpoint.validationGeneration + 1;
+		});
+		this.publish();
+	}
+	assertItemMutable(transaction) {
+		if (transaction && !transaction.active) throw new Error("Interrupt transaction is inactive.");
+		if (this.activeTransaction && transaction !== this.activeTransaction) throw new Error("Interrupt transaction is inactive.");
+		if (this.resuming) throw new Error("Interrupts cannot be mutated while submitting.");
+	}
+	assertRootMutable() {
+		if (this.activeTransaction) throw new Error("Interrupt transaction is already active.");
+		if (this.resuming) throw new Error("Interrupts cannot be mutated while submitting.");
+	}
+	invalidateRetry() {
+		this.retrySubmission = void 0;
+	}
+	submitBatch(submission) {
+		const operation = { submission };
+		this.activeSubmissionOperation = operation;
+		this.resuming = true;
+		this.retrySubmission = void 0;
+		for (const item of this.items) if (isClientOwnedInterrupt(item)) item.status = "submitting";
+		this.publish();
+		this.performSubmission(operation);
+	}
+	async performSubmission(operation) {
+		try {
+			await this.options.submit(operation.submission);
+		} catch (error) {
+			if (this.activeSubmissionOperation !== operation) return;
+			this.handleSubmissionFailure(error, operation.submission);
+		} finally {
+			if (this.activeSubmissionOperation === operation) {
+				this.activeSubmissionOperation = void 0;
+				this.resuming = false;
+				this.publish();
+			}
+		}
+	}
+	handleSubmissionFailure(error, submission) {
+		const errors = readSubmissionErrors(error);
+		if (errors.length === 0) {
+			const message = error instanceof Error ? error.message : String(error);
+			this.addRootError("transport", message, true, "transport");
+			this.retrySubmission = submission;
+			for (const item of this.items) if (isClientOwnedInterrupt(item)) item.status = "error";
+			return;
+		}
+		const correlatedErrors = errors.filter((submissionError) => submissionErrorMatchesActiveBatch(submissionError, submission));
+		if (correlatedErrors.length !== errors.length) this.addRootError("protocol", "Interrupt submission errors did not match the active batch.", false);
+		let nonRetryable = false;
+		let retryable = false;
+		const batchErrors = [];
+		for (const submissionError of correlatedErrors) {
+			if (submissionError.code === "stale" || submissionError.code === "expired" || submissionError.code === "conflict") nonRetryable = true;
+			retryable ||= submissionError.retryable;
+			if (submissionError.scope === "item") {
+				const item = this.items.find((candidate) => isClientOwnedInterrupt(candidate) && candidate.descriptor.id === submissionError.interruptId);
+				if (item) {
+					item.status = "error";
+					item.error = cloneAndDeepFreezeJson(submissionError);
+				}
+			} else batchErrors.push(cloneAndDeepFreezeJson(submissionError));
+		}
+		const mergedBatchErrors = mergeSubmissionBatchErrors(this.rootErrors, this.submissionRootErrors, batchErrors);
+		this.rootErrors = mergedBatchErrors.rootErrors;
+		this.submissionRootErrors = mergedBatchErrors.submissionRootErrors;
+		for (const item of this.items) if (isClientOwnedInterrupt(item) && item.status === "submitting") item.status = "error";
+		this.retrySubmission = retryable && !nonRetryable ? submission : void 0;
+	}
+	addRootError(code, message, retryable, source = "client") {
+		const hydration = this.requireHydration();
+		this.rootErrors = Object.freeze([...this.rootErrors, Object.freeze({
+			scope: "batch",
+			code,
+			message,
+			source,
+			retryable,
+			interruptIds: Object.freeze(this.items.filter(isClientOwnedInterrupt).map((item) => item.descriptor.id)),
+			threadId: hydration.threadId,
+			interruptedRunId: hydration.interruptedRunId,
+			generation: hydration.generation
+		})]);
+		this.publish();
+	}
+	findItem(interruptId) {
+		const item = this.items.find((candidate) => candidate.descriptor.id === interruptId);
+		if (!item) throw new Error(`Unknown interrupt: ${interruptId}`);
+		return item;
+	}
+	requireHydration() {
+		if (!this.hydration) throw new Error("InterruptManager is not hydrated.");
+		return this.hydration;
+	}
+	itemError(interruptId, code, message, path) {
+		const hydration = this.requireHydration();
+		return Object.freeze({
+			scope: "item",
+			interruptId,
+			code,
+			message,
+			...path !== void 0 ? { path: Object.freeze([...path]) } : {},
+			source: "client",
+			retryable: false,
+			threadId: hydration.threadId,
+			interruptedRunId: hydration.interruptedRunId,
+			generation: hydration.generation
+		});
+	}
+};
+//#endregion
+export { InterruptManager };
+
+//# sourceMappingURL=interrupt-manager.js.map

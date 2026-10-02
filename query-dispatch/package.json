@@ -1,0 +1,12 @@
+{
+  "name": "aion2-query-dispatch",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "cd .. && node scripts/test-query-dispatch-core.mjs && node scripts/test-query-dispatch-worker.mjs"
+  },
+  "devDependencies": {
+    "miniflare": "5.20260926.1-alpha",
+    "wrangler": "4.144.0"
+  }
+}

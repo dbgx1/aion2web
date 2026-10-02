@@ -1,0 +1,79 @@
+
+ ⛅️ wrangler 4.129.0 (update available 4.137.0)
+───────────────────────────────────────────────
+Using redirected Wrangler configuration.
+ - Configuration being used: "dist\server\wrangler.json"
+ - Original user's configuration: "wrangler.jsonc"
+ - Deploy configuration file: ".wrangler\deploy\config.json"
+Attaching additional modules:
+┌───────────────────────────────────────────────┬──────┬─────────────┐
+│ Name                                          │ Type │ Size        │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/characters-BPjinb6N.js                 │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/clients-BkuPDu-3.js                    │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/console-DrC6GPKE.js                    │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/docs-udQ07jdn.js                       │ esm  │ 0.15 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/empty-plugin-adapters-D7mxBbir.js      │ esm  │ 0.28 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/intelligence-DaWblOqe.js               │ esm  │ 0.15 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/manifest-BDLu45U3.js                   │ esm  │ 91.56 KiB   │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/matchContext-BJuTIfvk.js               │ esm  │ 2.65 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/messages-KxJa7rm8.js                   │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/mqtt.esm-D_637COy.js                   │ esm  │ 460.49 KiB  │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/react-dom-DFz6zqDu.js                  │ esm  │ 72.57 KiB   │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/reception-B4nm14bB.js                  │ esm  │ 0.15 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/reception-panel-CGSy56jJ.js            │ esm  │ 905.51 KiB  │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/router-CxAFOepT.js                     │ esm  │ 2032.12 KiB │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/routes-BPCXjWFz.js                     │ esm  │ 248.28 KiB  │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/server-access.server-lv8dlCF5.js       │ esm  │ 0.09 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/settings-D3kn_OXY.js                   │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/start-DxgovzEb.js                      │ esm  │ 0.22 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/usage-FcqKVyYO.js                      │ esm  │ 0.14 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/_portal-D9uuiH-F.js                    │ esm  │ 1.43 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/_tanstack-start-manifest_v-DSytxq3J.js │ esm  │ 2.76 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ Total (21 modules)                            │      │ 3819.34 KiB │
+└───────────────────────────────────────────────┴──────┴─────────────┘
+🌀 Building list of assets...
+✨ Read 19 files from the assets directory E:\project\aion2web\dist\client
+🌀 Starting asset upload...
+🌀 Found 4 new or modified static assets to upload. Proceeding with upload...
++ /assets/_portal-B3AvOO-L.js
++ /assets/index-BoZFzPiG.js
++ /assets/styles-Mu9YF8Bp.css
++ /assets/routes-BUj0y55M.js
+Uploaded 1 of 4 assets
+Uploaded 2 of 4 assets
+Uploaded 4 of 4 assets
+✨ Success! Uploaded 4 files (13 already uploaded) (2.01 sec)
+
+Total Upload: 4473.37 KiB / gzip: 871.50 KiB
+Worker Startup Time: 12 ms
+Your Worker has access to the following bindings:
+Binding                                                             Resource                  
+env.DB (aion2web-db)                                                D1 Database               
+env.CLOUDFLARE_ACCOUNT_ID ("eb1e201a3afb3d17f33285240edd595e")      Environment Variable      
+
+Uploaded aion2web (28.51 sec)
+Deployed aion2web triggers (2.36 sec)
+  mmorpgchat.com (custom domain)
+Current Version ID: 4d3456c5-7219-429d-aaa8-9f02d2a4ca28

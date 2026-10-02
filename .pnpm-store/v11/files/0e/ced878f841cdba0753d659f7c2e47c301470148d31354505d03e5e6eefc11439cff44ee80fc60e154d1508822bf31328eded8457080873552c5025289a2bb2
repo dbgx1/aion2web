@@ -1,0 +1,320 @@
+import { AnyClientTool, StreamChunk } from '@tanstack/ai/client';
+import { AIDevtoolsEventVisibility } from '@tanstack/ai-event-client';
+import { ChatClientEventContext, ChatClientEventEmitter, ChatClientRunEventContext } from './events.js';
+import { ChatClientState, ConnectionStatus, QueuedMessage, UIMessage } from './types.js';
+export interface AIDevtoolsDisplayOptions {
+    name?: string;
+}
+export interface AIDevtoolsClientMetadata extends AIDevtoolsDisplayOptions {
+    framework?: string;
+    hookName: string;
+    outputKind?: 'chat' | 'text' | 'structured' | 'image' | 'video' | 'audio';
+}
+export interface AIDevtoolsGenerationProgress {
+    value: number;
+    message?: string;
+}
+export interface AIDevtoolsGenerationMediaItem {
+    src: string;
+    sourceType: 'url' | 'base64';
+    mimeType?: string;
+    format?: string;
+    duration?: number;
+}
+export interface AIDevtoolsGenerationVideoJob {
+    jobId: string;
+    status?: string;
+    progress?: number;
+    error?: string;
+}
+export type AIDevtoolsGenerationPreview = {
+    kind: 'image';
+    items: Array<AIDevtoolsGenerationMediaItem>;
+} | {
+    kind: 'audio';
+    items: Array<AIDevtoolsGenerationMediaItem>;
+} | {
+    kind: 'video';
+    items: Array<AIDevtoolsGenerationMediaItem>;
+    job?: AIDevtoolsGenerationVideoJob;
+} | {
+    kind: 'text';
+    text: string;
+} | {
+    kind: 'structured';
+    value: unknown;
+} | {
+    kind: 'empty';
+};
+export type AIDevtoolsGenerationRunStatus = 'idle' | 'generating' | 'success' | 'error' | 'cancelled';
+export interface AIDevtoolsGenerationRunSnapshot<TOutput = unknown> {
+    id: string;
+    input: unknown;
+    result: TOutput | null;
+    preview: AIDevtoolsGenerationPreview;
+    progress: AIDevtoolsGenerationProgress | null;
+    status: AIDevtoolsGenerationRunStatus;
+    isLoading: boolean;
+    startedAt: number;
+    updatedAt: number;
+    completedAt?: number;
+    error?: string;
+    jobId?: string | null;
+    videoStatus?: unknown;
+}
+export interface AIDevtoolsGenerationPreviewInput {
+    outputKind?: AIDevtoolsClientMetadata['outputKind'];
+    result: unknown;
+    videoStatus?: unknown;
+}
+export interface AIDevtoolsChatSnapshot {
+    [key: string]: unknown;
+    messages: Array<UIMessage>;
+    status: ChatClientState;
+    isLoading: boolean;
+    isSubscribed: boolean;
+    connectionStatus: ConnectionStatus;
+    sessionGenerating: boolean;
+    activeRunIds: Array<string>;
+    queue?: Array<QueuedMessage>;
+    error?: string;
+}
+export declare function createAIDevtoolsGenerationPreview(input: AIDevtoolsGenerationPreviewInput): AIDevtoolsGenerationPreview;
+export interface AIDevtoolsToolFixture {
+    fixtureId?: string;
+    hookId?: string;
+    threadId?: string;
+    runId?: string;
+    toolName: string;
+    input: unknown;
+    output: unknown;
+    execute?: boolean;
+    message?: {
+        id: string;
+        role: UIMessage['role'];
+        parts: Array<unknown>;
+        createdAt?: number | string;
+    };
+    toolCallId?: string;
+    messageId?: string;
+    errorText?: string;
+}
+type AIDevtoolsRunEventType = 'run:created' | 'run:started' | 'run:updated' | 'run:completed' | 'run:errored' | 'run:cancelled';
+type AIDevtoolsRunStatus = 'created' | 'started' | 'updated' | 'completed' | 'errored' | 'cancelled';
+export interface AIDevtoolsBridgeOptions<TSnapshot extends object> {
+    hookId: string;
+    threadId?: string;
+    clientId: string;
+    metadata: AIDevtoolsClientMetadata;
+    getSnapshot: () => TSnapshot;
+    getTools?: () => Iterable<AnyClientTool>;
+    applyToolFixture?: (fixture: AIDevtoolsToolFixture) => void | Promise<void>;
+}
+export declare class ClientDevtoolsBridge<TSnapshot extends object> {
+    protected readonly options: AIDevtoolsBridgeOptions<TSnapshot>;
+    private readonly unsubscribers;
+    private disposed;
+    private superseded;
+    private registered;
+    constructor(options: AIDevtoolsBridgeOptions<TSnapshot>);
+    emitRegistered(): void;
+    emitUpdated(): void;
+    emitSnapshot(): void;
+    emitToolsRegistered(): void;
+    emitRunLifecycle(eventType: AIDevtoolsRunEventType, runId: string, status: AIDevtoolsRunStatus, options?: {
+        error?: string;
+    }): void;
+    deactivate(): void;
+    supersede(): void;
+    dispose(): void;
+    private prepareForEmit;
+    private prepareForMountEmit;
+    private activate;
+    private handleRequestState;
+    /**
+     * Extension hook for subclasses to replay any additional cached state on a
+     * `devtools:request-state` (i.e. when a panel opens). Called only after the
+     * base guards (disposed/superseded/targetHookId) pass. No-op by default.
+     */
+    protected onReplayState(): void;
+    private handleToolFixtureApply;
+    private matchesFixtureTarget;
+    protected createEnvelope(eventType: 'hook:registered' | 'hook:updated' | 'hook:unregistered' | 'hook:state-snapshot' | 'tools:registered' | 'memory:retrieve:started' | 'memory:retrieve:completed' | 'memory:snapshot' | 'compaction:started' | 'compaction:state' | 'compaction:ended' | 'skills:snapshot' | AIDevtoolsRunEventType, visibility?: AIDevtoolsEventVisibility, context?: {
+        runId?: string;
+    }): import('@tanstack/ai-event-client').AIDevtoolsEventEnvelope;
+    private createMetadataPayload;
+}
+export interface ChatDevtoolsBridgeOptions extends AIDevtoolsBridgeOptions<AIDevtoolsChatSnapshot> {
+    getMessages: () => Array<UIMessage>;
+    setMessages: (messages: Array<UIMessage>) => void;
+    addToolResult: (toolCallId: string, output: unknown, errorText?: string) => void;
+    generateId: (prefix: string) => string;
+}
+export declare class ChatDevtoolsBridge extends ClientDevtoolsBridge<AIDevtoolsChatSnapshot> {
+    readonly events: ChatClientEventEmitter;
+    private readonly chatOptions;
+    private currentRunId;
+    private currentRunThreadId;
+    private currentStreamId;
+    private lastStreamId;
+    private lastRunEventContext;
+    /** Last transported `memory:state` value, replayed when a panel opens. */
+    private lastMemoryStateValue;
+    /** Transported compaction CUSTOM events, replayed when a panel opens. */
+    private readonly lastCompactionEvents;
+    /** Last transported `skills:state` value, replayed when a panel opens. */
+    private lastSkillsStateValue;
+    constructor(options: ChatDevtoolsBridgeOptions);
+    setCurrentStreamId(streamId: string | null): void;
+    /**
+     * Called by the auto-attaching emitter every time it sees a non-empty
+     * streamId pass through. Lets devtools track the latest stream id
+     * without the chat client wiring it up explicitly.
+     */
+    recordStreamId(streamId: string): void;
+    mountWithTools(initialMessageCount: number): void;
+    notifyToolsChanged(): void;
+    getCurrentStreamId(): string | null;
+    getLastStreamId(): string | null;
+    resolveStreamId(): string;
+    beginRun(runId: string, threadId: string): void;
+    observeChunk(chunk: StreamChunk): void;
+    /**
+     * Record a transported `memory:state` value (the server memory middleware's
+     * per-turn recall metrics + store snapshot). Called from the chat client's
+     * `onCustomEvent` handler — the designated path for CUSTOM stream events —
+     * NOT from `observeChunk`. Re-emits the browser `memory:*` events the devtools
+     * store consumes, and caches the value so a panel opened later can replay it
+     * (see {@link onReplayState}). Symmetric with the generation bridge's
+     * `recordResultChange` / `recordProgressChange`.
+     */
+    recordMemoryState(rawValue: unknown): void;
+    recordSkillsState(rawValue: unknown): void;
+    /**
+     * Re-emit the browser-side `memory:*` events from a transported
+     * `memory:state` value. The devtools store consumes these to render the
+     * Memory tab (operations timeline + live contents). The recall pair mirrors
+     * the server middleware's own emits; the snapshot is included only when the
+     * adapter supports introspection.
+     */
+    private emitMemoryState;
+    /**
+     * Record a transported compaction CUSTOM event. Called from the chat
+     * client's `onCustomEvent` handler so server-side compaction reaches the
+     * browser DevTools panel.
+     */
+    recordCompactionEvent(eventType: string, rawValue: unknown): void;
+    recordCompactionState(rawValue: unknown): void;
+    private emitCompactionEvent;
+    private emitSkillsState;
+    protected onReplayState(): void;
+    getCurrentRunEventContext(): ChatClientRunEventContext | undefined;
+    getCurrentOrLastRunEventContext(): ChatClientRunEventContext | undefined;
+    findToolCallContext(toolCallId: string): ChatClientEventContext;
+    /**
+     * Entry point invoked when the devtools panel emits
+     * `devtools:tool-fixture:apply`. The chat client never calls this
+     * directly; it is wired through the base bridge's fixture subscription.
+     */
+    applyFixture(fixture: AIDevtoolsToolFixture): Promise<void>;
+    private executeFixture;
+    private addToolResultForFixture;
+    private createReplayMessageFromFixture;
+    private cloneFixtureSourceMessage;
+    private createFixtureToolCallIdMap;
+    private resolveFixtureMessageId;
+    private resolveFixtureToolCallId;
+    private findClientTool;
+}
+export interface AIDevtoolsGenerationSnapshotBase<TOutput> {
+    input: unknown;
+    result: TOutput | null;
+    preview: AIDevtoolsGenerationPreview;
+    progress: AIDevtoolsGenerationProgress | null;
+    status: AIDevtoolsGenerationRunStatus;
+    isLoading: boolean;
+    activeRunId: string | null;
+    runs: Array<AIDevtoolsGenerationRunSnapshot<TOutput>>;
+    error?: string;
+}
+export interface GenerationDevtoolsBridgeOptions<TOutput> extends Omit<AIDevtoolsBridgeOptions<AIDevtoolsGenerationSnapshotBase<TOutput>>, 'getSnapshot'> {
+    getCoreState: () => GenerationDevtoolsCoreState<TOutput>;
+    maxRuns?: number;
+}
+export interface GenerationDevtoolsCoreState<TOutput> {
+    input: unknown;
+    result: TOutput | null;
+    progress: AIDevtoolsGenerationProgress | null;
+    status: AIDevtoolsGenerationRunStatus;
+    isLoading: boolean;
+    error?: string;
+}
+export interface GenerationRunPatch<TOutput> {
+    input?: unknown;
+    result?: TOutput | null;
+    preview?: AIDevtoolsGenerationPreview;
+    progress?: AIDevtoolsGenerationProgress | null;
+    status?: AIDevtoolsGenerationRunStatus;
+    isLoading?: boolean;
+    completedAt?: number;
+    error?: string;
+    clearError?: boolean;
+}
+export declare class GenerationDevtoolsBridge<TOutput> extends ClientDevtoolsBridge<AIDevtoolsGenerationSnapshotBase<TOutput>> {
+    protected activeRunId: string | null;
+    protected activeRunStarted: boolean;
+    protected devtoolsRuns: Array<AIDevtoolsGenerationRunSnapshot<TOutput>>;
+    protected readonly maxRuns: number;
+    protected readonly getCoreState: () => GenerationDevtoolsCoreState<TOutput>;
+    constructor(options: GenerationDevtoolsBridgeOptions<TOutput>);
+    beginRun(input: unknown): string;
+    ensureRunStarted(runId: string): void;
+    finishRun(runId: string, eventType: 'run:completed' | 'run:errored' | 'run:cancelled', status: 'completed' | 'errored' | 'cancelled', error?: string): void;
+    getActiveRunId(): string | null;
+    /** Clear all per-run history. Called when the client `reset()`s. */
+    resetRuns(): void;
+    /** Record state changes from the client and emit the matching snapshot. */
+    recordResultChange(): void;
+    recordLoadingChange(): void;
+    recordErrorChange(error: Error | undefined): void;
+    recordStatusChange(status: AIDevtoolsGenerationRunStatus): void;
+    recordProgressChange(): void;
+    /** Emit the latest snapshot without touching run state. */
+    emitState(): void;
+    protected buildSnapshot(): AIDevtoolsGenerationSnapshotBase<TOutput>;
+    protected updateActiveRun(patch: GenerationRunPatch<TOutput>): void;
+    protected upsertRun(runId: string, patch: GenerationRunPatch<TOutput>): void;
+    protected renameRun(previousRunId: string, nextRunId: string): void;
+    protected getProgress(): AIDevtoolsGenerationProgress | null;
+    protected completeProgress(): AIDevtoolsGenerationProgress | null;
+    protected createPreview(result: TOutput | null): AIDevtoolsGenerationPreview;
+    protected generateRunId(): string;
+}
+export interface AIDevtoolsVideoSnapshotBase<TOutput> extends AIDevtoolsGenerationSnapshotBase<TOutput> {
+    jobId: string | null;
+    videoStatus: unknown;
+}
+export interface VideoDevtoolsCoreState<TOutput> extends GenerationDevtoolsCoreState<TOutput> {
+    jobId: string | null;
+    videoStatus: unknown;
+}
+export interface VideoDevtoolsBridgeOptions<TOutput> extends Omit<GenerationDevtoolsBridgeOptions<TOutput>, 'getCoreState'> {
+    getCoreState: () => VideoDevtoolsCoreState<TOutput>;
+}
+export interface VideoRunPatch<TOutput> extends GenerationRunPatch<TOutput> {
+    jobId?: string | null;
+    videoStatus?: unknown;
+}
+export declare class VideoDevtoolsBridge<TOutput> extends GenerationDevtoolsBridge<TOutput> {
+    constructor(options: VideoDevtoolsBridgeOptions<TOutput>);
+    recordJobIdChange(): void;
+    recordVideoStatusChange(): void;
+    protected buildSnapshot(): AIDevtoolsVideoSnapshotBase<TOutput>;
+    protected upsertRun(runId: string, patch: VideoRunPatch<TOutput>): void;
+    protected createPreview(result: TOutput | null): AIDevtoolsGenerationPreview;
+    private createVideoPreview;
+}
+export declare function createChatDevtoolsBridge(options: ChatDevtoolsBridgeOptions): ChatDevtoolsBridge;
+export declare function createGenerationDevtoolsBridge<TOutput>(options: GenerationDevtoolsBridgeOptions<TOutput>): GenerationDevtoolsBridge<TOutput>;
+export declare function createVideoDevtoolsBridge<TOutput>(options: VideoDevtoolsBridgeOptions<TOutput>): VideoDevtoolsBridge<TOutput>;
+export {};

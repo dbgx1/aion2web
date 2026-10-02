@@ -1,0 +1,217 @@
+
+--- 2026-09-14T05:58:19.890Z debug
+🪵  Writing logs to "E:\project\aion2web\artifacts\deploy-20260914\wrangler-2026-09-14_05-58-19_714.log"
+---
+
+--- 2026-09-14T05:58:19.890Z debug
+.env file not found at "E:\project\aion2web\.env". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-09-14T05:58:19.890Z debug
+.env file not found at "E:\project\aion2web\.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-09-14T05:58:19.900Z log
+
+ ⛅️ wrangler 4.129.0 (update available 4.131.1)
+───────────────────────────────────────────────
+---
+
+--- 2026-09-14T05:58:19.904Z info
+Using redirected Wrangler configuration.
+ - Configuration being used: "dist\server\wrangler.json"
+ - Original user's configuration: "wrangler.jsonc"
+ - Deploy configuration file: ".wrangler\deploy\config.json"
+---
+
+--- 2026-09-14T05:58:19.935Z debug
+Running autoconfig detection in E:\project\aion2web...
+---
+
+--- 2026-09-14T05:58:20.041Z info
+Attaching additional modules:
+---
+
+--- 2026-09-14T05:58:20.046Z log
+┌───────────────────────────────────────────────┬──────┬─────────────┐
+│ Name                                          │ Type │ Size        │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/ai-persona-BE75u9bf.js                 │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/characters-BPjinb6N.js                 │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/clients-BkuPDu-3.js                    │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/console-DrC6GPKE.js                    │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/docs-udQ07jdn.js                       │ esm  │ 0.15 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/empty-plugin-adapters-D7mxBbir.js      │ esm  │ 0.28 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/managed-chat-controls-DxlSaHQI.js      │ esm  │ 802.40 KiB  │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/manifest-BDLu45U3.js                   │ esm  │ 91.56 KiB   │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/matchContext-BJuTIfvk.js               │ esm  │ 2.65 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/messages-KxJa7rm8.js                   │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/mqtt.esm-D_637COy.js                   │ esm  │ 460.49 KiB  │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/react-dom-DFz6zqDu.js                  │ esm  │ 72.57 KiB   │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/router-B9J9lvPM.js                     │ esm  │ 1976.39 KiB │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/routes-bE1hCl4K.js                     │ esm  │ 225.98 KiB  │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/server-access.server-B0SGCkkp.js       │ esm  │ 0.09 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/settings-D3kn_OXY.js                   │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/start-DxgovzEb.js                      │ esm  │ 0.22 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/usage-FcqKVyYO.js                      │ esm  │ 0.14 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/_portal-BmBedu5l.js                    │ esm  │ 1.43 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/_tanstack-start-manifest_v-CUx5PwK3.js │ esm  │ 2.47 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ Total (20 modules)                            │      │ 3637.76 KiB │
+└───────────────────────────────────────────────┴──────┴─────────────┘
+---
+
+--- 2026-09-14T05:58:20.050Z info
+✨ Read 18 files from the assets directory E:\project\aion2web\dist\client
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/.assetsignore
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/aion-client-center.png
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/assets
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/presence-provider-guide.json
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/assets\ai-persona-CAIeH5mq.js
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/assets\characters-CAIeH5mq.js
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/assets\clients-CAIeH5mq.js
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/assets\console-CAIeH5mq.js
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/assets\docs-CAIeH5mq.js
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/assets\index-BvXROlNY.css
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/assets\index-DC0NWrgm.js
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/assets\messages-CAIeH5mq.js
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/assets\mqtt.esm-DJxwHEmv.js
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/assets\routes-BfKb1HbC.js
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/assets\settings-CAIeH5mq.js
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/assets\styles-nM8Iffg2.css
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/assets\usage-DJ7LAi8J.js
+---
+
+--- 2026-09-14T05:58:20.051Z debug
+/assets\_portal-BLdHzZwo.js
+---
+
+--- 2026-09-14T05:58:20.052Z debug
+Ignoring asset: .assetsignore
+---
+
+--- 2026-09-14T05:58:20.176Z log
+Total Upload: 4291.79 KiB / gzip: 831.49 KiB
+---
+
+--- 2026-09-14T05:58:20.181Z log
+Your Worker has access to the following bindings:
+---
+
+--- 2026-09-14T05:58:20.181Z log
+Binding                                                             Resource                  
+---
+
+--- 2026-09-14T05:58:20.181Z log
+env.DB (aion2web-db)                                                D1 Database               
+---
+
+--- 2026-09-14T05:58:20.181Z log
+env.CLOUDFLARE_ACCOUNT_ID ("eb1e201a3afb3d17f33285240edd595e")      Environment Variable      
+---
+
+--- 2026-09-14T05:58:20.181Z log
+
+---
+
+--- 2026-09-14T05:58:20.181Z log
+--dry-run: exiting now.
+---
+
+--- 2026-09-14T05:58:20.269Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"wrangler command started","timestamp":1789365500269,"properties":{"amplitude_session_id":1789365499911,"amplitude_event_id":0,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"isFirstUsage":false,"configFileType":"json","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":true,"agent":"codex","argsUsed":["dryRun"],"argsCombination":"dryRun","sanitizedCommand":"deploy","sanitizedArgs":{"dryRun":true},"currentAgentSkillsInstalled":false}}
+---
+
+--- 2026-09-14T05:58:20.271Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"autoconfig_process_started","timestamp":1789365500271,"properties":{"amplitude_session_id":1789365499934,"amplitude_event_id":0,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"codex","category":"Workers","os":"win32:x64","autoConfigId":"3a6ad3a1-8dd6-4cc5-b7fa-c3308f0a2a8b","command":"wrangler deploy","dryRun":true,"currentAgentSkillsInstalled":false}}
+---
+
+--- 2026-09-14T05:58:20.273Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"autoconfig_detection_started","timestamp":1789365500273,"properties":{"amplitude_session_id":1789365499935,"amplitude_event_id":0,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"codex","category":"Workers","os":"win32:x64","autoConfigId":"3a6ad3a1-8dd6-4cc5-b7fa-c3308f0a2a8b","command":"wrangler deploy","currentAgentSkillsInstalled":false}}
+---
+
+--- 2026-09-14T05:58:20.274Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"autoconfig_detection_completed","timestamp":1789365500274,"properties":{"amplitude_session_id":1789365499936,"amplitude_event_id":0,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"codex","category":"Workers","os":"win32:x64","autoConfigId":"3a6ad3a1-8dd6-4cc5-b7fa-c3308f0a2a8b","configured":true,"success":true,"currentAgentSkillsInstalled":false}}
+---
+
+--- 2026-09-14T05:58:20.274Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"autoconfig_process_ended","timestamp":1789365500274,"properties":{"amplitude_session_id":1789365499936,"amplitude_event_id":0,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"codex","category":"Workers","os":"win32:x64","autoConfigId":"3a6ad3a1-8dd6-4cc5-b7fa-c3308f0a2a8b","command":"wrangler deploy","dryRun":true,"success":true,"currentAgentSkillsInstalled":false}}
+---
+
+--- 2026-09-14T05:58:20.275Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"deploy worker script","timestamp":1789365500275,"properties":{"amplitude_session_id":1789365500181,"amplitude_event_id":0,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"codex","category":"Workers","os":"win32:x64","usesTypeScript":false,"durationMs":152,"currentAgentSkillsInstalled":false}}
+---
+
+--- 2026-09-14T05:58:20.276Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"wrangler command completed","timestamp":1789365500276,"properties":{"amplitude_session_id":1789365499911,"amplitude_event_id":1,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"isFirstUsage":false,"configFileType":"json","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":true,"agent":"codex","argsUsed":["dryRun"],"argsCombination":"dryRun","sanitizedCommand":"deploy","sanitizedArgs":{"dryRun":true},"durationMs":296,"currentAgentSkillsInstalled":false}}
+---

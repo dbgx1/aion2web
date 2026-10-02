@@ -1,0 +1,43 @@
+import { Keyring, KeyringStorage } from './storage.js';
+/**
+ * Whether the current environment exposes WebAuthn. Actual PRF support can
+ * only be confirmed during registration; `passkeyStorage` throws if the
+ * chosen authenticator does not support PRF.
+ */
+export declare function isPasskeyStorageSupported(): boolean;
+/** Derive a non-extractable AES-256-GCM key from a 32-byte PRF output. */
+export declare function deriveAesKey(prfOutput: BufferSource): Promise<CryptoKey>;
+export declare function encryptKeyring(key: CryptoKey, keys: Keyring): Promise<{
+    iv: ArrayBuffer;
+    ciphertext: ArrayBuffer;
+}>;
+export declare function decryptKeyring(key: CryptoKey, iv: BufferSource, ciphertext: BufferSource): Promise<Keyring>;
+export interface PasskeyStorageOptions {
+    /** Relying-party name shown in the passkey prompt. */
+    rpName?: string;
+    /** Username label attached to the created passkey. */
+    userName?: string;
+    /**
+     * WebAuthn Relying Party ID. Omit to bind the passkey to the current origin's
+     * effective domain (the default — no central/hardcoded domain). Set it to a
+     * registrable parent domain to share the credential across subdomains of your
+     * own deployment. The encrypted keyring is never portable across unrelated
+     * domains.
+     */
+    rpId?: string;
+    /** IndexedDB database name. Defaults to `byok`. */
+    dbName?: string;
+}
+/**
+ * Passkey-encrypted persistence. `ByokClient` treats this as `unlockable`, so
+ * nothing is decrypted until the user calls `unlock()` (or saves a key, which
+ * registers a passkey on first use). The derived key is cached in memory for
+ * the session so repeated saves don't re-prompt.
+ */
+export declare function passkeyStorage(options?: PasskeyStorageOptions): KeyringStorage;
+/**
+ * Passkey-encrypted storage when WebAuthn is available in a secure context.
+ * Otherwise session memory, with a warning — this is not an automatic PRF
+ * fallback. First save still throws if the authenticator lacks PRF.
+ */
+export declare function defaultByokStorage(options?: PasskeyStorageOptions): KeyringStorage;

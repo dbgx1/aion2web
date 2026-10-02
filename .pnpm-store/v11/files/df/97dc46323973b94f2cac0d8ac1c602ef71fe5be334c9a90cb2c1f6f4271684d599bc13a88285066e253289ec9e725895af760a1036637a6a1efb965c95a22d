@@ -1,0 +1,1 @@
+{"version":3,"file":"byok.js","names":[],"sources":["../../src/byok.ts"],"sourcesContent":["import { defineByokProvider } from '@tanstack/ai/byok'\n\nexport const openrouterByok = defineByokProvider({\n  id: 'openrouter',\n  label: 'OpenRouter',\n  env: 'OPENROUTER_API_KEY',\n})\n"],"mappings":";;AAEA,IAAa,iBAAiB,mBAAmB;CAC/C,IAAI;CACJ,OAAO;CACP,KAAK;AACP,CAAC"}

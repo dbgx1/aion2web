@@ -1,0 +1,98 @@
+
+> build
+> vite build
+
+vite v8.2.2 building client environment for production...
+transforming...
+
+[@tanstack/devtools-vite] Removed devtools code from: /src/routes/__root.tsx
+
+✓ 2260 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/.assetsignore                    0.02 kB
+dist/client/assets/index-BvXROlNY.css        3.78 kB │ gzip:   1.25 kB
+dist/client/assets/styles-Dx-hJz71.css      90.11 kB │ gzip:  17.93 kB
+dist/client/assets/reception-DJ7LAi8J.js     0.03 kB │ gzip:   0.05 kB
+dist/client/assets/usage-DJ7LAi8J.js         0.03 kB │ gzip:   0.05 kB
+dist/client/assets/characters-CAIeH5mq.js    0.04 kB │ gzip:   0.06 kB
+dist/client/assets/clients-CAIeH5mq.js       0.04 kB │ gzip:   0.06 kB
+dist/client/assets/console-CAIeH5mq.js       0.04 kB │ gzip:   0.06 kB
+dist/client/assets/docs-CAIeH5mq.js          0.04 kB │ gzip:   0.06 kB
+dist/client/assets/messages-CAIeH5mq.js      0.04 kB │ gzip:   0.06 kB
+dist/client/assets/settings-CAIeH5mq.js      0.04 kB │ gzip:   0.06 kB
+dist/client/assets/_portal-C6GHIM_d.js       0.29 kB │ gzip:   0.22 kB
+dist/client/assets/routes-Dk_rTTxG.js      115.40 kB │ gzip:  30.68 kB
+dist/client/assets/mqtt.esm-DJxwHEmv.js    357.42 kB │ gzip: 104.47 kB
+dist/client/assets/index-DsultBHA.js       858.53 kB │ gzip: 255.88 kB
+
+✓ built in 1.70s
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+vite v8.2.2 building ssr environment for production...
+transforming...
+
+[@tanstack/devtools-vite] Removed devtools code from: /src/routes/__root.tsx
+
+✓ 3177 modules transformed.
+rendering chunks...
+Using secrets defined in process.env
+▲ [WARNING] Missing required secrets: UPLOAD_API_TOKEN, OPENROUTER_API_KEY. Add them to .dev.vars, .env, or set as environment variables.
+
+
+X [ERROR] Failed to write to log file Error: EPERM: operation not permitted, open 'C:\Users\Administrator\AppData\Roaming\xdg.config\.wrangler\logs\wrangler-2026-09-16_08-31-08_605.log'
+
+      at async open (node:internal/fs/promises:1345:25)
+      at async writeFile (node:internal/fs/promises:1965:14)
+      at async E:\project\aion2web\node_modules\.pnpm\wrangler@4.129.0\node_modules\wrangler\wrangler-dist\cli.js:62686:7
+      at async Mutex.runWith (E:\project\aion2web\node_modules\.pnpm\miniflare@5.20260903.0-alpha\node_modules\miniflare\dist\src\index.js:54769:16)
+      at async appendToDebugLogFile (E:\project\aion2web\node_modules\.pnpm\wrangler@4.129.0\node_modules\wrangler\wrangler-dist\cli.js:62683:3) {
+    errno: -4048,
+    code: 'EPERM',
+    syscall: 'open',
+    path: 'C:\\Users\\Administrator\\AppData\\Roaming\\xdg.config\\.wrangler\\logs\\wrangler-2026-09-16_08-31-08_605.log'
+  }
+
+
+X [ERROR] Would have written: 
+
+  --- 2026-09-16T08:31:12.357Z debug
+  🪵  Writing logs to "C:\Users\Administrator\AppData\Roaming\xdg.config\.wrangler\logs\wrangler-2026-09-16_08-31-08_605.log"
+  ---
+  
+
+
+computing gzip size...
+dist/server/wrangler.json                                      1.55 kB │ gzip:   0.84 kB
+dist/server/.vite/manifest.json                                6.71 kB │ gzip:   1.11 kB
+dist/server/assets/reception-panel-BvXROlNY.css                3.78 kB │ gzip:   1.25 kB
+dist/server/assets/styles-Dx-hJz71.css                        90.11 kB │ gzip:  17.93 kB
+dist/server/assets/server-access.server-DbCiv8p8.js            0.08 kB │ gzip:   0.08 kB
+dist/server/assets/usage-FcqKVyYO.js                           0.14 kB │ gzip:   0.12 kB
+dist/server/assets/reception-B4nm14bB.js                       0.14 kB │ gzip:   0.13 kB
+dist/server/assets/docs-udQ07jdn.js                            0.15 kB │ gzip:   0.13 kB
+dist/server/assets/clients-BkuPDu-3.js                         0.16 kB │ gzip:   0.14 kB
+dist/server/assets/console-DrC6GPKE.js                         0.16 kB │ gzip:   0.14 kB
+dist/server/assets/messages-KxJa7rm8.js                        0.16 kB │ gzip:   0.14 kB
+dist/server/assets/settings-D3kn_OXY.js                        0.16 kB │ gzip:   0.14 kB
+dist/server/assets/characters-BPjinb6N.js                      0.16 kB │ gzip:   0.14 kB
+dist/server/assets/start-DxgovzEb.js                           0.22 kB │ gzip:   0.17 kB
+dist/server/assets/empty-plugin-adapters-D7mxBbir.js           0.28 kB │ gzip:   0.18 kB
+dist/server/assets/_portal-CH0Ark0W.js                         1.46 kB │ gzip:   0.75 kB
+dist/server/assets/_tanstack-start-manifest_v-BeT1DgQn.js      2.58 kB │ gzip:   0.65 kB
+dist/server/assets/matchContext-BJuTIfvk.js                    2.70 kB │ gzip:   1.13 kB
+dist/server/assets/react-dom-DFz6zqDu.js                      74.30 kB │ gzip:  20.00 kB
+dist/server/assets/manifest-BDLu45U3.js                       93.75 kB │ gzip:  22.25 kB
+dist/server/assets/routes-Dfzk-Dx6.js                        226.82 kB │ gzip:  42.50 kB
+dist/server/assets/mqtt.esm-D_637COy.js                      471.54 kB │ gzip: 124.36 kB
+dist/server/index.js                                         669.73 kB │ gzip: 137.47 kB
+dist/server/assets/reception-panel-BBwd7Arb.js               893.52 kB │ gzip: 213.20 kB
+dist/server/assets/router-WeNo-1_H.js                      2,044.32 kB │ gzip: 318.67 kB
+
+[INEFFECTIVE_DYNAMIC_IMPORT] src/server/server-access.server.ts is dynamically imported by src/routes/api/ai/chat.ts but also statically imported by src/routes/api/ai/reception.ts, src/routes/api/auth.ts, src/routes/api/character-tracking.ts, src/routes/api/characters.ts, src/routes/api/characters/profile.ts, ..., dynamic import will not move module into another chunk.
+
+✓ built in 1.67s
+🪵  Logs were written to "C:\Users\Administrator\AppData\Roaming\xdg.config\.wrangler\logs\wrangler-2026-09-16_08-31-08_605.log"

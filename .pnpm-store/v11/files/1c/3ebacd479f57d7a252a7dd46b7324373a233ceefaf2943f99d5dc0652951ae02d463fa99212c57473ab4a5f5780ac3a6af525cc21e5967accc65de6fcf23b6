@@ -1,0 +1,10 @@
+import { useSyncExternalStore } from "react";
+import { EMPTY_BYOK_SNAPSHOT } from "@tanstack/ai-client/byok";
+//#region src/use-byok.ts
+function useByok(client) {
+	return useSyncExternalStore(client.subscribe, client.getSnapshot, () => EMPTY_BYOK_SNAPSHOT);
+}
+//#endregion
+export { useByok };
+
+//# sourceMappingURL=use-byok.js.map

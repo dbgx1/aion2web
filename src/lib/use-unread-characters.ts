@@ -22,7 +22,7 @@ export function fallbackUnreadCharacter(target: UnreadTarget): GameCharacter {
     name: target.targetName || target.characterId,
     serverKey: target.serverKey,
     serverName: target.serverKey,
-    legionName: '', className: '', level: 0, faction: '', avatarUrl: '', lastSeenAt: 0,
+    legionName: '', legionPosition: null, className: '', level: 0, faction: '', avatarUrl: '', lastSeenAt: 0,
     avatarColor: avatarColorFor(target.characterId || target.targetName),
   }
 }

@@ -1,0 +1,52 @@
+import { ProviderId } from '@tanstack/ai/byok';
+import { Keyring, KeyringStorage } from './storage.js';
+export type KeyStatus = {
+    state: 'empty';
+} | {
+    state: 'set';
+    masked: string;
+} | {
+    state: 'locked';
+    masked: string;
+} | {
+    state: 'error';
+    masked: string;
+    message: string;
+};
+export type ByokPrompt = {
+    provider: ProviderId;
+    reason: 'missing' | 'locked';
+};
+export type ByokSnapshot = {
+    status: Partial<Record<string, KeyStatus>>;
+    locked: boolean;
+    prompt: ByokPrompt | null;
+    storageError: string | null;
+};
+export interface DefineByokOptions {
+    storage?: KeyringStorage;
+}
+export declare const EMPTY_BYOK_SNAPSHOT: ByokSnapshot;
+export declare class ByokClient {
+    #private;
+    readonly storage: KeyringStorage;
+    constructor(options?: DefineByokOptions);
+    /** Resolves when constructor hydration (peek/load) finishes. */
+    ready: () => Promise<void>;
+    subscribe: (listener: () => void) => (() => void);
+    getSnapshot: () => ByokSnapshot;
+    keys(): Keyring;
+    request(provider: ProviderId, reason: ByokPrompt['reason']): void;
+    /**
+     * `true` — the server can fill any slug from env.
+     * `false` — no env coverage.
+     * A record merges per-id flags and clears the all/none boolean.
+     */
+    setServerCoverage(flags: boolean | Readonly<Record<string, boolean>>): void;
+    headers(provider?: ProviderId): Record<string, string>;
+    prepare(provider?: ProviderId): Promise<void>;
+    update(providerOrKey: ProviderId | string, key?: string): Promise<void>;
+    clear(provider?: ProviderId): Promise<void>;
+    unlock(): Promise<void>;
+}
+export declare function defineByok(options?: DefineByokOptions): ByokClient;

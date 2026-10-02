@@ -1,0 +1,696 @@
+import { prepareResolvedByokHeaders, resolveByokProviderId } from "./byok/resolve.js";
+import { createNoOpGenerationDevtoolsBridge } from "./devtools-noop.js";
+import { GENERATION_EVENTS, GENERATION_STREAM_TRUNCATED_MESSAGE, GENERATION_UNRESTORABLE_RESULT_MESSAGE, clientStateFromResumeStatus, createGenerationHydrationError, createGenerationResultSnapshot, parseGenerationResumeSnapshot, updateGenerationResumeSnapshot } from "./generation-types.js";
+import { parseSSEResponse } from "./sse-parser.js";
+import { restoreInboundChunk } from "@tanstack/ai/client";
+import { ByokBlockedError, ByokMissingError } from "@tanstack/ai/byok";
+//#region src/generation-client.ts
+/**
+* A lightweight, generic client for one-shot generation tasks
+* (image, speech, transcription, summarize).
+*
+* Supports two transport modes:
+* - **ConnectConnectionAdapter** — Streaming transport (SSE, HTTP stream, custom).
+*   Server wraps results in StreamChunk events with CUSTOM event names.
+* - **Fetcher** — Direct async function call. No streaming protocol needed.
+*
+* @template TInput - The input type for the generation request
+* @template TResult - The result type returned by the generation
+*
+* @example
+* ```typescript
+* // With streaming connection adapter
+* const client = new GenerationClient<ImageGenerateInput, ImageGenerationResult>({
+*   connection: fetchServerSentEvents('/api/generate/image'),
+*   onResultChange: setResult,
+*   onLoadingChange: setIsLoading,
+* })
+*
+* // With fetcher (direct)
+* const client = new GenerationClient<ImageGenerateInput, ImageGenerationResult>({
+*   fetcher: async (input) => {
+*     const res = await fetch('/api/generate/image', {
+*       method: 'POST',
+*       body: JSON.stringify(input),
+*     })
+*     return res.json()
+*   },
+* })
+*
+* await client.generate({ prompt: 'A sunset over mountains' })
+* ```
+*/
+var GenerationClient = class {
+	connection;
+	fetcher;
+	hydrateGenerationHandler;
+	joinRunHandler;
+	uniqueId;
+	devtoolsMetadata;
+	devtoolsBridge;
+	threadId;
+	persistenceScope;
+	serverDriven = false;
+	body;
+	byok;
+	byokProvider;
+	result = null;
+	input = null;
+	progress = null;
+	isLoading = false;
+	error = void 0;
+	status = "idle";
+	resumeSnapshot;
+	lastEmittedResumeState;
+	abortController = null;
+	rejoinedRunId;
+	callbacksRef;
+	devtoolsMounted = false;
+	disposed = false;
+	serverHydrationStarted = false;
+	constructor(options) {
+		this.threadId = options.threadId ?? "";
+		this.uniqueId = this.threadId;
+		this.persistenceScope = options.threadId;
+		this.connection = options.connection;
+		this.fetcher = options.fetcher;
+		this.hydrateGenerationHandler = options.hydrateGeneration;
+		this.joinRunHandler = options.joinRun;
+		this.body = options.body ?? {};
+		this.byok = options.byok;
+		this.byokProvider = options.byokProvider;
+		this.serverDriven = options.persistence === true;
+		if (options.persistence && !this.persistenceScope) console.warn("[TanStack AI] `persistence` needs a stable `threadId` to key on. Without one nothing will be restored after a reload. Pass a `threadId` derived from your own domain (e.g. `product-123-hero`).");
+		this.callbacksRef = {
+			onResult: options.onResult,
+			onError: options.onError,
+			onProgress: options.onProgress,
+			onChunk: options.onChunk,
+			onResultChange: options.onResultChange,
+			onLoadingChange: options.onLoadingChange,
+			onErrorChange: options.onErrorChange,
+			onStatusChange: options.onStatusChange,
+			onResumeSnapshotChange: options.onResumeSnapshotChange,
+			onResumeStateChange: options.onResumeStateChange,
+			reconstructResult: options.reconstructResult
+		};
+		this.devtoolsMetadata = this.createDevtoolsMetadata(options.devtools);
+		this.devtoolsBridge = (options.devtoolsBridgeFactory ?? createNoOpGenerationDevtoolsBridge)(this.buildDevtoolsBridgeOptions());
+	}
+	buildDevtoolsBridgeOptions() {
+		const client = this;
+		return {
+			get hookId() {
+				return client.uniqueId;
+			},
+			get clientId() {
+				return client.uniqueId;
+			},
+			get threadId() {
+				return client.threadId;
+			},
+			metadata: this.devtoolsMetadata,
+			getCoreState: () => ({
+				input: this.input,
+				result: this.result,
+				progress: this.progress,
+				status: this.status,
+				isLoading: this.isLoading,
+				...this.error ? { error: this.error.message } : {}
+			})
+		};
+	}
+	mountDevtools() {
+		this.ensureThreadId();
+		this.disposed = false;
+		this.maybeHydrateFromServer();
+		this.maybeResumeInFlight();
+		if (this.devtoolsMounted) return;
+		this.devtoolsMounted = true;
+		this.devtoolsBridge.emitRegistered();
+		this.devtoolsBridge.emitSnapshot();
+	}
+	/**
+	* Trigger a generation request.
+	* Only one generation can be in-flight at a time; calling generate()
+	* while already generating will be a no-op.
+	*/
+	async generate(input) {
+		if (this.disposed) return;
+		if (this.isLoading) return;
+		this.mountDevtools();
+		this.input = input;
+		this.progress = null;
+		const runId = this.devtoolsBridge.beginRun(input);
+		this.setIsLoading(true);
+		this.setStatus("generating");
+		this.setError(void 0);
+		const abortController = new AbortController();
+		this.abortController = abortController;
+		const { signal } = abortController;
+		try {
+			let headers;
+			if (this.byok) {
+				const provider = resolveByokProviderId(this.byokProvider, this.body.provider);
+				headers = await prepareResolvedByokHeaders(this.byok, provider);
+			}
+			if (this.fetcher) {
+				const result = await this.fetcher(input, headers === void 0 ? { signal } : {
+					signal,
+					headers
+				});
+				if (signal.aborted) return;
+				if (result instanceof Response) await this.processStream(parseSSEResponse(result, signal), runId, signal);
+				else {
+					this.devtoolsBridge.ensureRunStarted(runId);
+					this.setResult(result);
+					this.setStatus("success");
+					this.completePlainFetcherResumeSnapshot(result);
+				}
+			} else if (this.connection) {
+				const mergedData = {
+					...this.body,
+					...input
+				};
+				const stream = this.connection.connect([], mergedData, signal, this.createRunContext(runId, headers));
+				await this.processStream(stream, runId, signal);
+			} else throw new Error("GenerationClient requires either a connection or fetcher option");
+			if (!signal.aborted && this.status === "success") {
+				this.progress = completeProgressValue(this.progress);
+				this.devtoolsBridge.finishRun(this.devtoolsBridge.getActiveRunId() ?? runId, "run:completed", "completed");
+			}
+		} catch (err) {
+			if (signal.aborted) return;
+			const error = err instanceof Error ? err : new Error(String(err));
+			if (error instanceof ByokMissingError) this.byok?.request(error.provider, "missing");
+			if (error instanceof ByokBlockedError && error.reason === "locked") this.byok?.request(error.provider, "locked");
+			this.setError(error);
+			this.setStatus("error");
+			this.recordResumeSnapshotError(error);
+			this.devtoolsBridge.finishRun(this.devtoolsBridge.getActiveRunId() ?? runId, "run:errored", "errored", error.message);
+			this.callbacksRef.onError?.(error);
+		} finally {
+			if (this.abortController === abortController) {
+				this.abortController = null;
+				this.setIsLoading(false);
+			}
+		}
+	}
+	/**
+	* Process a stream of AG-UI events from the streaming connection adapter.
+	*
+	* Throws {@link GENERATION_STREAM_TRUNCATED_MESSAGE} when the iteration ends
+	* without a terminal chunk. A `for await` over a stream that simply stops —
+	* proxy idle timeout, server restart, a durable log missing its terminal
+	* append — returns normally and would otherwise leave the caller's `status`
+	* on `generating` forever, with the persisted snapshot still `running` so
+	* every reload rejoins the same dead run. Throwing routes it through the
+	* caller's error path instead, which settles the status and rewrites the
+	* snapshot so nothing chases it again.
+	*/
+	async processStream(source, fallbackRunId, signal) {
+		let streamRunId;
+		let sawTerminalChunk = false;
+		for await (const raw of source) {
+			if (signal.aborted) break;
+			const chunk = restoreInboundChunk(raw);
+			this.callbacksRef.onChunk?.(chunk);
+			this.observeResumeSnapshot(chunk);
+			const chunkRunId = "runId" in chunk && typeof chunk.runId === "string" ? chunk.runId : void 0;
+			switch (chunk.type) {
+				case "RUN_STARTED":
+					streamRunId = chunk.runId;
+					this.devtoolsBridge.ensureRunStarted(chunk.runId);
+					break;
+				case "CUSTOM":
+					this.devtoolsBridge.ensureRunStarted(streamRunId ?? fallbackRunId);
+					if (chunk.name === GENERATION_EVENTS.RESULT) this.setResult(chunk.value);
+					else if (chunk.name === GENERATION_EVENTS.PROGRESS) {
+						const { progress, message } = chunk.value;
+						this.setProgress(progress, message);
+					}
+					break;
+				case "RUN_FINISHED":
+					streamRunId = chunk.runId;
+					sawTerminalChunk = true;
+					this.devtoolsBridge.ensureRunStarted(chunk.runId);
+					this.setStatus("success");
+					break;
+				case "RUN_ERROR": {
+					this.devtoolsBridge.ensureRunStarted(chunkRunId ?? streamRunId ?? fallbackRunId);
+					const msg = chunk.message || "An error occurred";
+					throw new Error(msg);
+				}
+			}
+		}
+		if (!sawTerminalChunk && !signal.aborted) throw new Error(GENERATION_STREAM_TRUNCATED_MESSAGE);
+	}
+	/**
+	* Abort any in-flight generation request.
+	*/
+	stop() {
+		const runId = this.devtoolsBridge.getActiveRunId();
+		if (this.abortController) {
+			this.abortController.abort();
+			this.abortController = null;
+		}
+		this.setIsLoading(false);
+		if (this.status === "generating") {
+			this.setStatus("idle");
+			if (runId) this.devtoolsBridge.finishRun(runId, "run:cancelled", "cancelled");
+		}
+		if (this.resumeSnapshot && this.resumeSnapshot.status === "running") {
+			this.resumeSnapshot = {
+				...this.resumeSnapshot,
+				resumeState: null,
+				status: "idle"
+			};
+			this.notifyResumeSnapshotChanged();
+		}
+	}
+	/**
+	* Clear the result, error, and return to idle state. Also drops the client's
+	* in-memory resume snapshot, so a remount restores nothing. The server-side
+	* record is untouched — this client no longer writes one — so a full page
+	* reload under `persistence: true` re-hydrates the last generation again.
+	*/
+	reset() {
+		this.stop();
+		this.setResult(null);
+		this.input = null;
+		this.progress = null;
+		this.devtoolsBridge.resetRuns();
+		this.setError(void 0);
+		this.setStatus("idle");
+		this.clearResumeSnapshot();
+		this.devtoolsBridge.emitState();
+	}
+	/**
+	* Update options without recreating the client.
+	*/
+	updateOptions(options) {
+		if (options.body !== void 0) this.body = options.body ?? {};
+		if (options.byok !== void 0) this.byok = options.byok;
+		if (options.byokProvider !== void 0) this.byokProvider = options.byokProvider;
+		if (options.onResult !== void 0) this.callbacksRef.onResult = options.onResult;
+		if (options.onError !== void 0) this.callbacksRef.onError = options.onError;
+		if (options.onProgress !== void 0) this.callbacksRef.onProgress = options.onProgress;
+		if (options.onChunk !== void 0) this.callbacksRef.onChunk = options.onChunk;
+	}
+	dispose() {
+		this.disposed = true;
+		if (this.abortController) {
+			this.abortController.abort();
+			this.abortController = null;
+		}
+		this.setIsLoading(false);
+		this.devtoolsBridge.dispose();
+		this.devtoolsMounted = false;
+		this.serverHydrationStarted = false;
+		this.rejoinedRunId = void 0;
+	}
+	getResult() {
+		return this.result;
+	}
+	getIsLoading() {
+		return this.isLoading;
+	}
+	getError() {
+		return this.error;
+	}
+	getStatus() {
+		return this.status;
+	}
+	getResumeSnapshot() {
+		return this.resumeSnapshot ? {
+			...this.resumeSnapshot,
+			...this.resumeSnapshot.pendingArtifacts ? { pendingArtifacts: [...this.resumeSnapshot.pendingArtifacts] } : {},
+			...this.resumeSnapshot.result ? { result: {
+				...this.resumeSnapshot.result,
+				...this.resumeSnapshot.result.artifacts ? { artifacts: [...this.resumeSnapshot.result.artifacts] } : {}
+			} } : {},
+			...this.resumeSnapshot.error ? { error: { ...this.resumeSnapshot.error } } : {},
+			...this.resumeSnapshot.lastEvent ? { lastEvent: { ...this.resumeSnapshot.lastEvent } } : {}
+		} : void 0;
+	}
+	setResult(rawResult) {
+		if (rawResult === null) {
+			this.result = null;
+			this.callbacksRef.onResultChange?.(null);
+			this.devtoolsBridge.recordResultChange();
+			return;
+		}
+		if (this.callbacksRef.onResult) {
+			const transformed = this.callbacksRef.onResult(rawResult);
+			if (transformed === null) {
+				this.devtoolsBridge.emitState();
+				return;
+			}
+			if (transformed !== void 0) {
+				this.result = transformed;
+				this.callbacksRef.onResultChange?.(this.result);
+				this.devtoolsBridge.recordResultChange();
+				return;
+			}
+		}
+		this.result = rawResult;
+		this.callbacksRef.onResultChange?.(this.result);
+		this.devtoolsBridge.recordResultChange();
+	}
+	setIsLoading(isLoading) {
+		this.isLoading = isLoading;
+		this.callbacksRef.onLoadingChange?.(isLoading);
+		this.devtoolsBridge.recordLoadingChange();
+	}
+	setError(error) {
+		this.error = error;
+		this.callbacksRef.onErrorChange?.(error);
+		this.devtoolsBridge.recordErrorChange(error);
+	}
+	setStatus(status) {
+		this.status = status;
+		this.callbacksRef.onStatusChange?.(status);
+		this.devtoolsBridge.recordStatusChange(status);
+	}
+	setProgress(value, message) {
+		this.progress = {
+			value,
+			...message ? { message } : {}
+		};
+		if (message === void 0) this.callbacksRef.onProgress?.(value);
+		else this.callbacksRef.onProgress?.(value, message);
+		this.devtoolsBridge.recordProgressChange();
+	}
+	createDevtoolsMetadata(metadata) {
+		return {
+			hookName: metadata?.hookName ?? "useGeneration",
+			...metadata?.framework ? { framework: metadata.framework } : {},
+			...metadata?.outputKind ? { outputKind: metadata.outputKind } : {},
+			...metadata?.name ? { name: metadata.name } : {}
+		};
+	}
+	ensureThreadId() {
+		if (!this.threadId) this.threadId = this.generateUniqueId("generation");
+		this.uniqueId = this.threadId;
+		return this.threadId;
+	}
+	generateUniqueId(prefix) {
+		return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+	}
+	createRunContext(runId, headers) {
+		return {
+			threadId: this.threadId,
+			runId,
+			...headers ? { headers } : {}
+		};
+	}
+	observeResumeSnapshot(chunk) {
+		this.resumeSnapshot = updateGenerationResumeSnapshot(this.resumeSnapshot, chunk);
+		this.notifyResumeSnapshotChanged();
+	}
+	/**
+	* Notify the (internal) snapshot listener AND emit the public resume state.
+	* The snapshot stays internal (persistence + devtools); the hook consumes
+	* `resumeState`, mirroring the chat client.
+	*/
+	notifyResumeSnapshotChanged() {
+		this.callbacksRef.onResumeSnapshotChange?.(this.resumeSnapshot);
+		this.emitResumeState();
+	}
+	/**
+	* Derive the public `resumeState` from the internal snapshot: the in-flight
+	* run identity, with any in-flight artifact refs folded under it. `null` once
+	* no run is in flight.
+	*
+	* The snapshot is rebuilt for every chunk, so emitting unconditionally would
+	* hand each framework hook a fresh object per chunk and re-render the
+	* component on every stream event. `resumeState` only changes at run
+	* boundaries and when artifacts land, so skip the notification unless it
+	* materially changed — same gate the persistence writes use.
+	*/
+	emitResumeState() {
+		const snapshot = this.resumeSnapshot;
+		const state = snapshot?.resumeState;
+		const resumeState = state ? {
+			...state,
+			...snapshot?.pendingArtifacts && snapshot.pendingArtifacts.length > 0 ? { pendingArtifacts: [...snapshot.pendingArtifacts] } : {}
+		} : null;
+		const signature = JSON.stringify(resumeState);
+		if (signature === this.lastEmittedResumeState) return;
+		this.lastEmittedResumeState = signature;
+		this.callbacksRef.onResumeStateChange?.(resumeState);
+	}
+	/**
+	* Repaint the normal fields from a restored snapshot (client store or server
+	* hydrate), so a reload presents the run in `result` / `status` / `error`
+	* exactly as a just-finished run would, never a bolt-on snapshot object.
+	* `isLoading` stays false: the client never auto-tails a restored run. The
+	* snapshot is not re-persisted here (it came from storage / the server).
+	*
+	* When the activity's mapper DECLINES a `complete` snapshot the repaint
+	* settles as an error instead: `success` with a `null` result is a state no
+	* consumer can render, and it hides the real cause (an output artifact
+	* persisted without a serve URL). A decline on any other status is expected —
+	* a `running` snapshot has no result yet, the rejoin will deliver it.
+	*/
+	repaintFromSnapshot(snapshot) {
+		this.resumeSnapshot = snapshot;
+		this.notifyResumeSnapshotChanged();
+		this.setStatus(clientStateFromResumeStatus(snapshot.status));
+		this.setError(snapshot.error ? Object.assign(new Error(snapshot.error.message), snapshot.error.code ? { code: snapshot.error.code } : {}) : void 0);
+		const restored = this.reconstructRestoredResult(snapshot);
+		if (restored !== null) this.setResult(restored);
+		else if (this.callbacksRef.reconstructResult && snapshot.status === "complete") this.reportUnrestorableResult();
+	}
+	/**
+	* Report a `complete` snapshot the activity's mapper could not rebuild.
+	* Runs after the status/error repaint above, so it wins over the snapshot's
+	* own `complete` status.
+	*/
+	reportUnrestorableResult() {
+		const error = new Error(GENERATION_UNRESTORABLE_RESULT_MESSAGE);
+		this.setStatus("error");
+		this.setError(error);
+		this.callbacksRef.onError?.(error);
+	}
+	/**
+	* Repaint a restored snapshot (client store or server hydrate) and, when it
+	* reports a run still in flight, tail that run to completion via `joinRun`
+	* (from the connection, or the `joinRun` option when the transport can't
+	* carry one).
+	*
+	* A `running` snapshot that no `joinRun` handler can tail is repainted as an
+	* interrupted error instead of a `generating` status that would never
+	* settle: an interrupted generation cannot be resumed, only re-run.
+	*/
+	repaintRestoredSnapshot(snapshot, activeRunId) {
+		if (snapshot.status !== "running") {
+			this.repaintFromSnapshot(snapshot);
+			return;
+		}
+		const joinRun = this.connection?.joinRun ?? this.joinRunHandler;
+		const runId = activeRunId ?? snapshot.resumeState?.runId;
+		if (runId && joinRun) {
+			this.repaintFromSnapshot(snapshot);
+			this.rejoinInFlight(runId);
+			return;
+		}
+		this.repaintFromSnapshot({
+			...snapshot,
+			resumeState: null,
+			status: "error",
+			error: { message: "The previous generation was interrupted before it finished and cannot be resumed — generate again to retry." }
+		});
+	}
+	/**
+	* Build the restorable result shape from the snapshot and hand it to the
+	* per-activity `reconstructResult` mapper (injected by the specialized
+	* client/hook, which knows the concrete result type).
+	*
+	* Returns `null` both when no mapper is set (nothing to rebuild — `result`
+	* simply stays null) and when the mapper declines. The caller distinguishes
+	* the two: see {@link repaintFromSnapshot}.
+	*/
+	reconstructRestoredResult(snapshot) {
+		const build = this.callbacksRef.reconstructResult;
+		if (!build) return null;
+		const result = snapshot.result;
+		return build({
+			...result?.id !== void 0 ? { id: result.id } : {},
+			...result?.model !== void 0 ? { model: result.model } : {},
+			...result?.status !== void 0 ? { status: result.status } : {},
+			...result?.providerJobId !== void 0 ? { providerJobId: result.providerJobId } : {},
+			...result?.expiresAt !== void 0 ? { expiresAt: result.expiresAt } : {},
+			...result?.text !== void 0 ? { text: result.text } : {},
+			...result?.usage !== void 0 ? { usage: result.usage } : {},
+			...snapshot.activity !== void 0 ? { activity: snapshot.activity } : {},
+			artifacts: result?.artifacts ?? []
+		});
+	}
+	/**
+	* The plain (non-Response) fetcher path never observes stream chunks, so
+	* the terminal snapshot is built here from the fetcher's own result. A
+	* stale `error` from a previous run is intentionally dropped — this run
+	* succeeded.
+	*/
+	completePlainFetcherResumeSnapshot(rawResult) {
+		const previous = this.resumeSnapshot;
+		const result = createGenerationResultSnapshot(rawResult);
+		this.resumeSnapshot = {
+			schemaVersion: 1,
+			resumeState: null,
+			status: "complete",
+			...previous?.activity ? { activity: previous.activity } : {},
+			...previous?.pendingArtifacts && previous.pendingArtifacts.length > 0 ? { pendingArtifacts: [...previous.pendingArtifacts] } : {},
+			...result ? { result } : previous?.result ? { result: { ...previous.result } } : {}
+		};
+		this.notifyResumeSnapshotChanged();
+	}
+	/**
+	* Records a transport-level failure (network drop, throwing callback) in
+	* the snapshot. Without this, only a server-emitted RUN_ERROR chunk would
+	* mark the snapshot `error`, leaving a persisted record that claims the
+	* run is still in flight.
+	*/
+	recordResumeSnapshotError(error) {
+		if (this.status !== "error") this.setStatus("error");
+		this.setError(error);
+		if (this.resumeSnapshot?.status === "error") return;
+		if (!this.resumeSnapshot && !this.serverDriven) return;
+		const previous = this.resumeSnapshot;
+		this.resumeSnapshot = {
+			schemaVersion: 1,
+			resumeState: null,
+			status: "error",
+			...previous?.activity ? { activity: previous.activity } : {},
+			...previous?.pendingArtifacts && previous.pendingArtifacts.length > 0 ? { pendingArtifacts: [...previous.pendingArtifacts] } : {},
+			...previous?.result ? { result: { ...previous.result } } : {},
+			error: { message: error.message }
+		};
+		this.notifyResumeSnapshotChanged();
+	}
+	/**
+	* Drop the client's in-memory snapshot and re-emit. Purely local — this
+	* client writes no storage, so nothing persisted is removed.
+	*/
+	clearResumeSnapshot() {
+		this.resumeSnapshot = void 0;
+		this.lastEmittedResumeState = void 0;
+		this.notifyResumeSnapshotChanged();
+	}
+	/**
+	* Server-driven mount hydration entry point (`persistence: true`). Runs at
+	* most once, from the commit-phase mount path (`mountDevtools`) — never the
+	* constructor / render phase — so remounts and speculative renders can't
+	* re-fire the hydrate GET.
+	*/
+	maybeHydrateFromServer() {
+		if (!this.serverDriven || this.serverHydrationStarted) return;
+		this.serverHydrationStarted = true;
+		if (this.connection?.hydrateGeneration ?? this.hydrateGenerationHandler) this.hydrateFromServer();
+		else console.warn("[TanStack AI] `persistence: true` (server-driven) needs a `hydrateGeneration` handler — either a connection that implements one (e.g. `fetchServerSentEvents` / `fetchHttpStream`, or `stream()` / `rpcStream()` with persistence handlers) or the `hydrateGeneration` option. Without one, nothing is persisted or restored.");
+	}
+	/**
+	* Server-driven mount hydration (`persistence: true`). The client holds no
+	* local snapshot; on mount it asks the server — keyed by the stable threadId —
+	* for the last generation's resume snapshot, validates it, and repaints it. It
+	* never auto-starts a run, and never blocks: a `generate()` that starts first
+	* owns the client and hydration backs off, mirroring the chat client.
+	*
+	* A genuine **miss** (the server reports no record for the thread) is silent —
+	* a fresh thread is not an error. A genuine **failure** (transport error, a
+	* 403 from the authorize gate, a malformed body, a record the client's own
+	* validator rejects) is surfaced through `status` / `error` / `onError`, so a
+	* broken server is distinguishable from an empty one and the app can retry.
+	*/
+	hydrateFromServer() {
+		const hydrate = this.connection?.hydrateGeneration ?? this.hydrateGenerationHandler;
+		if (!hydrate) return;
+		if (this.resumeSnapshot || this.isLoading || this.status !== "idle") return;
+		(async () => {
+			let res;
+			try {
+				res = await hydrate(this.threadId);
+			} catch (cause) {
+				this.failHydration(createGenerationHydrationError("the request to the server did not succeed", cause));
+				return;
+			}
+			if (!res.resumeSnapshot) return;
+			const snapshot = parseGenerationResumeSnapshot(res.resumeSnapshot);
+			if (!snapshot) {
+				this.failHydration(createGenerationHydrationError("the server returned a record this client cannot read (unknown schema version, or a missing/invalid `status` or `resumeState`)"));
+				return;
+			}
+			if (this.resumeSnapshot || this.isLoading || this.status !== "idle") return;
+			this.repaintRestoredSnapshot(snapshot, res.activeRun?.runId);
+		})();
+	}
+	/**
+	* Surface a hydration failure on the observable fields. Skipped when a
+	* `generate()` took ownership while the hydrate GET was in flight — the live
+	* run's state must win over a stale mount-time failure.
+	*/
+	failHydration(error) {
+		if (this.resumeSnapshot || this.isLoading || this.status !== "idle") return;
+		this.setStatus("error");
+		this.setError(error);
+		this.callbacksRef.onError?.(error);
+	}
+	/**
+	* Re-attach to an already-loaded `running` snapshot (the remount case). Safe
+	* to call repeatedly: `rejoinInFlight` dedupes on `rejoinedRunId` and bails
+	* when a run is already in flight, so on the first mount (where the rejoin was
+	* already started from `repaintRestoredSnapshot`) this is a no-op.
+	*/
+	maybeResumeInFlight() {
+		if (this.resumeSnapshot?.status !== "running") return;
+		const runId = this.resumeSnapshot.resumeState?.runId;
+		if (runId) this.rejoinInFlight(runId);
+	}
+	/**
+	* Re-attach to a run that is still generating and stream it to completion,
+	* mirroring the chat client's mount-time rejoin. Reuses `processStream`, so
+	* `result` / `progress` / `status` repaint from the replayed chunks exactly as
+	* a live run does. Best-effort: a live `generate()` owns the client and is
+	* never stomped, and the same run is only rejoined once.
+	*/
+	rejoinInFlight(runId) {
+		const joinRun = this.connection?.joinRun ?? this.joinRunHandler;
+		if (!joinRun) return;
+		if (this.rejoinedRunId === runId) return;
+		if (this.isLoading || this.abortController) return;
+		this.rejoinedRunId = runId;
+		const controller = new AbortController();
+		this.abortController = controller;
+		this.setIsLoading(true);
+		this.setStatus("generating");
+		(async () => {
+			try {
+				await this.processStream(joinRun(runId, controller.signal), runId, controller.signal);
+			} catch (error) {
+				if (!controller.signal.aborted) {
+					const failure = error instanceof Error ? error : new Error(String(error));
+					this.recordResumeSnapshotError(failure);
+					this.callbacksRef.onError?.(failure);
+				}
+			} finally {
+				if (this.abortController === controller) {
+					this.abortController = null;
+					this.setIsLoading(false);
+				}
+			}
+		})();
+	}
+};
+function completeProgressValue(progress) {
+	if (!progress) return null;
+	const message = progress.message;
+	return {
+		value: 100,
+		...message ? { message } : {}
+	};
+}
+//#endregion
+export { GenerationClient };
+
+//# sourceMappingURL=generation-client.js.map

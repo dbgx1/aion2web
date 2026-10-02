@@ -1,0 +1,4 @@
+PASS: pause/resume retains original recipients/content, does not requery or replay, pauses on a client server change, and tolerates double resume
+PASS: fixed-window batching, confirmed messages stay saved, failed backlog stops after one request
+PASS: rejected and malformed acknowledgements are visible, retain retryability, and are not counted as saved
+PASS: all clients enter directly, unknown server IDs remain visible, client server changes abort bulk, no occupancy API traffic

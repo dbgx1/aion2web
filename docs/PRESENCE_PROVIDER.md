@@ -1,6 +1,6 @@
 # AION2 在线查询服务接入文档
 
-版本 1.0 · 更新 2026-09-05
+版本 1.0 · 更新 2026-09-22
 
 适用于第三方查询客户端：订阅 MQTT 请求，使用自己的查询能力查角色，再把结果发布到请求指定的 replyTopic。无需运行聊天客户端，无需网站登录 Cookie 或上传令牌。本文描述当前已实现的手动查询协议。
 
@@ -20,8 +20,8 @@
 | 参数 | 约定 |
 | --- | --- |
 | 协议 / 编码 | MQTT 3.1.1，UTF-8 JSON。本文示例使用 WSS。 |
-| 默认 WSS 地址 | wss://broker.emqx.io:8084/mqtt，host=broker.emqx.io，TLS=true，port=8084，WebSocket path=/mqtt。必须以网站实际连接设置为准，不能仅根据本文默认值判断线上配置。 |
-| MQTT 身份验证 | 网页当前的默认连接未发送 username/password。该默认 Broker 是公共测试服务。私有 Broker 的账号和 ACL 由管理员另行约定；当前网页设置尚无 MQTT 用户名/密码输入项，切换到强制鉴权的 Broker 需要先补齐网页接入。 |
+| 默认 WSS 地址 | 默认使用网站配置的私有 EMQX Broker（WSS，端口 8084，路径 /mqtt）。请向管理员取得当前地址及提供方专用账号；旧公共 broker.emqx.io 已不再是网页默认连接。两方必须使用同一个 Broker。 |
+| MQTT 身份验证 | 网页连接默认私有 Broker 前，通过登录 Cookie 调用 /api/mqtt/connection 获取连接凭据，随后携带 username/password 建立 MQTT 连接。提供方使用管理员另行分配的账号及 Topic ACL，无需网站 Cookie 或上传令牌。自定义 Broker 不会自动收到默认私有 Broker 的凭据。 |
 | serviceId | 后端 PRESENCE_SERVICE_ID，默认 aion2web。1-100 个英文字母、数字、下划线或短横线，区分大小写；提供方应使用管理员确认的编号。 |
 | 提供方订阅 | aion2/presence/{serviceId}/requests。默认示例：aion2/presence/aion2web/requests。 |
 | 提供方发布 | aion2/presence/{serviceId}/results/{requestId}。每次使用收到的 replyTopic，并先检查其确实位于约定 serviceId 下、末尾与 requestId 一致。 |
@@ -128,7 +128,7 @@ online 只表示已确认在线；offline 只表示已确认离线。接口报�
 4. QoS 1 允许重复消息。提供方按 requestId 对查询任务去重；完成后可短期缓存原始结果，用于收到同一请求时原样重发。不要因重发而修改 checkedAt。
 5. 收到重复请求时，如果正在查询，不重复创建任务；如果已经完成且仍未过期，可以重发缓存结果。请求过期则直接丢弃。
 6. MQTT PUBACK 只表示 Broker 确认消息，不代表网页已收到或数据库保存成功；当前没有应用层结果 ACK。
-7. 网页关闭、离开查询页面或断线后，不保证继续接收。当前无 MQTT 取消消息，提供方以 expiresAt 作为停止执行的最晚时间。
+7. 网页在请求有效期内断线重连后，会重新订阅 replyTopic，并使用同一 requestId 重新请求尚未收到结果的角色；提供方必须按 requestId 和角色去重，不能重新执行已完成任务。网页关闭或离开页面会停止等待；无 MQTT 取消消息，以 expiresAt 为停止执行的最晚时间。
 
 ## 6. 多客服隔离
 
@@ -191,11 +191,12 @@ worker(context, character):
 
 ## 9. 网页内部接口（提供方无需调用）
 
-当前网页每 10 秒读取缓存，缓存默认 90 秒过期。缓存刷新不触发查询；自动触发、过期自动重查、跨客服请求合并和繁忙自动排队尚未实现。旧 jobs、tasks/claim、tasks/complete 接口已删除。
+网页在页面可见时约每 10 秒读取当前可见角色的缓存；网络失败时退避重试。在线记录默认 180 秒后标为 stale，离线记录继续显示 offline。缓存刷新不触发提供方查询；手动查询按 50 个角色顺序分批，后台并发满额时停止后续批次。自动重查、跨客服请求合并和繁忙自动排队尚未实现。旧 jobs、tasks/claim、tasks/complete 接口已删除。
 
 | 接口 | 用途 / 认证 |
 | --- | --- |
-| POST /api/presence/requests | 网页使用登录 Cookie，提交 {characters:[...]}；后台生成 requestId，登记客服归属及角色清单，返回 {ok:true,query:{...}}。满额为 429。 |
+| POST /api/presence/requests | 网页使用登录 Cookie，提交 {characters:[...]}，每批 1–50 个角色并校验所有区服权限；后台生成 requestId，登记客服归属及去重后的角色清单，返回 {ok:true,query:{type,requestId,serviceId,requestTopic,replyTopic,expiresAt,characters}}。400 参数错误、401 未登录、403 无区服权限、429 并发满额。 |
 | POST /api/presence/results | 网页使用登录 Cookie，提交 presence_result；校验请求归属、角色、状态及时间后保存。返回 {ok:true,saved:N}，重复或较旧结果可能 N=0。401 未登录、403 请求不属于当前客服、400 参数不合法、410 保存期限已过。 |
 | DELETE /api/presence/requests | 网页使用登录 Cookie，提交 {requestId:'UUID'}，释放自己的请求并发名额；不是发给提供方的取消消息。 |
-| POST /api/presence/status | 网页读取共享缓存，使用登录 Cookie，提交 {characters:[...],maxAgeMs:90000}。返回 {ok:true,statuses:[...]}，可出现 stale；stale 只能由网页缓存产生，不是提供方可回传的状态。 |
+| POST /api/presence/status | 使用登录 Cookie 提交 {characters:[{serverId,characterId}],maxAgeMs:180000}，最多 500 个角色，并校验区服权限。返回 {ok:true,statuses:[...]}；每项包含 serverId、characterId、name、online、status、checkedAt、updatedAt、sourceId。无记录为 unknown，online/时间为 null。只有在线记录超过 maxAgeMs 才变为 stale，离线与 unknown 不因超时改变。maxAgeMs 省略时默认 180000。 |
+| GET /api/mqtt/connection | 网页连接默认私有 Broker 时使用登录 Cookie 获取 {url,username,password}，不带 ok 字段；响应禁止缓存。401 未登录、503 服务端未配置 MQTT 凭据，错误体为 {error:"错误说明"}。提供方无需调用，应由管理员另行分配 Broker 凭据。 |

@@ -1,0 +1,20 @@
+import { ByokUnresolvedProviderError, isProviderId } from "@tanstack/ai/byok";
+//#region src/byok/resolve.ts
+function resolveByokProviderId(byokProvider, ...candidates) {
+	const fromFn = byokProvider?.();
+	if (isProviderId(fromFn)) return fromFn;
+	for (const candidate of candidates) if (isProviderId(candidate)) return candidate;
+}
+/**
+* Prepare and stamp headers for one resolved slug. Throws instead of
+* attaching every stored key when the slug is missing.
+*/
+async function prepareResolvedByokHeaders(byok, provider) {
+	if (!provider) throw new ByokUnresolvedProviderError();
+	await byok.prepare(provider);
+	return byok.headers(provider);
+}
+//#endregion
+export { prepareResolvedByokHeaders, resolveByokProviderId };
+
+//# sourceMappingURL=resolve.js.map

@@ -5,8 +5,12 @@ export type GameCharacter = {
   serverKey: string
   serverName: string
   legionName: string
+  legionPosition: number | null
   className: string
   level: number
+  combatPower?: number | null
+  equipItemLevel?: number | null
+  gender?: number | null
   avatarColor: string
   avatarUrl: string
   faction: string

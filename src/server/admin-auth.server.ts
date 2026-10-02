@@ -1,5 +1,5 @@
 import { env } from 'cloudflare:workers'
-import { type AdminPrincipal, verifyRegisteredAdminCredentials } from '#/server/admin-users.server'
+import { type AdminPrincipal, verifyRegisteredAdminCredentials, refreshAdminPrincipal } from '#/server/admin-users.server'
 import { uploadToken } from '#/server/characters.server'
 
 const COOKIE_NAME = 'aion_admin_session'
@@ -127,7 +127,8 @@ export async function currentAdminPrincipal(request: Request): Promise<AdminPrin
   if (!await constantTimeEqual(providedSignature, await signature(payload))) return null
   if (version === 'v1') return fallbackPrincipal()
   try {
-    return normalizePrincipal(JSON.parse(base64UrlToText(encodedPrincipal || '')))
+    const principal = normalizePrincipal(JSON.parse(base64UrlToText(encodedPrincipal || '')))
+    return principal ? await refreshAdminPrincipal(principal) : null
   } catch {
     return null
   }

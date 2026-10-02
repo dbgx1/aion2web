@@ -1,0 +1,54 @@
+import { useGeneration } from "./use-generation.js";
+import { reconstructTranscriptionResult } from "@tanstack/ai-client";
+//#region src/use-transcription.ts
+/**
+* React hook for transcribing audio to text using AI models.
+*
+* @example
+* ```tsx
+* import { useTranscription } from '@tanstack/ai-react'
+* import { fetchServerSentEvents } from '@tanstack/ai-client'
+*
+* function Transcriber() {
+*   const { generate, result, isLoading } = useTranscription({
+*     connection: fetchServerSentEvents('/api/transcribe'),
+*   })
+*
+*   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+*     const file = e.target.files?.[0]
+*     if (file) {
+*       const reader = new FileReader()
+*       reader.onload = () => {
+*         generate({ audio: reader.result as string, language: 'en' })
+*       }
+*       reader.readAsDataURL(file)
+*     }
+*   }
+*
+*   return (
+*     <div>
+*       <input type="file" accept="audio/*" onChange={handleFile} />
+*       {isLoading && <p>Transcribing...</p>}
+*       {result && <p>{result.text}</p>}
+*     </div>
+*   )
+* }
+* ```
+*/
+function useTranscription(options) {
+	const devtools = {
+		...options.devtools,
+		framework: "react",
+		hookName: "useTranscription",
+		outputKind: "text"
+	};
+	return useGeneration({
+		...options,
+		devtools,
+		reconstructResult: reconstructTranscriptionResult
+	});
+}
+//#endregion
+export { useTranscription };
+
+//# sourceMappingURL=use-transcription.js.map

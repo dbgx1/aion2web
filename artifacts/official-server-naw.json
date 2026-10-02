@@ -1,0 +1,28 @@
+{
+  "serverList": [
+    {
+      "raceId": 1,
+      "serverId": 1201,
+      "serverName": "Siel",
+      "serverShortName": "Sie"
+    },
+    {
+      "raceId": 1,
+      "serverId": 1202,
+      "serverName": "Nezekan",
+      "serverShortName": "Nez"
+    },
+    {
+      "raceId": 2,
+      "serverId": 2201,
+      "serverName": "Israphel",
+      "serverShortName": "Isr"
+    },
+    {
+      "raceId": 2,
+      "serverId": 2202,
+      "serverName": "Zikel",
+      "serverShortName": "Zik"
+    }
+  ]
+}

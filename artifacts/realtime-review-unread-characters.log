@@ -1,0 +1,3 @@
+PASS: hidden replies stay unread until visible; Chinese IME Enter does not send private or bulk messages
+PASS: actual MessageCenter merges bulk receipts per recipient, preserves real repeated sends, and handles reload/live replay
+PASS: 14,396 legions, 13 mounted choices, 72ms open including browser automation; search, keyboard, IME, selected-item scroll; off-page replies, filters, retained during reading, new replies, cached lookup, no browser errors

@@ -1,0 +1,9 @@
+{
+  "at": "2026-09-10T06:23:19.412Z",
+  "dataIntegrityVerified": true,
+  "chatHighRatePassed": false,
+  "burstAccountingPassed": true,
+  "sourceHashesMatch": true,
+  "unreceivedAt100PerSecond": 305819,
+  "notes": "A failed 100/s stage is preserved, not converted to a successful result; incomplete deliveries are not classified as permanent loss."
+}

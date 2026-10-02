@@ -2,9 +2,12 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import type { MqttClient } from 'mqtt'
 import { isPrivateChatPayload } from '#/lib/chat-channel'
 import { ClientOfflineMonitor } from '#/lib/client-offline'
+import { CommandReceipts } from '#/lib/command-receipts'
+import { ConsoleSubscriptions, agentTopics, validAgentId } from '#/lib/console-subscriptions'
 import { GameChatGuard } from '#/lib/game-chat-block'
 import { MessageInbox } from '#/lib/message-inbox'
 import { queryPresenceMqtt, presenceQuerySchema, type QueryPresence } from '#/lib/presence-mqtt'
+import { PRIVATE_MQTT_URL, migrateMqttUrl, privateMqttCredentials } from '#/lib/private-mqtt'
 
 const AGENT_TTL_MS = 45_000
 const SELECTED_AGENT_STORAGE_KEY = 'aion2-selected-agent-id'
@@ -18,8 +21,10 @@ export type ConnectionSettings = {
 }
 
 export type OnlineAgent = {
+  accountSwitchProtocol?: number
   agentId: string
   host: string
+  characterName?: string
   serverId: string
   room: string
   status: string
@@ -41,7 +46,7 @@ export type ConsoleMessage = {
 
 export const defaultConnectionSettings: ConnectionSettings = {
   room: 'aion2-local',
-  mqttUrl: 'wss://broker.emqx.io:8084/mqtt',
+  mqttUrl: PRIVATE_MQTT_URL,
   prefix: 'aion2-chat-bridge',
 }
 
@@ -73,7 +78,9 @@ function normalizeAgent(value: unknown, retained = false): OnlineAgent | null {
 
   return {
     agentId,
+    accountSwitchProtocol: value.accountSwitchProtocol === 1 ? 1 : undefined,
     host: textValue(value.host),
+    characterName: textValue(value.characterName ?? state.userName ?? state.characterName),
     serverId: textValue(value.serverId || value.serverKey || state.serverKey),
     room: textValue(value.room),
     status: textValue(value.status) || 'online',
@@ -102,7 +109,9 @@ function messageFromPayload(value: unknown, fallbackAgentId = ''): ConsoleMessag
   const controlLabels: Record<string, string> = {
     control_sent: '已发出',
     control_ack: '客户端已收到',
-    control_result: value.ok === true ? '执行成功' : '执行失败',
+    control_progress: '换号状态更新',
+    control_result: value.status === 'unknown' ? '执行结果未确认'
+      : value.status === 'not_sent' ? '未执行' : value.ok === true ? '执行成功' : '执行失败',
   }
   const controlLabel = controlLabels[type]
   const title = controlLabel
@@ -145,7 +154,7 @@ function loadSettings() {
   if (typeof window === 'undefined') return defaultConnectionSettings
   return {
     room: localStorage.getItem('aion2-room') || defaultConnectionSettings.room,
-    mqttUrl: localStorage.getItem('aion2-mqtt-url') || defaultConnectionSettings.mqttUrl,
+    mqttUrl: migrateMqttUrl(localStorage.getItem('aion2-mqtt-url')),
     prefix: localStorage.getItem('aion2-prefix') || defaultConnectionSettings.prefix,
   }
 }
@@ -178,65 +187,30 @@ export function useAionConsole() {
   const [agents, setAgents] = useState<OnlineAgent[]>([])
   const [messages, setMessages] = useState<ConsoleMessage[]>([])
   const [selectedAgentId, setSelectedAgentIdState] = useState(loadSelectedAgentId)
+  const selectedAgentRef = useRef(selectedAgentId)
+  const subscriptions = useRef(new ConsoleSubscriptions())
   const clientRef = useRef<MqttClient | null>(null)
+  const [commandReceipts] = useState(() => new CommandReceipts())
   const connectionGeneration = useRef(0)
   const connecting = useRef(false)
   const settingsRef = useRef(defaultConnectionSettings)
   const agentsRef = useRef(new Map<string, OnlineAgent>())
   const messageIdsRef = useRef(new Set<string>())
   const offlineMonitor = useRef(new ClientOfflineMonitor(AGENT_TTL_MS))
-  const offlineReports = useRef(new Map<string, number>())
-  const offlineReporting = useRef(false)
-  const offlineReportRetryAt = useRef(0)
-  const offlineReportFailures = useRef(0)
-
-  const flushOfflineReports = useCallback(async () => {
-    if (offlineReporting.current || !navigator.onLine || !clientRef.current?.connected
-      || document.visibilityState !== 'visible' || Date.now() < offlineReportRetryAt.current) return
-    offlineReporting.current = true
-    try {
-      for (const [agentId, offlineAt] of offlineReports.current) {
-        if (Date.now() - offlineAt > 60_000) {
-          offlineReports.current.delete(agentId)
-          continue
-        }
-        try {
-          const response = await fetch('/api/client-locks', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'offline', agentId, offlineAt }),
-            signal: AbortSignal.timeout(10_000),
-          })
-          const rejected = response.status >= 400 && response.status < 500 && response.status !== 408 && response.status !== 429
-          if (!response.ok && !rejected) throw new Error('离线状态上报失败')
-          if (offlineReports.current.get(agentId) === offlineAt) offlineReports.current.delete(agentId)
-          offlineReportFailures.current = 0
-          offlineReportRetryAt.current = 0
-        } catch {
-          offlineReportRetryAt.current = Date.now() + Math.min(60_000, 5_000 * 2 ** Math.min(offlineReportFailures.current++, 4))
-          break
-        }
-      }
-    } finally {
-      offlineReporting.current = false
-    }
-  }, [])
-
   const syncAgents = useCallback(() => {
     chatGuard.prune()
     const now = Date.now()
     const monitoring = Boolean(clientRef.current?.connected && navigator.onLine && document.visibilityState === 'visible')
     for (const agentId of offlineMonitor.current.sweep(monitoring, now)) {
-      offlineReports.current.set(agentId, now)
       agentsRef.current.delete(agentId)
     }
-    void flushOfflineReports()
     const nextAgents = [...agentsRef.current.values()].sort((a, b) =>
       (a.host || a.agentId).localeCompare(b.host || b.agentId),
     )
     setAgents(nextAgents)
     // Presence is temporary; selection is user intent. A delayed heartbeat or
     // suspended browser must not erase it, so a returning client can recover.
-  }, [flushOfflineReports, chatGuard])
+  }, [chatGuard])
 
   const addMessage = useCallback((value: unknown, fallbackAgentId = '') => {
     // Restriction enforcement precedes React rendering and timeline deduplication.
@@ -256,9 +230,20 @@ export function useAionConsole() {
     })
   }, [chatGuard, inbox])
 
+  const syncSubscriptions = useCallback(() => {
+    const client = clientRef.current
+    if (!client?.connected) return
+    subscriptions.current.update(client, topicBase(settingsRef.current), selectedAgentRef.current, message => {
+      if (clientRef.current !== client) return
+      setConnectionState('error')
+      setConnectionMessage(`订阅客户端消息失败：${message}`)
+    })
+  }, [])
+
   const publishDiscover = useCallback(() => {
     const client = clientRef.current
     if (!client?.connected) return
+    syncSubscriptions()
     const sessionId = `portal-${crypto.randomUUID()}`
     client.publish(
       `${topicBase(settingsRef.current)}/signal/agent/all`,
@@ -270,23 +255,25 @@ export function useAionConsole() {
         time: new Date().toISOString(),
       }),
     )
-  }, [])
+  }, [syncSubscriptions])
 
   const disconnect = useCallback(() => {
+    subscriptions.current.reset()
+    selectedAgentRef.current = ''
+    commandReceipts.disconnect()
     ++connectionGeneration.current
     connecting.current = false
     const client = clientRef.current
     clientRef.current = null
     client?.end(true)
     offlineMonitor.current = new ClientOfflineMonitor(AGENT_TTL_MS)
-    offlineReports.current.clear()
     agentsRef.current.clear()
     setAgents([])
     saveSelectedAgentId('')
     setSelectedAgentIdState('')
     setConnectionState('idle')
     setConnectionMessage('已断开')
-  }, [])
+  }, [commandReceipts])
 
   const connect = useCallback(async (nextSettings?: ConnectionSettings) => {
     if (clientRef.current || connecting.current) return
@@ -309,11 +296,15 @@ export function useAionConsole() {
       if (typeof connectMqtt !== 'function') {
         throw new Error('当前浏览器构建未提供 MQTT connect API')
       }
+      const credentials = await privateMqttCredentials(activeSettings.mqttUrl)
+      if (generation !== connectionGeneration.current) return
       const client = connectMqtt(activeSettings.mqttUrl.trim(), {
+        ...credentials,
         clientId: `aion2-portal-${crypto.randomUUID().replaceAll('-', '')}`,
         clean: true,
         keepalive: 30,
-        reconnectPeriod: 1500,
+        reconnectPeriod: 5000,
+        resubscribe: false,
         // Commands must not be silently queued for later execution after reconnect.
         queueQoSZero: false,
       })
@@ -321,16 +312,8 @@ export function useAionConsole() {
 
       client.on('connect', () => {
         if (clientRef.current !== client) return
-        const base = topicBase(activeSettings)
-        client.subscribe([`${base}/agents/+/status`, `${base}/events/+/chat`], (error) => {
-          if (clientRef.current !== client) return
-          if (error) {
-            setConnectionState('error')
-            setConnectionMessage(`订阅客户端消息失败：${error.message}`)
-            return
-          }
-          publishDiscover()
-        })
+        subscriptions.current.reset()
+        publishDiscover()
         setConnectionState('connected')
         setConnectionMessage(`已连接 · ${activeSettings.room}`)
       })
@@ -349,6 +332,8 @@ export function useAionConsole() {
 
       client.on('close', () => {
         if (clientRef.current === client) {
+          subscriptions.current.reset()
+          commandReceipts.disconnect()
           setConnectionState('reconnecting')
           setConnectionMessage('连接中断，正在重试…')
         }
@@ -380,21 +365,24 @@ export function useAionConsole() {
                 && (!current || offlineAt >= Date.parse(current.time))) {
                 agentsRef.current.delete(agent.agentId)
                 offlineMonitor.current.forget(agent.agentId)
-                offlineReports.current.set(agent.agentId, offlineAt)
               }
             }
           } else {
             agentsRef.current.set(agent.agentId, agent)
             offlineMonitor.current.observe(agent.agentId, agent.lastSeenAt)
-            offlineReports.current.delete(agent.agentId)
           }
           syncAgents()
           return
         }
 
-        const eventPrefix = `${topicBase(activeSettings)}/events/`
-        if (topic.startsWith(eventPrefix) && topic.endsWith('/chat')) {
-          const agentId = topic.slice(eventPrefix.length, -'/chat'.length)
+        const agentId = selectedAgentRef.current
+        const [, chatTopic, receiptTopic] = agentTopics(topicBase(activeSettings), agentId)
+        if (topic === chatTopic || topic === receiptTopic) {
+          if (!isRecord(payload) || (payload.agentId !== undefined && textValue(payload.agentId) !== agentId)) return
+          if (topic === receiptTopic && payload.type !== 'control_ack' && payload.type !== 'control_result' && payload.type !== 'control_progress') return
+          if (payload.type === 'control_progress' && packet?.retain === true) return
+          // Older clients still send receipts on chat; accept both during rollout.
+          commandReceipts.accept(agentId, payload, packet?.retain === true)
           addMessage(payload, agentId)
         }
       })
@@ -406,7 +394,7 @@ export function useAionConsole() {
     } finally {
       if (generation === connectionGeneration.current) connecting.current = false
     }
-  }, [addMessage, publishDiscover, syncAgents, chatGuard])
+  }, [addMessage, publishDiscover, syncAgents, chatGuard, commandReceipts])
 
   const reconnect = useCallback((nextSettings: ConnectionSettings) => {
     disconnect()
@@ -414,13 +402,15 @@ export function useAionConsole() {
   }, [connect, disconnect])
 
   const sendCommand = useCallback((agentId: string, command: Record<string, unknown>) => {
-    if (command.type === 'sendWhisper' && chatGuard.get(agentId)) return false
+    if (['sendWhisper', 'sendFactionMessage'].includes(String(command.type)) && chatGuard.get(agentId)) return false
     const client = clientRef.current
-    if (!client?.connected || !agentId) return false
+    if (!client?.connected || !validAgentId(agentId) || agentId !== selectedAgentRef.current
+      || subscriptions.current.readyAgent !== agentId) return false
 
     const requestId = textValue(command.requestId) || crypto.randomUUID()
     const message = {
       ...command,
+      ...(['sendWhisper', 'sendFactionMessage'].includes(String(command.type)) ? { expiresAt: command.expiresAt ?? Date.now() + 30_000 } : {}),
       requestId,
       sender: `portal-${requestId}`,
       target: agentId,
@@ -430,6 +420,7 @@ export function useAionConsole() {
     client.publish(
       `${topicBase(settingsRef.current)}/control/agent/${agentId}`,
       JSON.stringify(message),
+      { qos: ['switchAccount', 'switchAccountStatus', 'cancelSwitchAccount', 'resumeAccountChat'].includes(String(command.type)) ? 1 : 0, retain: false },
     )
     addMessage({
       type: 'control_sent',
@@ -443,18 +434,21 @@ export function useAionConsole() {
     return true
   }, [addMessage, chatGuard])
 
-  const queryPresence = useCallback<QueryPresence>(async (characters, onResults, signal) => {
+  const sendCommandWithReceipt = useCallback((agentId: string, command: Record<string, unknown>, signal?: AbortSignal) =>
+    commandReceipts.send(agentId, requestId => sendCommand(agentId, { ...command, requestId }), signal), [commandReceipts, sendCommand])
+
+  const queryPresence = useCallback<QueryPresence>(async (characters, onResults, signal, onProgress) => {
     const client = clientRef.current
-    if (!client?.connected) throw new Error('MQTT 未连接')
+    if (!client || client.disconnecting) throw new Error('MQTT 未连接')
     const response = await fetch('/api/presence/requests', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ characters }), signal,
+      body: JSON.stringify({ characters }), signal: AbortSignal.any([signal, AbortSignal.timeout(15_000)]),
     })
     const body = await response.json() as { query?: unknown; error?: string }
     if (!response.ok) throw new Error(body.error || '登记查询失败')
     const query = presenceQuerySchema.parse(body.query)
     try {
-      await queryPresenceMqtt(client, query, onResults, signal)
+      await queryPresenceMqtt(client, query, onResults, signal, onProgress)
     } finally {
       void fetch('/api/presence/requests', {
         method: 'DELETE', headers: { 'Content-Type': 'application/json' },
@@ -469,9 +463,15 @@ export function useAionConsole() {
   }, [])
 
   const setSelectedAgentId = useCallback((agentId: string) => {
+    if (agentId && !validAgentId(agentId)) return
+    if (selectedAgentRef.current === agentId) return
+    commandReceipts.disconnect()
+    selectedAgentRef.current = agentId
     saveSelectedAgentId(agentId)
     setSelectedAgentIdState(agentId)
-  }, [])
+    syncSubscriptions()
+    if (!agentId) publishDiscover()
+  }, [commandReceipts, syncSubscriptions, publishDiscover])
 
   useEffect(() => {
     const onStorage = (event: StorageEvent) => { if (event.key === chatGuard.storageKey) chatGuard.reload() }
@@ -493,13 +493,15 @@ export function useAionConsole() {
       window.removeEventListener('online', wake)
       document.removeEventListener('visibilitychange', wake)
       ++connectionGeneration.current
+      subscriptions.current.reset()
+      commandReceipts.disconnect()
       connecting.current = false
       window.clearInterval(timer)
       const client = clientRef.current
       clientRef.current = null
       client?.end(true)
     }
-  }, [connect, syncAgents, chatGuard, publishDiscover])
+  }, [connect, syncAgents, chatGuard, publishDiscover, commandReceipts])
 
   return {
     inboxMessages: inboxState.messages,
@@ -519,6 +521,7 @@ export function useAionConsole() {
     reconnect,
     publishDiscover,
     sendCommand,
+    sendCommandWithReceipt,
     queryPresence,
     clearMessages,
   }

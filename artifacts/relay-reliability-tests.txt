@@ -1,0 +1,15 @@
+test_600_offline_events_survive_reopen_and_ack (__main__.ReliabilityTests.test_600_offline_events_survive_reopen_and_ack) ... ok
+test_abrupt_process_exit_preserves_committed_events (__main__.ReliabilityTests.test_abrupt_process_exit_preserves_committed_events) ... ok
+test_default_identity_reopens_same_database_across_processes (__main__.ReliabilityTests.test_default_identity_reopens_same_database_across_processes) ... ok
+test_duplicate_command_inflight_completed_and_after_restart (__main__.ReliabilityTests.test_duplicate_command_inflight_completed_and_after_restart) ... ok
+test_inflight_events_survive_process_restart (__main__.ReliabilityTests.test_inflight_events_survive_process_restart) ... ok
+test_interrupted_command_is_unknown_not_reexecuted (__main__.ReliabilityTests.test_interrupted_command_is_unknown_not_reexecuted) ... ok
+test_overload_and_expired_commands_never_execute (__main__.ReliabilityTests.test_overload_and_expired_commands_never_execute) ... ok
+test_progress_notifications_do_not_fill_durable_outbox (__main__.ReliabilityTests.test_progress_notifications_do_not_fill_durable_outbox) ... ok
+test_publish_callback_does_not_take_application_lock (__main__.ReliabilityTests.test_publish_callback_does_not_take_application_lock) ... ok
+test_queue_deadline_and_http_uncertainty (__main__.ReliabilityTests.test_queue_deadline_and_http_uncertainty) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 2.190s
+
+OK

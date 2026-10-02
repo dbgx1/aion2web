@@ -1,0 +1,97 @@
+import { getChunkRunId } from "./connection-adapters.js";
+//#region src/cleared-stream-tracker.ts
+function getChunkToolCallId(chunk) {
+	return "toolCallId" in chunk && typeof chunk.toolCallId === "string" ? chunk.toolCallId : void 0;
+}
+function getChunkMessageId(chunk) {
+	return "messageId" in chunk && typeof chunk.messageId === "string" ? chunk.messageId : void 0;
+}
+function getChunkParentMessageId(chunk) {
+	return "parentMessageId" in chunk && typeof chunk.parentMessageId === "string" ? chunk.parentMessageId : void 0;
+}
+/** Tracks stream chunks that must be ignored after the owning chat is cleared. */
+var ClearedStreamTracker = class {
+	clearedMessageIds = /* @__PURE__ */ new Set();
+	clearedRunIds = /* @__PURE__ */ new Set();
+	ignoredActiveRunIds = /* @__PURE__ */ new Set();
+	clearedToolCallIds = /* @__PURE__ */ new Set();
+	currentRunlessRunId = null;
+	snapshotClear(context) {
+		for (const message of context.messages) this.clearedMessageIds.add(message.id);
+		for (const runId of context.activeRunIds) {
+			this.clearedRunIds.add(runId);
+			this.ignoredActiveRunIds.add(runId);
+		}
+		if (context.currentRunId) {
+			this.clearedRunIds.add(context.currentRunId);
+			this.ignoredActiveRunIds.add(context.currentRunId);
+		}
+	}
+	shouldIgnoreChunk(chunk) {
+		const runId = getChunkRunId(chunk);
+		if (runId && this.clearedRunIds.has(runId)) {
+			if (chunk.type === "RUN_STARTED") {
+				this.ignoredActiveRunIds.add(runId);
+				this.currentRunlessRunId = runId;
+			}
+			this.markIgnoredChunkIds(chunk);
+			return true;
+		}
+		if (runId && this.ignoredActiveRunIds.has(runId)) {
+			this.markIgnoredChunkIds(chunk);
+			return true;
+		}
+		if (this.isRunlessChunkFromIgnoredRun(chunk)) {
+			this.markIgnoredChunkIds(chunk);
+			return true;
+		}
+		const toolCallId = getChunkToolCallId(chunk);
+		if (toolCallId && this.clearedToolCallIds.has(toolCallId)) return true;
+		const parentMessageId = getChunkParentMessageId(chunk);
+		if (parentMessageId && this.clearedMessageIds.has(parentMessageId)) {
+			if (toolCallId) this.clearedToolCallIds.add(toolCallId);
+			return true;
+		}
+		const messageId = getChunkMessageId(chunk);
+		return Boolean(messageId && this.clearedMessageIds.has(messageId));
+	}
+	onRunStarted(runId) {
+		this.currentRunlessRunId = runId;
+	}
+	onRunSettled(runId) {
+		this.ignoredActiveRunIds.delete(runId);
+		this.clearedRunIds.delete(runId);
+		if (this.currentRunlessRunId === runId) this.currentRunlessRunId = this.ignoredActiveRunIds.values().next().value ?? null;
+	}
+	onSessionRunError() {
+		this.ignoredActiveRunIds.clear();
+		this.currentRunlessRunId = null;
+	}
+	resetActiveRuns() {
+		this.ignoredActiveRunIds.clear();
+		this.currentRunlessRunId = null;
+	}
+	takeRunlessRunId() {
+		const runId = this.currentRunlessRunId;
+		if (!runId) return null;
+		this.ignoredActiveRunIds.delete(runId);
+		this.clearedRunIds.delete(runId);
+		this.currentRunlessRunId = this.ignoredActiveRunIds.values().next().value ?? null;
+		return runId;
+	}
+	markIgnoredChunkIds(chunk) {
+		const messageId = getChunkMessageId(chunk);
+		if (messageId) this.clearedMessageIds.add(messageId);
+		const toolCallId = getChunkToolCallId(chunk);
+		if (toolCallId) this.clearedToolCallIds.add(toolCallId);
+	}
+	isRunlessChunkFromIgnoredRun(chunk) {
+		if (getChunkRunId(chunk) || !this.currentRunlessRunId) return false;
+		if (!this.ignoredActiveRunIds.has(this.currentRunlessRunId) && !this.clearedRunIds.has(this.currentRunlessRunId)) return false;
+		return chunk.type === "TEXT_MESSAGE_START" || chunk.type === "TEXT_MESSAGE_CONTENT" || chunk.type === "TOOL_CALL_START" || chunk.type === "TOOL_CALL_ARGS" || chunk.type === "TOOL_CALL_END" || chunk.type === "TOOL_CALL_RESULT" || chunk.type === "MESSAGES_SNAPSHOT" || chunk.type === "RUN_ERROR";
+	}
+};
+//#endregion
+export { ClearedStreamTracker };
+
+//# sourceMappingURL=cleared-stream-tracker.js.map

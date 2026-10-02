@@ -1,0 +1,13 @@
+✔ two simultaneous operators share a service without sharing requests or results (5.5099ms)
+✔ timeout only marks missing roles unknown and cancellation before SUBACK sends nothing (20.6844ms)
+✔ reconnect resubscribes and queries only missing roles, ignoring old SUBACKs (1.126ms)
+✔ waiting for connection stays bounded and can be canceled or explicitly ended (12.1286ms)
+✔ request ownership, role validation, idempotency, cache ordering and global capacity use actual SQL (52.7245ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 96.8354

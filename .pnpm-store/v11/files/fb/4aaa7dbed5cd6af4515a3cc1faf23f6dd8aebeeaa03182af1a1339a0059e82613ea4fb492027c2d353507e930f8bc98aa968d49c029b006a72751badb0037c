@@ -1,0 +1,28 @@
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
+import rehypeHighlight from "rehype-highlight";
+//#region src/chat-ui/markdown-plugins.ts
+var DEFAULT_REMARK_PLUGINS = [remarkGfm];
+var DEFAULT_REHYPE_PLUGINS_BEFORE_USER = [rehypeRaw, rehypeHighlight];
+var DEFAULT_REHYPE_PLUGINS_AFTER_USER = [rehypeSanitize];
+function resolveMarkdownPlugins(options) {
+	const userRemark = options.remarkPlugins ?? [];
+	const userRehype = options.rehypePlugins ?? [];
+	if (options.disableDefaultPlugins) return {
+		remarkPlugins: [...userRemark],
+		rehypePlugins: [...userRehype]
+	};
+	return {
+		remarkPlugins: [...DEFAULT_REMARK_PLUGINS, ...userRemark],
+		rehypePlugins: [
+			...DEFAULT_REHYPE_PLUGINS_BEFORE_USER,
+			...userRehype,
+			...DEFAULT_REHYPE_PLUGINS_AFTER_USER
+		]
+	};
+}
+//#endregion
+export { DEFAULT_REHYPE_PLUGINS_AFTER_USER, DEFAULT_REHYPE_PLUGINS_BEFORE_USER, DEFAULT_REMARK_PLUGINS, resolveMarkdownPlugins };
+
+//# sourceMappingURL=markdown-plugins.js.map

@@ -1,0 +1,54 @@
+[
+  {
+    "results": [
+      {
+        "server_id": "1101",
+        "status": "unknown",
+        "count": 8
+      },
+      {
+        "server_id": "1305",
+        "status": "unknown",
+        "count": 20
+      },
+      {
+        "server_id": "2201",
+        "status": "offline",
+        "count": 20
+      },
+      {
+        "server_id": "2201",
+        "status": "online",
+        "count": 8
+      },
+      {
+        "server_id": "2201",
+        "status": "unknown",
+        "count": 10
+      },
+      {
+        "server_id": "2305",
+        "status": "unknown",
+        "count": 23
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.4117
+      },
+      "duration": 0.4117,
+      "changes": 0,
+      "last_row_id": 1137337,
+      "changed_db": false,
+      "size_after": 66146304,
+      "rows_read": 178,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "file": "E:\\project\\aion2web\\artifacts\\aion2-client-20260914-precise-topics.zip",
+  "bytes": 29176321,
+  "files": 539,
+  "sha256": "a0dbda08552acdaa2e799af74a7431856e37e5e1a8a5a6f61fe473da508e8303",
+  "build": "2026-09-14.precise-topics.1",
+  "freshPyInstallerBuild": true,
+  "addonMatchesSource": true,
+  "crcAndFileComparisonPassed": true,
+  "includesPrivateCredentials": false,
+  "executable": "E:\\project\\aion2web\\artifacts\\client-release\\precise-topics-20260914\\aion2-client\\aion2-client.exe"
+}

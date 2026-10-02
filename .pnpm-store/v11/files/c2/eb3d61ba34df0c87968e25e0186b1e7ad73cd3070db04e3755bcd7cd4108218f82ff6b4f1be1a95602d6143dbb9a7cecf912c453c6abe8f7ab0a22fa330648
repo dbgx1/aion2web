@@ -1,0 +1,42 @@
+//#region src/types.ts
+/**
+* Create a typed array of client tools with proper type inference.
+* This eliminates the need for `as const` when defining tool arrays.
+*
+* @example
+* ```ts
+* const tools = clientTools(
+*   myTool1.client(() => result1),
+*   myTool2.client(() => result2),
+* )
+*
+* // tools is now properly typed as a tuple with literal tool names
+* // This enables type narrowing when checking part.name === 'toolName'
+* ```
+*/
+function clientTools(...tools) {
+	return tools;
+}
+/**
+* Helper to create typed chat client options
+* Use this to get proper type inference for messages
+*
+* @example
+* ```ts
+* const tools = clientTools(myTool1, myTool2)
+*
+* const chatOptions = createChatClientOptions({
+*   connection: fetchServerSentEvents('/api/chat'),
+*   tools,
+* })
+*
+* type MyMessages = InferChatMessages<typeof chatOptions>
+* ```
+*/
+function createChatClientOptions(options) {
+	return options;
+}
+//#endregion
+export { clientTools, createChatClientOptions };
+
+//# sourceMappingURL=types.js.map

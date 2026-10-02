@@ -51,7 +51,7 @@ export function sanitizeAiPersonaPayload(input: AiPersonaPayload): SaveAiPersona
   return { ok: true, persona }
 }
 
-export async function getAiPersona(principal: AdminPrincipal): Promise<AiPersona> {
+export async function getAiPersona(principal: Pick<AdminPrincipal, 'userKey'>): Promise<AiPersona> {
   try {
     const row = await database().prepare(`
       SELECT name, system_prompt, style_prompt, goal_prompt, forbidden_prompt,

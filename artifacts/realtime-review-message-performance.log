@@ -1,0 +1,1 @@
+PASS: 120,000 roles, 13 DOM rows at list end; visible-only polling; input/reset; stale-page cancellation; count-free pagination; 2,500 bulk roles in 3 requests

@@ -1,0 +1,1 @@
+PASS: actual React MQTT hook correlates published request IDs, ignores retained/wrong-client receipts and settles pending execution on close/unmount

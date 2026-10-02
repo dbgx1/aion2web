@@ -1,0 +1,2 @@
+import { MCPAppResource } from "./mcp-app-resource.js";
+export { MCPAppResource };

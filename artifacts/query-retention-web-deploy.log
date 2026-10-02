@@ -1,0 +1,66 @@
+
+ ⛅️ wrangler 4.144.0
+────────────────────
+Attaching additional modules:
+┌───────────────────────────────────────────────┬──────┬─────────────┐
+│ Name                                          │ Type │ Size        │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/characters-BPjinb6N.js                 │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/clients-BkuPDu-3.js                    │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/console-DrC6GPKE.js                    │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/docs-udQ07jdn.js                       │ esm  │ 0.15 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/empty-plugin-adapters-D7mxBbir.js      │ esm  │ 0.28 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/intelligence-DaWblOqe.js               │ esm  │ 0.15 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/manifest-BDLu45U3.js                   │ esm  │ 91.56 KiB   │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/matchContext-BJuTIfvk.js               │ esm  │ 2.65 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/messages-KxJa7rm8.js                   │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/mqtt.esm-D_637COy.js                   │ esm  │ 460.49 KiB  │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/react-dom-DFz6zqDu.js                  │ esm  │ 72.57 KiB   │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/reception-B4nm14bB.js                  │ esm  │ 0.15 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/reception-panel-GMU45wuK.js            │ esm  │ 910.22 KiB  │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/router-By5aUKqS.js                     │ esm  │ 2036.99 KiB │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/routes-BY8qfSuN.js                     │ esm  │ 249.73 KiB  │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/server-access.server-CVFpa7vI.js       │ esm  │ 0.09 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/settings-D3kn_OXY.js                   │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/start-DxgovzEb.js                      │ esm  │ 0.22 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/usage-FcqKVyYO.js                      │ esm  │ 0.14 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/_portal-B-kJ_6aN.js                    │ esm  │ 1.43 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/_tanstack-start-manifest_v-BYyZSObg.js │ esm  │ 2.79 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ Total (21 modules)                            │      │ 3830.38 KiB │
+└───────────────────────────────────────────────┴──────┴─────────────┘
+🌀 Building list of assets...
+✨ Read 19 files from the assets directory E:\project\aion2web\dist\client
+🌀 Starting asset upload...
+No updated asset files to upload. Proceeding with deployment...
+Total Upload: 4484.42 KiB / gzip: 873.83 KiB
+Worker Startup Time: 10 ms
+Your Worker has access to the following bindings:
+Binding                                                             Resource                  
+env.DB (aion2web-db)                                                D1 Database               
+env.CLOUDFLARE_ACCOUNT_ID ("eb1e201a3afb3d17f33285240edd595e")      Environment Variable      
+
+Uploaded aion2web (5.74 sec)
+Deployed aion2web triggers (1.62 sec)
+  mmorpgchat.com (custom domain)
+Current Version ID: 15533745-21fd-45d6-9036-9cf8e780f579

@@ -1,0 +1,359 @@
+import { tanstackMetadata } from "@tanstack/ai/client";
+//#region src/generation-types.ts
+/**
+* Thrown when a generation stream ends without a terminal `RUN_FINISHED` /
+* `RUN_ERROR` chunk — a proxy/load-balancer idle timeout, a server restart
+* mid-run, or a durable log whose terminal append never landed. The run's
+* outcome is unknowable from the client, so it settles as an error rather than
+* leaving the client stuck on `generating` forever.
+*/
+var GENERATION_STREAM_TRUNCATED_MESSAGE = "The generation stream ended before the run finished (no RUN_FINISHED or RUN_ERROR was received) — the connection was interrupted. Generate again to retry.";
+/**
+* Reported when a restored snapshot says the run completed but the activity's
+* `reconstructResult` mapper cannot rebuild a result from it — typically an
+* output artifact persisted without a serve `url`. Surfacing it beats a
+* `success` status with a `null` result, which no consumer can render.
+*/
+var GENERATION_UNRESTORABLE_RESULT_MESSAGE = "The stored generation completed but its result could not be rebuilt from the persisted record (its output artifact carries no serve URL, or the fields this activity needs were not persisted). Generate again to produce a fresh result.";
+/**
+* Wrap a mount-hydration failure with context. Genuine failures (transport
+* error, a 403 from the authorize gate, an unparseable body, a record the
+* client's validator rejects) must reach the app; only a genuine miss — the
+* server reporting no record for the thread — stays silent.
+*/
+function createGenerationHydrationError(detail, cause) {
+	const suffix = cause instanceof Error ? `: ${cause.message}` : "";
+	const error = /* @__PURE__ */ new Error(`[TanStack AI] Restoring the last generation for this thread failed — ${detail}${suffix}`);
+	if (cause !== void 0) error.cause = cause;
+	return error;
+}
+/**
+* Map a persisted resume status to the client's live state machine on restore:
+* complete → success, error → error, running → generating, idle → idle. A
+* restored `running` only reaches this mapping when a `joinRun` handler can
+* tail the run to completion; without one the client rewrites the snapshot to
+* `error` (interrupted) before repainting, so it never sticks on `generating`.
+*/
+function clientStateFromResumeStatus(status) {
+	switch (status) {
+		case "complete": return "success";
+		case "error": return "error";
+		case "running": return "generating";
+		case "idle": return "idle";
+	}
+}
+/**
+* Well-known CUSTOM event names used by generation clients.
+* These events are emitted by the server-side streaming helpers
+* and consumed by the client-side GenerationClient.
+*/
+var GENERATION_EVENTS = {
+	/** The generation result payload */
+	RESULT: "generation:result",
+	/** Persisted artifact refs for generated media */
+	ARTIFACTS: "generation:artifacts",
+	/** Progress update (0-100) with optional message */
+	PROGRESS: "generation:progress",
+	/** Video job created with jobId */
+	VIDEO_JOB_CREATED: "video:job:created",
+	/** Video job status update */
+	VIDEO_STATUS: "video:status"
+};
+/**
+* Reduces one observed stream chunk into the lightweight resume snapshot.
+*
+* A `RUN_STARTED` chunk begins a fresh run, so stale `result` / `error` /
+* `pendingArtifacts` from a previous run are dropped rather than carried into
+* the new run's snapshot.
+*
+* @internal
+*/
+function updateGenerationResumeSnapshot(previous, chunk) {
+	const tanstack = tanstackMetadata(chunk);
+	const threadId = stringField(chunk, "threadId") ?? (typeof tanstack?.threadId === "string" ? tanstack.threadId : void 0);
+	const runId = stringField(chunk, "runId") ?? (typeof tanstack?.runId === "string" ? tanstack.runId : void 0);
+	const carried = chunk.type === "RUN_STARTED" ? void 0 : previous;
+	const previousArtifacts = carried?.pendingArtifacts ?? [];
+	const next = {
+		schemaVersion: 1,
+		resumeState: carried?.resumeState ?? null,
+		status: carried?.status ?? "idle",
+		...carried?.activity ? { activity: carried.activity } : {},
+		...previousArtifacts.length > 0 ? { pendingArtifacts: [...previousArtifacts] } : {},
+		...carried?.result ? { result: { ...carried.result } } : {},
+		...carried?.error ? { error: { ...carried.error } } : {},
+		lastEvent: createGenerationEventSnapshot(chunk)
+	};
+	if (threadId && runId) {
+		next.resumeState = {
+			threadId,
+			runId
+		};
+		next.status = "running";
+	} else if (chunk.type === "RUN_STARTED") next.status = "running";
+	if (chunk.type === "CUSTOM") {
+		if (chunk.name === GENERATION_EVENTS.ARTIFACTS) {
+			const artifacts = collectArtifactRefs(chunk.value);
+			if (artifacts.length > 0) {
+				next.pendingArtifacts = artifacts;
+				next.activity = artifacts[0]?.source.activity;
+			}
+		} else if (chunk.name === GENERATION_EVENTS.RESULT) {
+			const result = createGenerationResultSnapshot(chunk.value);
+			if (result) {
+				next.result = result;
+				if (result.artifacts && result.artifacts.length > 0) {
+					next.pendingArtifacts = result.artifacts;
+					next.activity = result.artifacts[0]?.source.activity;
+				}
+			}
+		} else if (chunk.name === GENERATION_EVENTS.VIDEO_JOB_CREATED) {
+			const providerJobId = isObject(chunk.value) ? stringField(chunk.value, "jobId") : void 0;
+			if (providerJobId) next.result = {
+				...next.result,
+				providerJobId
+			};
+		}
+	} else if (chunk.type === "RUN_FINISHED") {
+		next.resumeState = null;
+		next.status = "complete";
+	} else if (chunk.type === "RUN_ERROR") {
+		next.resumeState = null;
+		next.status = "error";
+		next.error = createGenerationErrorSnapshot(chunk);
+	}
+	return next;
+}
+/**
+* Validates an untrusted value (a hydration body resolved by the server) into a
+* {@link GenerationResumeSnapshot}, or returns `undefined` when the value is
+* not a usable snapshot.
+*
+* A hydrated record is outside the type system: it may be stale, truncated, or
+* written by a different version. Every field is re-validated with the same
+* narrowing the live chunk reducer uses. `lastEvent` is not restored, since it
+* describes a transient stream position with no meaning after a reload.
+*
+* @internal
+*/
+function parseGenerationResumeSnapshot(value) {
+	if (!isObject(value)) return void 0;
+	const schemaVersion = Reflect.get(value, "schemaVersion");
+	if (schemaVersion !== void 0 && schemaVersion !== 1) return void 0;
+	const status = generationResumeStatusField(value, "status");
+	if (!status) return void 0;
+	const rawResumeState = Reflect.get(value, "resumeState");
+	let resumeState = null;
+	if (rawResumeState !== null && rawResumeState !== void 0) {
+		if (!isObject(rawResumeState)) return void 0;
+		const threadId = stringField(rawResumeState, "threadId");
+		const runId = stringField(rawResumeState, "runId");
+		if (!threadId || !runId) return void 0;
+		resumeState = {
+			threadId,
+			runId
+		};
+	}
+	const snapshot = {
+		schemaVersion: 1,
+		resumeState,
+		status
+	};
+	const activity = persistedArtifactActivityField(value, "activity");
+	if (activity) snapshot.activity = activity;
+	const pendingArtifacts = collectArtifactRefs(Reflect.get(value, "pendingArtifacts"));
+	if (pendingArtifacts.length > 0) snapshot.pendingArtifacts = pendingArtifacts;
+	const result = createGenerationResultSnapshot(Reflect.get(value, "result"));
+	if (result) snapshot.result = result;
+	const rawError = Reflect.get(value, "error");
+	if (isObject(rawError)) {
+		const message = stringField(rawError, "message");
+		if (message) {
+			const code = stringField(rawError, "code");
+			snapshot.error = {
+				message,
+				...code ? { code } : {}
+			};
+		}
+	}
+	return snapshot;
+}
+function generationResumeStatusField(value, key) {
+	const field = stringField(value, key);
+	if (field === void 0) return void 0;
+	switch (field) {
+		case "idle":
+		case "running":
+		case "complete":
+		case "error": return field;
+		default: return;
+	}
+}
+function createGenerationEventSnapshot(chunk) {
+	const name = stringField(chunk, "name");
+	const timestamp = numberField(chunk, "timestamp");
+	return {
+		type: chunk.type,
+		...name ? { name } : {},
+		...timestamp !== void 0 ? { timestamp } : {}
+	};
+}
+/** @internal Narrows an untrusted result payload into the persisted result snapshot shape. */
+function createGenerationResultSnapshot(value) {
+	if (!isObject(value)) return void 0;
+	const artifacts = collectArtifactRefs(Reflect.get(value, "artifacts"));
+	const snapshot = {};
+	const id = stringField(value, "id");
+	const model = stringField(value, "model");
+	const status = stringField(value, "status");
+	const providerJobId = stringField(value, "providerJobId") ?? stringField(value, "jobId");
+	const text = stringField(value, "text") ?? stringField(value, "summary");
+	const usage = Reflect.get(value, "usage");
+	if (id) snapshot.id = id;
+	if (model) snapshot.model = model;
+	if (status) snapshot.status = status;
+	if (providerJobId) snapshot.providerJobId = providerJobId;
+	if (text) snapshot.text = text;
+	if (isObject(usage)) snapshot.usage = usage;
+	const expiresAt = Reflect.get(value, "expiresAt");
+	if (typeof expiresAt === "string") snapshot.expiresAt = expiresAt;
+	else if (expiresAt instanceof Date && !Number.isNaN(expiresAt.getTime())) snapshot.expiresAt = expiresAt.toISOString();
+	if (artifacts.length > 0) snapshot.artifacts = artifacts;
+	return Object.keys(snapshot).length > 0 ? snapshot : void 0;
+}
+function createGenerationErrorSnapshot(chunk) {
+	const message = stringField(chunk, "message") ?? nestedStringField(chunk, "error", "message") ?? "An error occurred";
+	const code = stringField(chunk, "code");
+	return {
+		message,
+		...code ? { code } : {}
+	};
+}
+function collectArtifactRefs(value) {
+	if (!Array.isArray(value)) return [];
+	const refs = [];
+	for (const item of value) {
+		const ref = createPersistedArtifactRefSnapshot(item);
+		if (ref) refs.push(ref);
+	}
+	return refs;
+}
+function createPersistedArtifactRefSnapshot(value) {
+	if (!isObject(value)) return void 0;
+	const source = Reflect.get(value, "source");
+	if (!isObject(source)) return void 0;
+	const role = persistedArtifactRoleField(value, "role");
+	const artifactId = stringField(value, "artifactId");
+	const threadId = stringField(value, "threadId");
+	const runId = stringField(value, "runId");
+	const name = stringField(value, "name");
+	const mimeType = stringField(value, "mimeType");
+	const size = numberField(value, "size");
+	const createdAt = stringField(value, "createdAt");
+	const activity = persistedArtifactActivityField(source, "activity");
+	const path = stringField(source, "path");
+	const provider = stringField(source, "provider");
+	const model = stringField(source, "model");
+	if (!role || !artifactId || !threadId || !runId || !name || !mimeType || size === void 0 || !createdAt || !activity || !path || !provider || !model) return;
+	const sourceUrl = durableUrlField(value, "sourceUrl");
+	const url = serveUrlField(value, "url");
+	const mediaType = persistedArtifactMediaTypeField(source, "mediaType");
+	const jobId = stringField(source, "jobId");
+	const expiresAt = stringField(source, "expiresAt");
+	return {
+		role,
+		artifactId,
+		threadId,
+		runId,
+		name,
+		mimeType,
+		size,
+		createdAt,
+		...sourceUrl ? { sourceUrl } : {},
+		...url ? { url } : {},
+		source: {
+			activity,
+			path,
+			provider,
+			model,
+			...mediaType ? { mediaType } : {},
+			...jobId ? { jobId } : {},
+			...expiresAt ? { expiresAt } : {}
+		}
+	};
+}
+function durableUrlField(value, key) {
+	const field = stringField(value, key);
+	if (!field || field.length > 2048) return void 0;
+	try {
+		const url = new URL(field);
+		return url.protocol === "http:" || url.protocol === "https:" ? field : void 0;
+	} catch {
+		return;
+	}
+}
+/**
+* Validates an app-origin serve URL, which unlike a provider URL is usually a
+* same-origin path (`/api/.../artifact?id=...`). Accepts an absolute http(s) URL
+* or a path-absolute same-origin URL (single leading `/`); rejects
+* protocol-relative (`//host`), `javascript:` / `data:`, and anything else, since
+* this value is rendered as media `src`.
+*/
+function serveUrlField(value, key) {
+	const field = stringField(value, key);
+	if (!field || field.length > 2048) return void 0;
+	if (field.startsWith("/") && !field.startsWith("//") && !field.includes("\\")) return field;
+	try {
+		const url = new URL(field);
+		return url.protocol === "http:" || url.protocol === "https:" ? field : void 0;
+	} catch {
+		return;
+	}
+}
+function persistedArtifactRoleField(value, key) {
+	const field = stringField(value, key);
+	return field === "input" || field === "output" ? field : void 0;
+}
+function persistedArtifactActivityField(value, key) {
+	const field = stringField(value, key);
+	if (field === void 0) return void 0;
+	switch (field) {
+		case "image":
+		case "audio":
+		case "tts":
+		case "video":
+		case "transcription": return field;
+		default: return;
+	}
+}
+function persistedArtifactMediaTypeField(value, key) {
+	const field = stringField(value, key);
+	if (field === void 0) return void 0;
+	switch (field) {
+		case "image":
+		case "audio":
+		case "video":
+		case "document":
+		case "json": return field;
+		default: return;
+	}
+}
+function nestedStringField(value, key, nestedKey) {
+	const nested = Reflect.get(value, key);
+	return isObject(nested) ? stringField(nested, nestedKey) : void 0;
+}
+function stringField(value, key) {
+	const field = Reflect.get(value, key);
+	return typeof field === "string" ? field : void 0;
+}
+function numberField(value, key) {
+	const field = Reflect.get(value, key);
+	return typeof field === "number" ? field : void 0;
+}
+function isObject(value) {
+	return typeof value === "object" && value !== null;
+}
+//#endregion
+export { GENERATION_EVENTS, GENERATION_STREAM_TRUNCATED_MESSAGE, GENERATION_UNRESTORABLE_RESULT_MESSAGE, clientStateFromResumeStatus, createGenerationHydrationError, createGenerationResultSnapshot, parseGenerationResumeSnapshot, updateGenerationResumeSnapshot };
+
+//# sourceMappingURL=generation-types.js.map

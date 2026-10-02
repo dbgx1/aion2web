@@ -1,0 +1,89 @@
+{
+  "at": "2026-09-10T02:53:38.374Z",
+  "gameDelayMs": 500,
+  "machine": {
+    "cpu": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "ramGB": 32
+  },
+  "scope": "Loopback Aedes broker + real Python WebRtcRelay/Paho + real browser useAionConsole. Game HTTP replaced with fixed-delay success (gameDelayMs); mitmproxy host stubbed. No game, public broker, production API/DB, AI, account authorization, or full console page load.",
+  "stages": [
+    {
+      "clients": 1,
+      "consoles": 20,
+      "messagesPerClientPerSecond": 10,
+      "trafficSeconds": 60,
+      "elapsedSeconds": 63.499,
+      "generated": 600,
+      "brokerReceivedChat": 666,
+      "expectedDeliveries": 12000,
+      "receivedDeliveries": 12000,
+      "drained": true,
+      "chatLatencyMs": {
+        "count": 12000,
+        "p50": 7.5,
+        "p95": 17.6,
+        "p99": 111.3,
+        "max": 366.3
+      },
+      "commandLatencyMs": {
+        "count": 2930,
+        "p50": 1750,
+        "p95": 2087.1,
+        "p99": 2103.4,
+        "max": 2759.8
+      },
+      "commandStatuses": {
+        "confirmed": 2930
+      },
+      "clientStats": {
+        "executed": 2930,
+        "active": 0,
+        "maxActiveGameCalls": 24,
+        "gameDelayMs": 500,
+        "ready": 1,
+        "outbox": 0
+      },
+      "longTasks": {
+        "count": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "browserHeapMB": [
+        17,
+        18,
+        17,
+        17,
+        18,
+        18,
+        18,
+        17,
+        19,
+        18,
+        18,
+        19,
+        18,
+        18,
+        17,
+        18,
+        15,
+        16,
+        18,
+        17
+      ],
+      "offlineQueueProbe": {
+        "offlineSubmitted": 600,
+        "offlineRetained": 500
+      },
+      "duplicateExecutions": 2,
+      "errors": [],
+      "eventReplayProbe": {
+        "chatSubmissions": 1,
+        "chatPublishes": 2,
+        "webrtcPending": 1
+      }
+    }
+  ]
+}

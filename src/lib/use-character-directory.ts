@@ -4,7 +4,7 @@ import {
   type GameCharacter,
 } from '#/lib/game-characters'
 import { refreshDirectory, useDirectoryResource } from './use-directory-resource'
-import { ALL_SERVERS_KEY, useDirectoryFilters } from './use-directory-filters'
+import { ALL_SERVERS_KEY, useDirectoryFilters, type CharacterSort, type DirectoryInitialScope } from './use-directory-filters'
 
 type ApiCharacter = {
   id: number
@@ -13,7 +13,11 @@ type ApiCharacter = {
   serverId: string
   serverName: string
   legionName: string
+  legionPosition: number | null
   level: number
+  combatPower?: number | null
+  equipItemLevel?: number | null
+  gender?: number | null
   className: string
   faction: string
   avatarUrl: string
@@ -23,7 +27,7 @@ type ApiCharacter = {
 export type CharacterResponse = {
   ok: boolean
   characters: ApiCharacter[]
-  nextCursor: number | null
+  nextCursor: number | string | null
   totalCount: number | null
 }
 
@@ -47,8 +51,12 @@ export function toGameCharacter(character: ApiCharacter): GameCharacter {
     serverKey: character.serverId,
     serverName: character.serverName || character.serverId,
     legionName: character.legionName,
+    legionPosition: character.legionPosition ?? null,
     className: character.className,
     level: character.level,
+    combatPower: character.combatPower ?? null,
+    equipItemLevel: character.equipItemLevel ?? null,
+    gender: character.gender ?? null,
     faction: character.faction,
     avatarUrl: character.avatarUrl,
     avatarColor: avatarColorFor(character.characterId),
@@ -56,32 +64,48 @@ export function toGameCharacter(character: ApiCharacter): GameCharacter {
   }
 }
 
-export function useCharacterDirectory(storageKey?: string) {
+export function useCharacterDirectory(storageKey?: string, initialScope?: DirectoryInitialScope) {
   const { servers, error: directoryError } = useDirectoryResource()
-  const { filters, ready: filtersReady, updateFilters } = useDirectoryFilters(storageKey)
-  const { raceId: selectedRaceId, serverKey: selectedServerKey, legionName: selectedLegionName } = filters
-  const filteredServers = useMemo(() => selectedRaceId === '0' ? servers
-    : servers.filter(server => String(server.raceId) === selectedRaceId), [servers, selectedRaceId])
+  const { filters, ready: filtersReady, updateFilters } = useDirectoryFilters(storageKey, initialScope)
+  const { raceId: selectedRaceId, serverKey: selectedServerKey, legionName: selectedLegionName, legionLeadersOnly, sort } = filters
+  const clientServerId = initialScope?.serverId
+  const filteredServers = useMemo(() => {
+    const choices = clientServerId && !servers.some(server => server.serverId === clientServerId)
+      ? [...servers, { serverId: clientServerId, serverName: `区服 ${clientServerId}`, raceId: 0, characterCount: 0, unaffiliatedCount: 0, legions: [] }]
+      : servers
+    return selectedRaceId === '0' ? choices : choices.filter(server => String(server.raceId) === selectedRaceId)
+  }, [servers, selectedRaceId, clientServerId])
   const [search, setSearch] = useState('')
+  const [chatStatus, setChatStatus] = useState<'all' | 'chatted' | 'unchatted'>('all')
+  const [chatRevision, setChatRevision] = useState(0)
+  useEffect(() => {
+    if (chatStatus === 'all') return
+    const refresh = () => setChatRevision(value => value + 1)
+    window.addEventListener('aion:chat-history-saved', refresh)
+    return () => window.removeEventListener('aion:chat-history-saved', refresh)
+  }, [chatStatus])
   const [characters, setCharacters] = useState<GameCharacter[]>([])
-  const [nextCursor, setNextCursor] = useState<number | null>(null)
+  const [nextCursor, setNextCursor] = useState<number | string | null>(null)
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const createCharacterParams = useCallback((limit: number, cursor = 0) => {
+  const createCharacterParams = useCallback((limit: number, cursor: number | string = 0) => {
     const params = new URLSearchParams({ limit: String(limit) })
+    if (chatStatus !== 'all') params.set('chatStatus', chatStatus)
     if (selectedRaceId !== '0') params.set('raceId', selectedRaceId)
     if (selectedServerKey !== ALL_SERVERS_KEY) params.set('serverId', selectedServerKey)
     if (selectedLegionName === NO_LEGION_KEY) params.set('withoutLegion', '1')
     else if (selectedLegionName) params.set('legionName', selectedLegionName)
+    if (legionLeadersOnly) params.set('legionLeadersOnly', '1')
     if (search.trim()) params.set('q', search.trim())
-    if (cursor > 0) params.set('cursor', String(cursor))
+    if (sort !== 'default') params.set('sort', sort)
+    if (cursor !== 0) params.set('cursor', String(cursor))
     return params
-  }, [search, selectedLegionName, selectedServerKey, selectedRaceId])
+  }, [search, selectedLegionName, selectedServerKey, selectedRaceId, legionLeadersOnly, sort, chatStatus])
 
   const characterRequest = useRef<AbortController | null>(null)
-  const fetchCharacters = useCallback(async (cursor: number, append: boolean, signal?: AbortSignal) => {
+  const fetchCharacters = useCallback(async (cursor: number | string, append: boolean, signal?: AbortSignal) => {
     if (!filtersReady) return
     if (append && characterRequest.current) return
     characterRequest.current?.abort()
@@ -124,19 +148,18 @@ export function useCharacterDirectory(storageKey?: string) {
     }
   }, [createCharacterParams, selectedServerKey, filtersReady])
 
-  const loadAll = useCallback(async (signal?: AbortSignal) => {
+  const streamAll = useCallback(async function* (signal?: AbortSignal, pageSize = 1000) {
     if (!filtersReady) throw new Error('筛选条件正在恢复，请稍后重试。')
-    if (!selectedServerKey) return []
+    if (!selectedServerKey) return
 
-    const allCharacters: GameCharacter[] = []
-    const visitedCursors = new Set<number>()
-    let cursor = 0
+    const visitedCursors = new Set<number | string>()
+    let cursor: number | string = 0
     while (true) {
       signal?.throwIfAborted()
       if (visitedCursors.has(cursor)) throw new Error('角色分页游标重复，已停止读取。')
       visitedCursors.add(cursor)
 
-      const params = createCharacterParams(1000, cursor)
+      const params = createCharacterParams(pageSize, cursor)
       params.set('bulk', '1')
       params.set('includeTotal', '0')
       const response = await fetch(`/api/characters?${params}`, { signal: AbortSignal.any([
@@ -144,11 +167,18 @@ export function useCharacterDirectory(storageKey?: string) {
       ]) })
       if (!response.ok) throw new Error(`全部角色加载失败 (${response.status})`)
       const result = await response.json() as CharacterResponse
-      allCharacters.push(...result.characters.map(toGameCharacter))
-      if (result.nextCursor === null) return allCharacters
+      signal?.throwIfAborted()
+      yield result.characters.map(toGameCharacter)
+      if (result.nextCursor === null) return
       cursor = result.nextCursor
     }
   }, [createCharacterParams, selectedServerKey, filtersReady])
+
+  const loadAll = useCallback(async (signal?: AbortSignal) => {
+    const characters: GameCharacter[] = []
+    for await (const page of streamAll(signal)) characters.push(...page)
+    return characters
+  }, [streamAll])
 
   useEffect(() => {
     if (!filtersReady) return
@@ -166,7 +196,7 @@ export function useCharacterDirectory(storageKey?: string) {
       characterRequest.current?.abort()
       characterRequest.current = null
     }
-  }, [fetchCharacters, search, filtersReady])
+  }, [fetchCharacters, search, filtersReady, chatRevision])
 
   const selectServer = useCallback((serverKey: string) => {
     updateFilters(previous => previous.serverKey === serverKey ? previous : { ...previous, serverKey, legionName: null })
@@ -175,7 +205,7 @@ export function useCharacterDirectory(storageKey?: string) {
 
   const selectRace = useCallback((raceId: string) => {
     const normalized = raceId === '1' || raceId === '2' ? raceId : '0'
-    updateFilters(previous => previous.raceId === normalized ? previous : { raceId: normalized, serverKey: ALL_SERVERS_KEY, legionName: null })
+    updateFilters(previous => previous.raceId === normalized ? previous : { ...previous, raceId: normalized, serverKey: ALL_SERVERS_KEY, legionName: null })
     setSearch('')
   }, [updateFilters])
 
@@ -185,6 +215,13 @@ export function useCharacterDirectory(storageKey?: string) {
   }, [updateFilters])
 
   return {
+    sort,
+    chatStatus,
+    chatRevision,
+    setChatStatus,
+    setSort: (sort: CharacterSort) => updateFilters(previous => ({ ...previous, sort })),
+    legionLeadersOnly,
+    setLegionLeadersOnly: (legionLeadersOnly: boolean) => updateFilters(previous => ({ ...previous, legionLeadersOnly })),
     servers: filteredServers,
     selectedRaceId,
     selectRace,
@@ -206,5 +243,6 @@ export function useCharacterDirectory(storageKey?: string) {
     },
     loadMore: () => nextCursor === null ? Promise.resolve() : fetchCharacters(nextCursor, true),
     loadAll,
+    streamAll,
   }
 }

@@ -1,0 +1,117 @@
+{
+  "checkedAt": "2026-09-24T08:06:07.055Z",
+  "base": "https://mmorpgchat.com",
+  "pages": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/messages",
+      "status": 200
+    }
+  ],
+  "assets": [
+    {
+      "name": "characters-CAIeH5mq.js",
+      "sha256": "ab913ea8b5e281e4a6dbd85b354e95eaf5b285987b804c6859aabdddf9387591",
+      "matches": true
+    },
+    {
+      "name": "clients-CAIeH5mq.js",
+      "sha256": "ab913ea8b5e281e4a6dbd85b354e95eaf5b285987b804c6859aabdddf9387591",
+      "matches": true
+    },
+    {
+      "name": "console-CAIeH5mq.js",
+      "sha256": "ab913ea8b5e281e4a6dbd85b354e95eaf5b285987b804c6859aabdddf9387591",
+      "matches": true
+    },
+    {
+      "name": "docs-CAIeH5mq.js",
+      "sha256": "ab913ea8b5e281e4a6dbd85b354e95eaf5b285987b804c6859aabdddf9387591",
+      "matches": true
+    },
+    {
+      "name": "index-BoZFzPiG.js",
+      "sha256": "769c3ac0f398c31498dc61e6a1a170d331993e6b63684f95771e6aea232ff891",
+      "matches": true
+    },
+    {
+      "name": "index-BvXROlNY.css",
+      "sha256": "680c4479dc01a554dd0cf9ec2a12de7d45ec42c17d62262774b5e616b2f73376",
+      "matches": true
+    },
+    {
+      "name": "intelligence-DJ7LAi8J.js",
+      "sha256": "b0d4a42c1fc0b25b0d80c4a10c90c24b20df6f1683c5e9a8c81897a4b063c63d",
+      "matches": true
+    },
+    {
+      "name": "messages-CAIeH5mq.js",
+      "sha256": "ab913ea8b5e281e4a6dbd85b354e95eaf5b285987b804c6859aabdddf9387591",
+      "matches": true
+    },
+    {
+      "name": "mqtt.esm-DJxwHEmv.js",
+      "sha256": "c4acbb85e22bce9b3d6d1e8c33928d7d995f677a272a5825adecfca71595a7ad",
+      "matches": true
+    },
+    {
+      "name": "reception-DJ7LAi8J.js",
+      "sha256": "b0d4a42c1fc0b25b0d80c4a10c90c24b20df6f1683c5e9a8c81897a4b063c63d",
+      "matches": true
+    },
+    {
+      "name": "routes-BUj0y55M.js",
+      "sha256": "70e51b8cccd19e73fdd35907fbdbb367f669fa384dd0bf4bf01aeddd64a963e2",
+      "matches": true
+    },
+    {
+      "name": "settings-CAIeH5mq.js",
+      "sha256": "ab913ea8b5e281e4a6dbd85b354e95eaf5b285987b804c6859aabdddf9387591",
+      "matches": true
+    },
+    {
+      "name": "styles-Mu9YF8Bp.css",
+      "sha256": "4a36b86b768c16b8264c1bcccc037595a28ac8fff5b8e602716afd6c74de0ca5",
+      "matches": true
+    },
+    {
+      "name": "usage-DJ7LAi8J.js",
+      "sha256": "b0d4a42c1fc0b25b0d80c4a10c90c24b20df6f1683c5e9a8c81897a4b063c63d",
+      "matches": true
+    },
+    {
+      "name": "_portal-B3AvOO-L.js",
+      "sha256": "d4324eadea4e35b2efabe208ed5d6a78ee4419f69fa4b86cb9b0f998d95c252a",
+      "matches": true
+    }
+  ],
+  "auth": [
+    {
+      "path": "/api/auth",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "path": "/api/mqtt/connection",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "path": "/api/messages?serverId=1001&characterId=1",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "path": "/api/presence/status",
+      "method": "POST",
+      "status": 401
+    }
+  ],
+  "browser": {
+    "loginVisible": true,
+    "errors": []
+  }
+}

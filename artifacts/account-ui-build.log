@@ -1,0 +1,65 @@
+
+> build
+> vite build
+
+vite v8.2.2 building client environment for production...
+transforming...
+
+[@tanstack/devtools-vite] Removed devtools code from: /src/routes/__root.tsx
+
+✓ 2251 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/.assetsignore                    0.02 kB
+dist/client/assets/index-BvXROlNY.css        3.78 kB │ gzip:   1.25 kB
+dist/client/assets/styles-CtvvFyCH.css      82.35 kB │ gzip:  16.52 kB
+dist/client/assets/usage-DJ7LAi8J.js         0.03 kB │ gzip:   0.05 kB
+dist/client/assets/ai-persona-CAIeH5mq.js    0.04 kB │ gzip:   0.06 kB
+dist/client/assets/characters-CAIeH5mq.js    0.04 kB │ gzip:   0.06 kB
+dist/client/assets/clients-CAIeH5mq.js       0.04 kB │ gzip:   0.06 kB
+dist/client/assets/console-CAIeH5mq.js       0.04 kB │ gzip:   0.06 kB
+dist/client/assets/docs-CAIeH5mq.js          0.04 kB │ gzip:   0.06 kB
+dist/client/assets/messages-CAIeH5mq.js      0.04 kB │ gzip:   0.06 kB
+dist/client/assets/settings-CAIeH5mq.js      0.04 kB │ gzip:   0.06 kB
+dist/client/assets/_portal-DqPtpMHg.js       0.29 kB │ gzip:   0.22 kB
+dist/client/assets/routes-D0CSgRdO.js      122.52 kB │ gzip:  32.71 kB
+dist/client/assets/mqtt.esm-DJxwHEmv.js    357.42 kB │ gzip: 104.47 kB
+dist/client/assets/index-D00zOFNv.js       828.82 kB │ gzip: 246.77 kB
+
+✓ built in 1.87s
+vite v8.2.2 building ssr environment for production...
+transforming...
+
+[@tanstack/devtools-vite] Removed devtools code from: /src/routes/__root.tsx
+
+✓ 3165 modules transformed.
+rendering chunks...
+Using secrets defined in process.env
+computing gzip size...
+dist/server/wrangler.json                                      1.55 kB │ gzip:   0.84 kB
+dist/server/.vite/manifest.json                                6.77 kB │ gzip:   1.13 kB
+dist/server/assets/managed-chat-controls-BvXROlNY.css          3.78 kB │ gzip:   1.25 kB
+dist/server/assets/styles-CtvvFyCH.css                        82.35 kB │ gzip:  16.52 kB
+dist/server/assets/client-locks.server-D8S2-DY2.js             0.08 kB │ gzip:   0.08 kB
+dist/server/assets/usage-FcqKVyYO.js                           0.14 kB │ gzip:   0.12 kB
+dist/server/assets/docs-udQ07jdn.js                            0.15 kB │ gzip:   0.13 kB
+dist/server/assets/clients-BkuPDu-3.js                         0.16 kB │ gzip:   0.14 kB
+dist/server/assets/console-DrC6GPKE.js                         0.16 kB │ gzip:   0.14 kB
+dist/server/assets/messages-KxJa7rm8.js                        0.16 kB │ gzip:   0.14 kB
+dist/server/assets/settings-D3kn_OXY.js                        0.16 kB │ gzip:   0.14 kB
+dist/server/assets/ai-persona-BE75u9bf.js                      0.16 kB │ gzip:   0.14 kB
+dist/server/assets/characters-BPjinb6N.js                      0.16 kB │ gzip:   0.14 kB
+dist/server/assets/start-DxgovzEb.js                           0.22 kB │ gzip:   0.17 kB
+dist/server/assets/empty-plugin-adapters-D7mxBbir.js           0.28 kB │ gzip:   0.18 kB
+dist/server/assets/_portal-Bmfamsnj.js                         1.46 kB │ gzip:   0.75 kB
+dist/server/assets/_tanstack-start-manifest_v-BCOiRh__.js      2.50 kB │ gzip:   0.63 kB
+dist/server/assets/matchContext-BJuTIfvk.js                    2.70 kB │ gzip:   1.13 kB
+dist/server/assets/react-dom-DFz6zqDu.js                      74.30 kB │ gzip:  20.00 kB
+dist/server/assets/manifest-BDLu45U3.js                       93.75 kB │ gzip:  22.25 kB
+dist/server/assets/routes-COogka-7.js                        239.97 kB │ gzip:  45.48 kB
+dist/server/assets/mqtt.esm-D_637COy.js                      471.54 kB │ gzip: 124.36 kB
+dist/server/index.js                                         669.73 kB │ gzip: 137.47 kB
+dist/server/assets/managed-chat-controls-DkqVePhS.js         819.25 kB │ gzip: 195.09 kB
+dist/server/assets/router-BoAQQUYE.js                      2,036.11 kB │ gzip: 315.96 kB
+
+✓ built in 2.44s

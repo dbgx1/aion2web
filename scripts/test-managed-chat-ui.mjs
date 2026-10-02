@@ -15,13 +15,13 @@ const bundle=await build({stdin:{contents:source+fixture,resolveDir:root+'src/ro
  window.receive=value=>emit('message','aion2-chat-bridge/aion2-local/events/A1/chat',new TextEncoder().encode(JSON.stringify(value)));
  window.reply=(role,id)=>window.receive({type:'MESSAGE',method:'GAME',message_id:id,agentId:'A1',time:new Date().toISOString(),payload:{jsonData:{playNcCharId:String(role),serverId:'1001',userName:'Role '+role,isFromGame:false,content:id,gameRoomKeyInfo:{type:'ONE_ON_ONE'}}}});
  window.heartbeat=()=>emit('message','aion2-chat-bridge/aion2-local/agents/A1/status',new TextEncoder().encode(JSON.stringify({type:'agent_status',agentId:'A1',host:'A1',serverId:'1001',room:'aion2-local',status:'online',time:new Date().toISOString()})));
- return client }
+ setInterval(()=>{if(client.connected)window.heartbeat()},10000);return client }
  `:`import React from 'react';export const createFileRoute=()=>v=>v;export const useNavigate=()=>()=>{};export const Link=({children,to,...props})=><a href={to} {...props} onClick={event=>{event.preventDefault();window.section(to.slice(1))}}>{children}</a>;`}))
 }}]})
 const characters=[1,2,3].map(id=>({id,characterId:String(id),characterName:'Role '+id,serverId:'1001',serverName:'Test',legionName:'',className:'',level:1,faction:'',avatarUrl:'',lastSeenAt:0}))
 const calls=[], requestTurns=new Map();let fail=false
 const historyLookups=[]
-let lockAcquiredAt=100, lockOwner='a'
+let hasAccess=true
 const server=createServer(async(req,res)=>{
  if(req.url==='/bundle.js'){res.setHeader('Content-Type','text/javascript');res.end(bundle.outputFiles.find(x=>x.path.endsWith('.js')).text);return}
  if(req.url==='/styles.css'){res.setHeader('Content-Type','text/css');res.end(readFileSync(root+'src/styles.css'));return}
@@ -39,7 +39,8 @@ const server=createServer(async(req,res)=>{
  }
  if(req.url.startsWith('/api/')){
   if(req.method==='GET'&&req.url.startsWith('/api/messages?'))historyLookups.push(new URL(req.url,'http://localhost').searchParams.get('characterId'))
-  let body={ok:true,characters,servers:[],messages:[],nextCursor:null,totalCount:3,locks:[{agentId:'A1',userKey:lockOwner,username:lockOwner==='a'?'Alice':'Bob',acquiredAt:lockAcquiredAt,expiresAt:0}]}
+  let body={ok:true,entries:[],characters,servers:[{serverId:'1001',serverName:'Test',legions:[],characterCount:3}],messages:[],nextCursor:null,totalCount:3}
+  if(req.url.startsWith('/api/server-access')&&!hasAccess){res.statusCode=403;body={error:'no access'}}
   if(req.url.startsWith('/api/characters?')&&!new URL(req.url,'http://localhost').searchParams.has('bulk'))body={...body,characters:characters.slice(0,2),nextCursor:2}
   if(req.url==='/api/presence/status')body.statuses=characters.map((c,i)=>({serverId:'1001',characterId:c.characterId,name:c.characterName,online:i<2,status:i===0?'online':i===1?'stale':'offline',checkedAt:Date.now()-(i===1?600000:0),updatedAt:Date.now(),sourceId:'test'}))
   if(req.url==='/api/presence/requests'&&req.method==='POST'){let raw='';for await(const part of req)raw+=part;const requestId=crypto.randomUUID();body={query:{type:'presence_query',requestId,serviceId:'test',requestTopic:'aion2/presence/test/requests',replyTopic:'aion2/presence/test/results/'+requestId,expiresAt:Date.now()+180000,characters:JSON.parse(raw).characters}}}
@@ -57,7 +58,7 @@ try{
  await page.goto(url);await page.getByPlaceholder('发送消息给 Role 1').waitFor()
  await page.clock.install()
  const advance=async ms=>{await page.evaluate(()=>window.heartbeat());await page.clock.runFor(ms)}
- const openSetup=async()=>{if(await page.locator('.managed-chat-setup').getAttribute('open')===null)await page.locator('.managed-chat-setup summary').click()}
+ const openSetup=async()=>{if(await page.locator('.message-assistant-toggle').getAttribute('aria-expanded')==='false')await page.locator('.message-assistant-toggle').click();if(await page.locator('.managed-chat-setup').getAttribute('open')===null)await page.locator('.managed-chat-setup summary').click()}
  await openSetup();await page.getByLabel('托管发送间隔秒').fill('-1')
  assert.equal(await page.getByRole('button',{name:'开启持续托管'}).isDisabled(),true)
  await page.getByRole('alert').getByText('全局发送间隔请输入有效的非负数字。').waitFor()
@@ -114,24 +115,23 @@ try{
  assert.equal(await page.getByRole('button',{name:'暂停托管'}).count(),1,'Complete first round stays active')
  mkdirSync(root+'artifacts',{recursive:true});await page.setViewportSize({width:1920,height:1080});await page.screenshot({path:root+'artifacts/managed-chat.png',fullPage:true})
  // A second tab cannot start a second scheduler for this same client.
- const other=await context.newPage();await other.goto(url);await other.getByPlaceholder('发送消息给 Role 1').waitFor();await other.locator('.managed-chat-setup summary').click()
+ const other=await context.newPage();await other.goto(url);await other.getByPlaceholder('发送消息给 Role 1').waitFor();await other.locator('.message-assistant-toggle').click();await other.locator('.managed-chat-setup summary').click()
  await other.getByRole('button',{name:'开启持续托管'}).click();await other.locator('.managed-chat-setup summary').click();await other.getByText('其他标签页正在托管此客户端，请先在那里停止').waitFor();await other.close()
- const sentBeforeOwnershipChange=await page.evaluate(()=>window.commands.length)
- lockAcquiredAt=200
- await advance(6000);await advance(1000)
+ const sentBeforeScopeChange=await page.evaluate(()=>window.commands.length)
+ hasAccess=false
+ await page.evaluate(()=>window.reply('1','revoked permission'))
+ for(let i=0;i<8&&!await page.getByRole('button',{name:'恢复托管'}).count();i++)await advance(10000)
  await page.getByRole('button',{name:'恢复托管'}).waitFor()
- assert.equal(await page.evaluate(()=>window.commands.length),sentBeforeOwnershipChange,'New generation pauses automatically even for the same account')
+ assert.equal(await page.evaluate(()=>window.commands.length),sentBeforeScopeChange,'Revoked server access prevents managed sends')
+ await page.getByRole('button',{name:'恢复托管'}).click()
+ await page.getByText('当前账号没有该区服权限',{exact:true}).waitFor()
+ hasAccess=true
  await page.getByRole('button',{name:'恢复托管'}).click()
  await page.getByRole('button',{name:'暂停托管'}).waitFor()
- await page.evaluate(()=>window.reply('1','reply after explicit resume'))
- await advance(6000);await page.waitForFunction(n=>window.commands.length===n,sentBeforeOwnershipChange+1)
- assert.equal(calls.findLast(call=>call.forwardedProps?.surface==='managed').forwardedProps.acquiredAt,200,'Explicit resume passes the server-verified generation to the AI endpoint')
- lockOwner='b';lockAcquiredAt=300
- await advance(6000);await advance(1000)
- await page.getByRole('button',{name:'恢复托管'}).waitFor()
- await page.getByRole('button',{name:'恢复托管'}).click()
- await page.getByText('当前账号未占用此客户端，请先重新占用再恢复托管',{exact:true}).waitFor()
- assert.equal(await page.evaluate(()=>window.commands.length),sentBeforeOwnershipChange+1,'Explicit resume cannot adopt another user’s lock')
+ await page.evaluate(()=>window.reply('1','restored permission'))
+ await advance(16000)
+ await page.waitForFunction(n=>window.commands.length>n,sentBeforeScopeChange)
+ assert.equal(calls.findLast(call=>call.forwardedProps?.surface==='managed').forwardedProps.serverId,'1001')
  await page.getByRole('button',{name:'停止托管'}).click()
  assert.deepEqual(errors,[])
  console.log('PASS: real portal + SDK + SSE + MQTT receipt path; all tools; single/online/all; independent target while navigating; pause/stop; sustained rounds; cross-tab exclusion')

@@ -1,0 +1,24 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.19.0
+2 info using node@v24.20.0
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:E:\project\aion2web\.npmrc
+5 silly config load:file:C:\Users\Administrator\.npmrc
+6 silly config load:file:C:\Users\Administrator\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm exec @tanstack/intent@latest load @tanstack/start-client-core#start-core
+8 verbose argv "exec" "--" "@tanstack/intent@latest" "load" "@tanstack/start-client-core#start-core"
+9 verbose logfile logs-max:10 dir:E:\project\aion2web\.npm-cache\_logs\2026-09-24T07_21_17_650Z-
+10 verbose logfile E:\project\aion2web\.npm-cache\_logs\2026-09-24T07_21_17_650Z-debug-0.log
+11 silly logfile start cleaning logs, removing 1 files
+12 silly logfile done cleaning log files
+13 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+14 http fetch GET 200 https://registry.npmjs.org/@tanstack%2fintent 348ms (cache revalidated)
+15 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+16 verbose Could not read global path C:\Users\Administrator\AppData\Roaming\npm, ignoring
+17 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+18 verbose cwd E:\project\aion2web
+19 verbose os Windows_NT 10.0.19045
+20 verbose node v24.20.0
+21 verbose npm  v11.19.0
+22 verbose exit 0
+23 info ok

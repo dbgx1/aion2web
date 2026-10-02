@@ -1,0 +1,35 @@
+// src/context/devtools-store.ts
+var keyboardModifiers = [
+  "Alt",
+  "Control",
+  "Meta",
+  "Shift",
+  "CtrlOrMeta"
+];
+var initialState = {
+  settings: {
+    defaultOpen: false,
+    hideUntilHover: false,
+    position: "bottom-right",
+    triggerMode: "floating",
+    triggerCoords: void 0,
+    panelLocation: "bottom",
+    openHotkey: ["Control", "~"],
+    inspectHotkey: ["Shift", "Alt", "CtrlOrMeta"],
+    requireUrlFlag: false,
+    urlFlag: "tanstack-devtools",
+    theme: typeof window !== "undefined" && typeof window.matchMedia !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+    sourceAction: "ide-warp",
+    triggerHidden: false,
+    customTrigger: void 0
+  },
+  state: {
+    activeTab: "plugins",
+    height: 400,
+    layout: null,
+    persistOpen: false,
+    subheaderCollapsed: false
+  }
+};
+
+export { initialState, keyboardModifiers };

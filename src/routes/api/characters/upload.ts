@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { parseCharacterUpload } from '#/lib/character-upload'
 import { jsonError, verifyBearerToken } from '#/server/api-auth.server'
-import { isAdminRequest } from '#/server/admin-auth.server'
+import { currentAdminPrincipal } from '#/server/admin-auth.server'
 import { upsertCharacters, uploadToken } from '#/server/characters.server'
+import { readLimitedBody } from '#/server/request-body.server'
 
 const MAX_BODY_BYTES = 1_000_000
 const MAX_BATCH_SIZE = 200
@@ -11,7 +12,7 @@ export const Route = createFileRoute('/api/characters/upload')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const authorized = await isAdminRequest(request) || await verifyBearerToken(request, uploadToken())
+        const authorized = (await currentAdminPrincipal(request))?.role === 'admin' || await verifyBearerToken(request, uploadToken())
         if (!authorized) {
           return jsonError('上传令牌无效', 401)
         }
@@ -19,8 +20,13 @@ export const Route = createFileRoute('/api/characters/upload')({
         const contentLength = Number(request.headers.get('content-length') || 0)
         if (contentLength > MAX_BODY_BYTES) return jsonError('请求体不能超过 1MB', 413)
 
-        const bodyText = await request.text()
-        if (bodyText.length > MAX_BODY_BYTES) return jsonError('请求体不能超过 1MB', 413)
+        let bodyText: string | null
+        try {
+          bodyText = await readLimitedBody(request, MAX_BODY_BYTES)
+        } catch {
+          return jsonError('无法读取请求体', 400)
+        }
+        if (bodyText === null) return jsonError('请求体不能超过 1MB', 413)
 
         let body: unknown
         try {

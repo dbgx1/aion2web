@@ -1,0 +1,225 @@
+import { aiEventClient, createAIDevtoolsEventEnvelope } from "@tanstack/ai-event-client";
+//#region src/events.ts
+/**
+* Abstract base class for ChatClient event emission
+*/
+var ChatClientEventEmitter = class {
+	clientId;
+	constructor(clientId) {
+		this.clientId = clientId;
+	}
+	/**
+	* Emit client created event
+	*/
+	clientCreated(initialMessageCount) {
+		this.emitEvent("client:created", { initialMessageCount });
+	}
+	/**
+	* Emit loading state changed event
+	*/
+	loadingChanged(isLoading) {
+		this.emitEvent("client:loading:changed", { isLoading });
+	}
+	/**
+	* Emit error state changed event
+	*/
+	errorChanged(error) {
+		this.emitEvent("client:error:changed", { error });
+	}
+	/**
+	* Emit text update events (combines processor and client events)
+	*/
+	textUpdated(streamId, messageId, content, context) {
+		this.emitEvent("text:chunk:content", {
+			streamId,
+			messageId,
+			content,
+			...context
+		});
+	}
+	/**
+	* Emit tool call state change events (combines processor and client events)
+	*/
+	toolCallStateChanged(streamId, messageId, toolCallId, toolName, state, args, context) {
+		this.emitEvent("tools:call:updated", {
+			streamId,
+			messageId,
+			toolCallId,
+			toolName,
+			state,
+			arguments: args,
+			...context
+		});
+	}
+	/**
+	* Emit tool result state change event
+	*/
+	/**
+	* Emit thinking update event
+	*/
+	thinkingUpdated(streamId, messageId, content, delta, context) {
+		this.emitEvent("text:chunk:thinking", {
+			streamId,
+			messageId,
+			content,
+			delta,
+			...context
+		});
+	}
+	structuredOutputChanged(eventName, streamId, messageId, output, context) {
+		this.emitEvent(eventName, {
+			streamId,
+			messageId,
+			...output,
+			...context
+		});
+	}
+	/**
+	* Emit approval requested event
+	*/
+	approvalRequested(streamId, messageId, toolCallId, toolName, input, approvalId, context) {
+		this.emitEvent("tools:approval:requested", {
+			streamId,
+			messageId,
+			toolCallId,
+			toolName,
+			input,
+			approvalId,
+			...context
+		});
+	}
+	/**
+	* Emit message appended event
+	*/
+	messageAppended(uiMessage, streamId, context) {
+		const content = uiMessage.parts.filter((part) => part.type === "text").map((part) => part.content).join(" ");
+		this.emitEvent("text:message:created", {
+			streamId,
+			messageId: uiMessage.id,
+			role: uiMessage.role,
+			content,
+			parts: uiMessage.parts,
+			...context
+		});
+	}
+	/**
+	* Emit message sent event.
+	* Supports both simple string content and multimodal content arrays.
+	*
+	* @param messageId - The ID of the sent message
+	* @param content - The message content (string or array of ContentPart for multimodal)
+	*/
+	messageSent(messageId, content) {
+		const textContent = typeof content === "string" ? content : content.filter((part) => part.type === "text").map((part) => part.content).join("");
+		this.emitEvent("text:message:created", {
+			messageId,
+			role: "user",
+			content: textContent,
+			...Array.isArray(content) && { parts: content }
+		});
+		this.emitEvent("text:message:user", {
+			messageId,
+			role: "user",
+			content: textContent,
+			...Array.isArray(content) && { parts: content }
+		});
+	}
+	/**
+	* Emit reloaded event
+	*/
+	reloaded(fromMessageIndex) {
+		this.emitEvent("client:reloaded", { fromMessageIndex });
+	}
+	/**
+	* Emit stopped event
+	*/
+	stopped() {
+		this.emitEvent("client:stopped");
+	}
+	/**
+	* Emit messages cleared event
+	*/
+	messagesCleared() {
+		this.emitEvent("client:messages:cleared");
+	}
+	/**
+	* Emit tool result added event
+	*/
+	toolResultAdded(toolCallId, toolName, output, state, context) {
+		this.emitEvent("tools:result:added", {
+			toolCallId,
+			toolName,
+			output,
+			state,
+			...context
+		});
+	}
+	/**
+	* Emit tool approval responded event
+	*/
+	toolApprovalResponded(approvalId, toolCallId, approved, context) {
+		this.emitEvent("tools:approval:responded", {
+			approvalId,
+			toolCallId,
+			approved,
+			...context
+		});
+	}
+	/**
+	* Emit tool fixture applied event.
+	*/
+	toolFixtureApplied(fixture) {
+		this.emitEvent("devtools:tool-fixture:applied", { ...fixture });
+	}
+};
+/**
+* Default implementation of ChatClientEventEmitter
+*/
+var DefaultChatClientEventEmitter = class extends ChatClientEventEmitter {
+	/**
+	* Emit an event with automatic clientId and timestamp for client/tool events
+	*/
+	emitEvent(eventName, data) {
+		const timestamp = Date.now();
+		const isUserVisibleEvent = eventName.startsWith("text:") || eventName.startsWith("tools:") || eventName.startsWith("structured-output:") || eventName === "devtools:tool-fixture:applied";
+		const includesClientContext = eventName.startsWith("client:") || eventName.startsWith("tools:") || eventName.startsWith("text:") || eventName.startsWith("structured-output:") || eventName === "devtools:tool-fixture:applied";
+		const visibility = isUserVisibleEvent ? "user-visible" : "client-state";
+		const envelopeContext = {
+			hookId: this.clientId,
+			...typeof data?.threadId === "string" ? { threadId: data.threadId } : {},
+			...typeof data?.runId === "string" ? { runId: data.runId } : {},
+			...typeof data?.streamId === "string" ? { streamId: data.streamId } : {},
+			...typeof data?.messageId === "string" ? { messageId: data.messageId } : {},
+			...typeof data?.toolCallId === "string" ? { toolCallId: data.toolCallId } : {}
+		};
+		if (includesClientContext) {
+			const envelope = createAIDevtoolsEventEnvelope({
+				eventType: eventName,
+				clientId: this.clientId,
+				...envelopeContext,
+				source: "client",
+				visibility,
+				timestamp
+			});
+			aiEventClient.emit(eventName, {
+				...data,
+				...envelope
+			});
+		} else {
+			const envelope = createAIDevtoolsEventEnvelope({
+				eventType: eventName,
+				source: "client",
+				visibility: "client-state",
+				timestamp
+			});
+			aiEventClient.emit(eventName, {
+				...data,
+				...envelope
+			});
+		}
+	}
+};
+//#endregion
+export { ChatClientEventEmitter, DefaultChatClientEventEmitter };
+
+//# sourceMappingURL=events.js.map

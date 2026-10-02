@@ -1,0 +1,840 @@
+
+--- 2026-09-15T03:15:32.770Z debug
+🪵  Writing logs to "E:\project\aion2web\artifacts\presence-deploy-wrangler.log"
+---
+
+--- 2026-09-15T03:15:32.770Z debug
+local dev variables file not found at ".dev.vars". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-09-15T03:15:32.772Z debug
+.env file not found at "E:\project\aion2web\.env". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-09-15T03:15:32.772Z debug
+.env file not found at "E:\project\aion2web\.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-09-15T03:15:32.772Z log
+Using secrets defined in process.env
+---
+
+--- 2026-09-15T03:15:32.867Z warn
+▲ [WARNING] Missing required secrets: UPLOAD_API_TOKEN, OPENROUTER_API_KEY. Add them to .dev.vars, .env, or set as environment variables.
+
+
+---
+
+--- 2026-09-15T03:15:34.140Z debug
+🪵  Writing logs to "E:\project\aion2web\artifacts\presence-deploy-wrangler.log"
+---
+
+--- 2026-09-15T03:15:34.140Z debug
+.env file not found at "E:\project\aion2web\.env". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-09-15T03:15:34.141Z debug
+.env file not found at "E:\project\aion2web\.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-09-15T03:15:34.152Z log
+
+ ⛅️ wrangler 4.129.0 (update available 4.131.2)
+───────────────────────────────────────────────
+---
+
+--- 2026-09-15T03:15:34.155Z info
+Using redirected Wrangler configuration.
+ - Configuration being used: "dist\server\wrangler.json"
+ - Original user's configuration: "wrangler.jsonc"
+ - Deploy configuration file: ".wrangler\deploy\config.json"
+---
+
+--- 2026-09-15T03:15:34.171Z debug
+Running autoconfig detection in E:\project\aion2web...
+---
+
+--- 2026-09-15T03:15:34.173Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"wrangler command started","timestamp":1789442134173,"properties":{"amplitude_session_id":1789442134160,"amplitude_event_id":0,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"packageManager":"npm","isFirstUsage":false,"configFileType":"json","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":true,"agent":"codex","argsUsed":[],"argsCombination":"","sanitizedCommand":"deploy","sanitizedArgs":{},"currentAgentSkillsInstalled":false}}
+---
+
+--- 2026-09-15T03:15:34.181Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"autoconfig_process_started","timestamp":1789442134181,"properties":{"amplitude_session_id":1789442134171,"amplitude_event_id":0,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"packageManager":"npm","isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"codex","category":"Workers","os":"win32:x64","autoConfigId":"824036f8-640c-4d01-81d9-82f230d50bdf","command":"wrangler deploy","dryRun":false,"currentAgentSkillsInstalled":false}}
+---
+
+--- 2026-09-15T03:15:34.182Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"autoconfig_detection_started","timestamp":1789442134182,"properties":{"amplitude_session_id":1789442134171,"amplitude_event_id":0,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"packageManager":"npm","isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"codex","category":"Workers","os":"win32:x64","autoConfigId":"824036f8-640c-4d01-81d9-82f230d50bdf","command":"wrangler deploy","currentAgentSkillsInstalled":false}}
+---
+
+--- 2026-09-15T03:15:34.183Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"autoconfig_detection_completed","timestamp":1789442134183,"properties":{"amplitude_session_id":1789442134172,"amplitude_event_id":0,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"packageManager":"npm","isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"codex","category":"Workers","os":"win32:x64","autoConfigId":"824036f8-640c-4d01-81d9-82f230d50bdf","configured":true,"success":true,"currentAgentSkillsInstalled":false}}
+---
+
+--- 2026-09-15T03:15:34.197Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"autoconfig_process_ended","timestamp":1789442134197,"properties":{"amplitude_session_id":1789442134172,"amplitude_event_id":0,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"packageManager":"npm","isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"codex","category":"Workers","os":"win32:x64","autoConfigId":"824036f8-640c-4d01-81d9-82f230d50bdf","command":"wrangler deploy","dryRun":false,"success":true,"currentAgentSkillsInstalled":false}}
+---
+
+--- 2026-09-15T03:15:34.341Z info
+Attaching additional modules:
+---
+
+--- 2026-09-15T03:15:34.346Z log
+┌───────────────────────────────────────────────┬──────┬─────────────┐
+│ Name                                          │ Type │ Size        │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/ai-persona-BE75u9bf.js                 │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/characters-BPjinb6N.js                 │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/clients-BkuPDu-3.js                    │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/console-DrC6GPKE.js                    │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/docs-udQ07jdn.js                       │ esm  │ 0.15 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/empty-plugin-adapters-D7mxBbir.js      │ esm  │ 0.28 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/managed-chat-controls-BkkUdDfT.js      │ esm  │ 802.82 KiB  │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/manifest-BDLu45U3.js                   │ esm  │ 91.56 KiB   │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/matchContext-BJuTIfvk.js               │ esm  │ 2.65 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/messages-KxJa7rm8.js                   │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/mqtt.esm-D_637COy.js                   │ esm  │ 460.49 KiB  │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/react-dom-DFz6zqDu.js                  │ esm  │ 72.57 KiB   │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/router-Bo26t0Ra.js                     │ esm  │ 1977.39 KiB │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/routes-Cv1wzyey.js                     │ esm  │ 226.98 KiB  │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/server-access.server-CvWCpZpe.js       │ esm  │ 0.09 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/settings-D3kn_OXY.js                   │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/start-DxgovzEb.js                      │ esm  │ 0.22 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/usage-FcqKVyYO.js                      │ esm  │ 0.14 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/_portal-DTlzktV2.js                    │ esm  │ 1.43 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/_tanstack-start-manifest_v-CVbgj114.js │ esm  │ 2.47 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ Total (20 modules)                            │      │ 3640.19 KiB │
+└───────────────────────────────────────────────┴──────┴─────────────┘
+---
+
+--- 2026-09-15T03:15:34.351Z debug
+Starting verifyWorkerMatchesCITag() with tag: undefined, name: aion2web
+---
+
+--- 2026-09-15T03:15:34.351Z debug
+No WRANGLER_CI_MATCH_TAG variable provided, aborting verifyWorkerMatchesCITag()
+---
+
+--- 2026-09-15T03:15:34.352Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/eb1e201a3afb3d17f33285240edd595e/workers/services/aion2web
+---
+
+--- 2026-09-15T03:15:34.352Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:34.353Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:34.353Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:34.353Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-09-15T03:15:34.955Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-09-15T03:15:34.955Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:34.955Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:34.955Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-09-15T03:15:34.958Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/eb1e201a3afb3d17f33285240edd595e/workers/scripts/aion2web/secrets
+---
+
+--- 2026-09-15T03:15:34.958Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:34.958Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:34.958Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:34.958Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-09-15T03:15:35.295Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-09-15T03:15:35.295Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:35.295Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:35.295Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-09-15T03:15:35.297Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/eb1e201a3afb3d17f33285240edd595e/workers/scripts/aion2web/deployments
+---
+
+--- 2026-09-15T03:15:35.297Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:35.297Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:35.297Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:35.297Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-09-15T03:15:35.601Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-09-15T03:15:35.601Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:35.601Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:35.601Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-09-15T03:15:35.603Z info
+🌀 Building list of assets...
+---
+
+--- 2026-09-15T03:15:35.604Z info
+✨ Read 18 files from the assets directory E:\project\aion2web\dist\client
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/.assetsignore
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/aion-client-center.png
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/assets
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/presence-provider-guide.json
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/assets\ai-persona-CAIeH5mq.js
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/assets\characters-CAIeH5mq.js
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/assets\clients-CAIeH5mq.js
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/assets\console-CAIeH5mq.js
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/assets\docs-CAIeH5mq.js
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/assets\index-BvXROlNY.css
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/assets\index-CaHMkcKN.js
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/assets\messages-CAIeH5mq.js
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/assets\mqtt.esm-DJxwHEmv.js
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/assets\routes-Cfb3wetp.js
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/assets\settings-CAIeH5mq.js
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/assets\styles-Dw5N73kn.css
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/assets\usage-DJ7LAi8J.js
+---
+
+--- 2026-09-15T03:15:35.604Z debug
+/assets\_portal-fhNhyB-L.js
+---
+
+--- 2026-09-15T03:15:35.605Z debug
+Ignoring asset: .assetsignore
+---
+
+--- 2026-09-15T03:15:35.627Z info
+🌀 Starting asset upload...
+---
+
+--- 2026-09-15T03:15:35.628Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/eb1e201a3afb3d17f33285240edd595e/workers/scripts/aion2web/assets-upload-session
+---
+
+--- 2026-09-15T03:15:35.628Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:35.628Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:35.628Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:35.628Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-09-15T03:15:36.888Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-09-15T03:15:36.888Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:36.888Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:36.888Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-09-15T03:15:36.888Z info
+🌀 Found 3 new or modified static assets to upload. Proceeding with upload...
+---
+
+--- 2026-09-15T03:15:36.889Z info
++ /assets/_portal-fhNhyB-L.js
+---
+
+--- 2026-09-15T03:15:36.889Z info
++ /assets/routes-Cfb3wetp.js
+---
+
+--- 2026-09-15T03:15:36.889Z info
++ /assets/index-CaHMkcKN.js
+---
+
+--- 2026-09-15T03:15:36.893Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/eb1e201a3afb3d17f33285240edd595e/workers/assets/upload?base64=true
+---
+
+--- 2026-09-15T03:15:36.893Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:36.893Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:36.893Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:36.894Z debug
+BODY: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:36.894Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-09-15T03:15:36.897Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/eb1e201a3afb3d17f33285240edd595e/workers/assets/upload?base64=true
+---
+
+--- 2026-09-15T03:15:36.897Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:36.897Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:36.897Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:36.897Z debug
+BODY: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:36.897Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-09-15T03:15:36.902Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/eb1e201a3afb3d17f33285240edd595e/workers/assets/upload?base64=true
+---
+
+--- 2026-09-15T03:15:36.902Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:36.902Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:36.902Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:36.904Z debug
+BODY: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:36.904Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-09-15T03:15:37.820Z debug
+-- START CF API RESPONSE: Accepted 202
+---
+
+--- 2026-09-15T03:15:37.820Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:37.820Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:37.820Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-09-15T03:15:37.821Z info
+Uploaded 1 of 3 assets
+---
+
+--- 2026-09-15T03:15:37.821Z debug
+✨ /assets/_portal-fhNhyB-L.js
+---
+
+--- 2026-09-15T03:15:38.122Z debug
+-- START CF API RESPONSE: Accepted 202
+---
+
+--- 2026-09-15T03:15:38.123Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:38.123Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:38.123Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-09-15T03:15:38.123Z info
+Uploaded 2 of 3 assets
+---
+
+--- 2026-09-15T03:15:38.123Z debug
+✨ /assets/routes-Cfb3wetp.js
+---
+
+--- 2026-09-15T03:15:42.339Z debug
+-- START CF API RESPONSE: Created 201
+---
+
+--- 2026-09-15T03:15:42.339Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:42.339Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:42.339Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-09-15T03:15:42.339Z info
+Uploaded 3 of 3 assets
+---
+
+--- 2026-09-15T03:15:42.339Z debug
+✨ /assets/index-CaHMkcKN.js
+---
+
+--- 2026-09-15T03:15:42.339Z log
+✨ Success! Uploaded 3 files (13 already uploaded) (5.45 sec)
+
+---
+
+--- 2026-09-15T03:15:42.442Z log
+Total Upload: 4294.22 KiB / gzip: 832.11 KiB
+---
+
+--- 2026-09-15T03:15:42.448Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/eb1e201a3afb3d17f33285240edd595e/workers/scripts/aion2web/settings
+---
+
+--- 2026-09-15T03:15:42.448Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:42.448Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:42.448Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:42.448Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-09-15T03:15:43.023Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-09-15T03:15:43.023Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:43.023Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:43.023Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-09-15T03:15:43.028Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/eb1e201a3afb3d17f33285240edd595e/workers/scripts/aion2web/versions
+---
+
+--- 2026-09-15T03:15:43.029Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:43.029Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:43.029Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:43.038Z debug
+BODY: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:43.038Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-09-15T03:15:47.767Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-09-15T03:15:47.767Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:47.767Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:47.767Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-09-15T03:15:47.769Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/eb1e201a3afb3d17f33285240edd595e/workers/scripts/aion2web/deployments
+---
+
+--- 2026-09-15T03:15:47.769Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:47.769Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:47.769Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:47.769Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-09-15T03:15:48.530Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-09-15T03:15:48.530Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:48.530Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:48.530Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-09-15T03:15:48.531Z debug
+-- START CF API REQUEST: PATCH https://api.cloudflare.com/client/v4/accounts/eb1e201a3afb3d17f33285240edd595e/workers/scripts/aion2web/script-settings
+---
+
+--- 2026-09-15T03:15:48.531Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:48.531Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:48.531Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:48.531Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-09-15T03:15:49.025Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-09-15T03:15:49.025Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.025Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.025Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-09-15T03:15:49.025Z log
+Worker Startup Time: 19 ms
+---
+
+--- 2026-09-15T03:15:49.026Z log
+Your Worker has access to the following bindings:
+---
+
+--- 2026-09-15T03:15:49.027Z log
+Binding                                                             Resource                  
+---
+
+--- 2026-09-15T03:15:49.027Z log
+env.DB (aion2web-db)                                                D1 Database               
+---
+
+--- 2026-09-15T03:15:49.027Z log
+env.CLOUDFLARE_ACCOUNT_ID ("eb1e201a3afb3d17f33285240edd595e")      Environment Variable      
+---
+
+--- 2026-09-15T03:15:49.027Z log
+
+---
+
+--- 2026-09-15T03:15:49.027Z log
+Uploaded aion2web (13.73 sec)
+---
+
+--- 2026-09-15T03:15:49.028Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/eb1e201a3afb3d17f33285240edd595e/workers/subdomain
+---
+
+--- 2026-09-15T03:15:49.028Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.028Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.028Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.028Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-09-15T03:15:49.316Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-09-15T03:15:49.316Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.316Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.316Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-09-15T03:15:49.317Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/eb1e201a3afb3d17f33285240edd595e/workers/scripts/aion2web/subdomain
+---
+
+--- 2026-09-15T03:15:49.317Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.317Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.317Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.317Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-09-15T03:15:49.622Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-09-15T03:15:49.622Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.622Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.622Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-09-15T03:15:49.623Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/eb1e201a3afb3d17f33285240edd595e/workers/scripts/aion2web/subdomain
+---
+
+--- 2026-09-15T03:15:49.623Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.623Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.623Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.623Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-09-15T03:15:49.948Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-09-15T03:15:49.948Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.948Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-15T03:15:49.948Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-09-15T03:15:49.948Z log
+Deployed aion2web triggers (0.92 sec)
+---
+
+--- 2026-09-15T03:15:49.948Z log
+  https://aion2web.cc328496536.workers.dev
+---
+
+--- 2026-09-15T03:15:49.948Z log
+Current Version ID: 3001e16f-251f-4c1d-a5d6-8187bf848440
+---
+
+--- 2026-09-15T03:15:49.950Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"deploy worker script","timestamp":1789442149950,"properties":{"amplitude_session_id":1789442149949,"amplitude_event_id":0,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"packageManager":"npm","isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"codex","category":"Workers","os":"win32:x64","usesTypeScript":false,"durationMs":15629,"assetUploadDurationMs":5450,"assetUploadIsBulk":true,"assetUploadFileCount":3,"assetUploadTotalBytes":944960,"currentAgentSkillsInstalled":false}}
+---
+
+--- 2026-09-15T03:15:49.953Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"wrangler command completed","timestamp":1789442149953,"properties":{"amplitude_session_id":1789442134160,"amplitude_event_id":1,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"packageManager":"npm","isFirstUsage":false,"configFileType":"json","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":true,"agent":"codex","argsUsed":[],"argsCombination":"","sanitizedCommand":"deploy","sanitizedArgs":{},"durationMs":15809,"currentAgentSkillsInstalled":false}}
+---

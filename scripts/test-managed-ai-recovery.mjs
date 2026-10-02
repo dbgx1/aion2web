@@ -4,14 +4,14 @@ import { toServerSentEventsResponse } from '@tanstack/ai'
 
 const bundle = await build({ entryPoints: ['src/lib/managed-ai-turn.ts'], bundle: true, write: false, format: 'esm', platform: 'node' })
 const { runManagedAiTurn } = await import('data:text/javascript;base64,' + Buffer.from(bundle.outputFiles[0].text).toString('base64'))
-const originalFetch = globalThis.fetch, originalInfo = console.info
+const originalFetch = globalThis.fetch, originalInfo = console.info, originalError = console.error
 let mode, requests, sends, groups, logs, controller
 globalThis.fetch = async (_url, init) => {
   const body = JSON.parse(init.body); requests.push(body)
   const { threadId, runId } = body
   const events = [{ type: 'RUN_STARTED', threadId, runId }]
   const tool = mode === 'group' ? 'send_group_chat' : 'send_private_chat'
-  if (mode === 'provider-error') events.push({ type: 'RUN_ERROR', error: { message: 'upstream limited', code: '429' } })
+  if (mode === 'provider-error') events.push({ type: 'RUN_ERROR', error: { message: 'upstream limited', code: '429' }, rawEvent: { metadata: { provider_name: 'fixture-provider', raw: JSON.stringify({ error: { message: 'quota exceeded', code: 'limit_exceeded' }, api_key: 'must-not-log' }) }, requestId: 'trace-fixture' } })
   else if (['send-failure', 'send', 'group', 'cancel-send'].includes(mode) || (mode === 'recover' && requests.length === 2)) {
     const input = { content: 'fixture-only' }, toolCallId = 'call-' + requests.length
     events.push({ type: 'TOOL_CALL_START', toolCallId, toolCallName: tool }, { type: 'TOOL_CALL_END', toolCallId, input },
@@ -23,11 +23,12 @@ globalThis.fetch = async (_url, init) => {
   return toServerSentEventsResponse((async function* () { for (const event of events) yield { ...event, timestamp: Date.now() } })())
 }
 console.info = (...args) => logs.push(args)
+console.error = (...args) => logs.push(args)
 async function execute(scenario) {
   originalInfo('Checking:', scenario)
   mode = scenario; requests = []; sends = []; groups = []; logs = []; controller = new AbortController()
   return runManagedAiTurn({ recipient: { characterId: 'one', serverKey: '1001', name: 'Fixture' },
-    config: { agentId: 'A1', acquiredAt: 100, scope: 'single', instruction: 'fixture' }, reason: 'reply', signal: controller.signal, history: [],
+    config: { agentId: 'A1', serverId: '1001', scope: 'single', instruction: 'fixture' }, reason: 'reply', signal: controller.signal, history: [],
     send: async content => { sends.push(content); if (mode === 'send-failure') throw new Error('receipt failed'); if (mode === 'cancel-send') { controller.abort(); controller.signal.throwIfAborted() } return true },
     queueGroup: content => { groups.push(content); return 3 },
   }, { history: async () => [], presence: async () => 'online', controlDraft: () => {}, notice: () => { if (mode === 'cancel-recovery') controller.abort() } })
@@ -40,7 +41,13 @@ try {
   assert.ok(!JSON.stringify(logs).includes('fixture-only')); assert.ok(!JSON.stringify(logs).includes('Fixture'))
   await assert.rejects(execute('no-action'), /已纠正一次/)
   assert.equal(requests.length, 2); assert.equal(sends.length, 0)
-  await assert.rejects(execute('provider-error'), /upstream limited/)
+  await assert.rejects(execute('provider-error'), error => {
+    assert.match(error.message, /429/); assert.match(error.message, /upstream limited/)
+    assert.match(error.message, /quota exceeded/); assert.match(error.message, /fixture-provider/)
+    assert.match(error.message, /trace-fixture/); assert.ok(!error.message.includes('must-not-log'))
+    return true
+  })
+  assert.ok(!JSON.stringify(logs).includes('must-not-log'))
   assert.equal(requests.length, 1)
   await assert.rejects(execute('send-failure'), /receipt failed/)
   assert.equal(requests.length, 1); assert.equal(sends.length, 1)
@@ -48,5 +55,5 @@ try {
   await execute('group'); assert.equal(requests.length, 1); assert.equal(groups.length, 1)
   await assert.rejects(execute('cancel-send')); assert.equal(requests.length, 1)
   await assert.rejects(execute('cancel-recovery')); assert.equal(requests.length, 1); assert.equal(sends.length, 0)
-} finally { globalThis.fetch = originalFetch; console.info = originalInfo }
+} finally { globalThis.fetch = originalFetch; console.info = originalInfo; console.error = originalError }
 console.log('PASS: real ChatClient + SSE: bounded no-action recovery, fixed scope, no raw-text sends, provider/receipt failure preservation, cancellation, no post-action model calls, content-free diagnostics')

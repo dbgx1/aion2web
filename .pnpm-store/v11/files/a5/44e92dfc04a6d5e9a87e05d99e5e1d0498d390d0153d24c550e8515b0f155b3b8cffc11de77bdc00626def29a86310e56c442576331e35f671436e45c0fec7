@@ -1,0 +1,49 @@
+import { useGeneration } from "./use-generation.js";
+import { reconstructSummarizeResult } from "@tanstack/ai-client";
+//#region src/use-summarize.ts
+/**
+* React hook for summarizing text using AI models.
+*
+* @example
+* ```tsx
+* import { useSummarize } from '@tanstack/ai-react'
+* import { fetchServerSentEvents } from '@tanstack/ai-client'
+*
+* function Summarizer() {
+*   const { generate, result, isLoading } = useSummarize({
+*     connection: fetchServerSentEvents('/api/summarize'),
+*   })
+*
+*   return (
+*     <div>
+*       <button onClick={() => generate({
+*         text: 'Long article text...',
+*         style: 'bullet-points',
+*         maxLength: 200,
+*       })}>
+*         Summarize
+*       </button>
+*       {isLoading && <p>Summarizing...</p>}
+*       {result && <p>{result.summary}</p>}
+*     </div>
+*   )
+* }
+* ```
+*/
+function useSummarize(options) {
+	const devtools = {
+		...options.devtools,
+		framework: "react",
+		hookName: "useSummarize",
+		outputKind: "text"
+	};
+	return useGeneration({
+		...options,
+		devtools,
+		reconstructResult: reconstructSummarizeResult
+	});
+}
+//#endregion
+export { useSummarize };
+
+//# sourceMappingURL=use-summarize.js.map

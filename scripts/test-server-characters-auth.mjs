@@ -35,7 +35,7 @@ const apiAuth = loadModule('../src/server/api-auth.server.ts', {})
 const characters = { uploadToken: () => token }
 const adminAuth = loadModule('../src/server/admin-auth.server.ts', {
   'cloudflare:workers': { env: {} },
-  '#/server/admin-users.server': {},
+  '#/server/admin-users.server': { refreshAdminPrincipal: async principal => principal.userKey === 'env:admin' ? principal : null },
   '#/server/characters.server': characters,
 })
 
@@ -43,14 +43,15 @@ test('server character route accepts Bearer or session and rejects unauthenticat
   let reads = 0
   const { Route } = loadModule('../src/routes/api/servers/$serverId/characters.ts', {
     '@tanstack/react-router': { createFileRoute: () => (options) => options },
-    '#/lib/aion2-servers': { AION2_SERVERS: [], aion2ServerName: () => '' },
+    '#/lib/aion2-servers': loadModule('../src/lib/aion2-servers.ts', {}),
+    '#/server/server-access.server': { canAccessServer: async () => true },
     '#/server/admin-auth.server': adminAuth,
     '#/server/api-auth.server': apiAuth,
     '#/server/characters.server': {
       ...characters,
       listCharacters: async (input) => {
         reads += 1
-        assert.equal(input.serverId, '1001')
+        assert.equal(input.serverId, '1101')
         assert.equal(input.limit, 500)
         assert.equal(input.cursor, 42)
         return { characters: [{ characterId: '123' }], nextCursor: 43, hasMore: true, totalCount: null }
@@ -69,8 +70,8 @@ test('server character route accepts Bearer or session and rejects unauthenticat
   ]) {
     const before = reads
     const response = await Route.server.handlers.GET({
-      request: new Request('https://example.test/api/servers/1001/characters?limit=500&cursor=42', { headers }),
-      params: { serverId: '1001' },
+      request: new Request('https://example.test/api/servers/1101/characters?limit=500&cursor=42', { headers }),
+      params: { serverId: '1101' },
     })
     assert.equal(response.status, status)
     const body = await response.json()
@@ -79,6 +80,8 @@ test('server character route accepts Bearer or session and rejects unauthenticat
     if (status === 200) {
       assert.equal(body.characters[0].characterId, '123')
       assert.equal(body.page.nextCursor, 43)
+      assert.equal(body.server.serverName, '北美东部 · Siel')
+      assert.equal(body.server.known, true)
     }
   }
 })

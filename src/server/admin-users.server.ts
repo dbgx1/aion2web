@@ -139,8 +139,8 @@ export async function registerAdminUser(username: string, password: string): Pro
   if (existing) return { ok: false, error: '账号已存在，请换一个账号。' }
 
   const now = Date.now()
-  const currentUserCount = await countRegisteredAdminUsers()
-  const role: AdminPrincipal['role'] = currentUserCount === 0 ? 'admin' : 'agent'
+  // Administrators are provisioned separately; account creation must never promote a customer-service user.
+  const role: AdminPrincipal['role'] = 'agent'
   const passwordHash = await hashPassword(password)
   try {
     await database().prepare(`
@@ -205,6 +205,14 @@ function userPrincipal(user: AdminUserRow): AdminPrincipal {
     username: user.display_name || user.username,
     role: user.role || 'agent',
   }
+}
+
+export async function refreshAdminPrincipal(principal: AdminPrincipal): Promise<AdminPrincipal | null> {
+  if (principal.userKey === 'env:admin') return principal
+  if (!/^user:[1-9]\d*$/.test(principal.userKey)) return null
+  const user = await database().prepare('SELECT id, username, display_name, role, status FROM admin_users WHERE id = ?')
+    .bind(Number(principal.userKey.slice(5))).first<AdminUserRow>()
+  return user?.status === 'active' ? userPrincipal(user) : null
 }
 
 export async function verifyRegisteredAdminCredentials(username: string, password: string) {

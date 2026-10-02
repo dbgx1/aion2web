@@ -1,0 +1,21 @@
+import { AudioGenerationResult, ImageGenerationResult, SummarizationResult, TranscriptionResult, TTSResult } from '@tanstack/ai';
+import { GenerationRestoredResult } from './generation-types.js';
+/** image → `{ id, model, images: [{ url }], artifacts }`. */
+export declare function reconstructImageResult(restored: GenerationRestoredResult): ImageGenerationResult | null;
+/**
+ * tts → `{ id, model, audio: '', format, contentType, artifacts }`.
+ *
+ * Unlike {@link reconstructAudioResult}, `TTSResult.audio` is a bare base64
+ * string with no URL slot, and server-driven persistence never stores the raw
+ * bytes — only the durable serve URL on the artifact ref. So the restored
+ * result surfaces the audio through `artifacts` (each carrying `url`); consumers
+ * play the restored clip from `result.artifacts[0].url` and fall back to the
+ * live base64 `audio` only for a just-finished (non-restored) run.
+ */
+export declare function reconstructSpeechResult(restored: GenerationRestoredResult): TTSResult | null;
+/** audio → `{ id, model, audio: { url }, artifacts }`. */
+export declare function reconstructAudioResult(restored: GenerationRestoredResult): AudioGenerationResult | null;
+/** transcription → `{ id, model, text, artifacts }`. */
+export declare function reconstructTranscriptionResult(restored: GenerationRestoredResult): TranscriptionResult | null;
+/** summarize → `{ id, model, summary, usage }` (needs persisted `usage`). */
+export declare function reconstructSummarizeResult(restored: GenerationRestoredResult): SummarizationResult | null;

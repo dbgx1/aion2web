@@ -1,0 +1,15 @@
+{
+  "nodes": [
+    {
+      "clientId": "aion2pipe-local-20260930",
+      "serverId": "2201",
+      "ready": true,
+      "seenAt": 1790864240501,
+      "busy": false
+    }
+  ],
+  "queued": 0,
+  "deliveries": 0,
+  "dispatchedToday": 792,
+  "dailyLimit": 20000
+}

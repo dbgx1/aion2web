@@ -1,0 +1,49 @@
+import { createMcpAppBridge } from "@tanstack/ai-client";
+import { useMemo, useRef } from "react";
+//#region src/use-mcp-app-bridge.ts
+/**
+* React wrapper around `createMcpAppBridge` that returns a **stable** bridge for
+* the given `threadId`/`callEndpoint`, while always invoking the latest
+* `chat.sendMessage` and `onLink` (kept in refs). This avoids both recreating
+* the bridge on every render and the stale-closure / `exhaustive-deps` dance
+* you'd otherwise write by hand:
+*
+* ```tsx
+* const { sendMessage } = useChat({ threadId, connection })
+* const bridge = useMcpAppBridge({
+*   threadId,
+*   callEndpoint: '/api/mcp-apps-call',
+*   chat: { sendMessage: (content, body) => sendMessage(content, { body }) },
+*   onLink: (url) => window.open(url, '_blank', 'noopener,noreferrer'),
+* })
+* // pass `bridge` to <MCPAppResource bridge={bridge} … />
+* ```
+*
+* The bridge is recreated only when `threadId`, `callEndpoint`, `fetchImpl`, or
+* the *presence* of `onLink` changes — passing a new inline `onLink`/`sendMessage`
+* each render does not churn it.
+*/
+function useMcpAppBridge(options) {
+	const { threadId, callEndpoint, chat, fetchImpl, onLink } = options;
+	const chatRef = useRef(chat);
+	chatRef.current = chat;
+	const onLinkRef = useRef(onLink);
+	onLinkRef.current = onLink;
+	const hasOnLink = onLink != null;
+	return useMemo(() => createMcpAppBridge({
+		threadId,
+		callEndpoint,
+		fetchImpl,
+		chat: { sendMessage: (content, body) => chatRef.current.sendMessage(content, body) },
+		onLink: hasOnLink ? (url) => onLinkRef.current?.(url) : void 0
+	}), [
+		threadId,
+		callEndpoint,
+		fetchImpl,
+		hasOnLink
+	]);
+}
+//#endregion
+export { useMcpAppBridge };
+
+//# sourceMappingURL=use-mcp-app-bridge.js.map

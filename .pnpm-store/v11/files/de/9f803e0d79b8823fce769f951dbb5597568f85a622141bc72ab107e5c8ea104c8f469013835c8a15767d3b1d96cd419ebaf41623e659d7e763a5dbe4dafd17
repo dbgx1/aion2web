@@ -1,0 +1,3 @@
+import { UIMessage } from './types.js';
+export declare function normalizeMessageDates(message: UIMessage): UIMessage;
+export declare function normalizeMessagesDates(messages: Array<UIMessage>): Array<UIMessage>;

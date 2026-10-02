@@ -1,0 +1,129 @@
+import { ContentPart } from '@tanstack/ai/client';
+import { UIMessage } from './types.js';
+export interface ChatClientRunEventContext {
+    threadId: string;
+    runId: string;
+    toolCallId?: string;
+}
+export interface ChatClientEventContext {
+    threadId?: string;
+    runId?: string;
+    toolCallId?: string;
+}
+export interface ChatClientToolFixtureAppliedEvent {
+    hookId: string;
+    threadId: string;
+    toolName: string;
+    input: unknown;
+    output: unknown;
+    execute?: boolean;
+    message?: {
+        id: string;
+        role: 'system' | 'user' | 'assistant';
+        parts: Array<unknown>;
+        createdAt?: number | string;
+    };
+    messageId: string;
+    toolCallId: string;
+    runId?: string;
+    errorText?: string;
+}
+export interface ChatClientStructuredOutputEvent {
+    status: 'streaming' | 'complete' | 'error';
+    raw?: string;
+    partial?: unknown;
+    data?: unknown;
+    reasoning?: string;
+    errorMessage?: string;
+    delta?: string;
+}
+export type ChatClientStructuredOutputEventName = 'structured-output:started' | 'structured-output:updated' | 'structured-output:completed' | 'structured-output:errored';
+/**
+ * Abstract base class for ChatClient event emission
+ */
+export declare abstract class ChatClientEventEmitter {
+    protected clientId: string;
+    constructor(clientId: string);
+    /**
+     * Protected abstract method for emitting events
+     * Implementations should handle adding clientId and timestamp
+     */
+    protected abstract emitEvent(eventName: string, data?: Record<string, unknown>): void;
+    /**
+     * Emit client created event
+     */
+    clientCreated(initialMessageCount: number): void;
+    /**
+     * Emit loading state changed event
+     */
+    loadingChanged(isLoading: boolean): void;
+    /**
+     * Emit error state changed event
+     */
+    errorChanged(error: string | null): void;
+    /**
+     * Emit text update events (combines processor and client events)
+     */
+    textUpdated(streamId: string, messageId: string, content: string, context?: ChatClientRunEventContext): void;
+    /**
+     * Emit tool call state change events (combines processor and client events)
+     */
+    toolCallStateChanged(streamId: string, messageId: string, toolCallId: string, toolName: string, state: string, args: string, context?: ChatClientRunEventContext): void;
+    /**
+     * Emit tool result state change event
+     */
+    /**
+     * Emit thinking update event
+     */
+    thinkingUpdated(streamId: string, messageId: string, content: string, delta?: string, context?: ChatClientRunEventContext): void;
+    structuredOutputChanged(eventName: ChatClientStructuredOutputEventName, streamId: string, messageId: string, output: ChatClientStructuredOutputEvent, context?: ChatClientRunEventContext): void;
+    /**
+     * Emit approval requested event
+     */
+    approvalRequested(streamId: string, messageId: string, toolCallId: string, toolName: string, input: unknown, approvalId: string, context?: ChatClientRunEventContext): void;
+    /**
+     * Emit message appended event
+     */
+    messageAppended(uiMessage: UIMessage, streamId?: string, context?: ChatClientEventContext): void;
+    /**
+     * Emit message sent event.
+     * Supports both simple string content and multimodal content arrays.
+     *
+     * @param messageId - The ID of the sent message
+     * @param content - The message content (string or array of ContentPart for multimodal)
+     */
+    messageSent(messageId: string, content: string | Array<ContentPart>): void;
+    /**
+     * Emit reloaded event
+     */
+    reloaded(fromMessageIndex: number): void;
+    /**
+     * Emit stopped event
+     */
+    stopped(): void;
+    /**
+     * Emit messages cleared event
+     */
+    messagesCleared(): void;
+    /**
+     * Emit tool result added event
+     */
+    toolResultAdded(toolCallId: string, toolName: string, output: unknown, state: string, context?: ChatClientEventContext): void;
+    /**
+     * Emit tool approval responded event
+     */
+    toolApprovalResponded(approvalId: string, toolCallId: string, approved: boolean, context?: ChatClientRunEventContext): void;
+    /**
+     * Emit tool fixture applied event.
+     */
+    toolFixtureApplied(fixture: ChatClientToolFixtureAppliedEvent): void;
+}
+/**
+ * Default implementation of ChatClientEventEmitter
+ */
+export declare class DefaultChatClientEventEmitter extends ChatClientEventEmitter {
+    /**
+     * Emit an event with automatic clientId and timestamp for client/tool events
+     */
+    protected emitEvent(eventName: string, data?: Record<string, any>): void;
+}

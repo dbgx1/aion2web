@@ -1,0 +1,13 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "aion2-query-dispatch",
+  "main": "worker.ts",
+  "compatibility_date": "2026-09-30",
+  "workers_dev": true,
+  "routes": [{ "pattern": "query.mmorpgchat.com", "custom_domain": true }],
+  "durable_objects": { "bindings": [{ "name": "POOL", "class_name": "QueryPool" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["QueryPool"] }],
+  "d1_databases": [{ "binding": "DB", "database_name": "aion2web-db", "database_id": "506fb168-4216-41e0-a9a5-0fc957fb9c8c" }],
+  "vars": { "SERVICE_ID": "aion2web", "DAILY_QUERY_LIMIT": "20000" },
+  "observability": { "enabled": true, "head_sampling_rate": 0.01 }
+}

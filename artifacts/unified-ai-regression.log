@@ -1,0 +1,67 @@
+
+> test:ai
+> node scripts/test-ai-suite.mjs
+
+
+Checking: types
+
+Checking: context and durable task instructions
+PASS: bounded valid JSON context, immutable evidence, complete persistent task/recipient metadata, newest question retention and explicit oversized-input error
+
+Checking: action lifetime and execution receipts
+PASS: execution receipt correlation, timeout/disconnect/cancellation, late outcomes, action deduplication and continuation budget
+
+Checking: execution receipts in MQTT hook
+PASS: actual React MQTT hook correlates published request IDs, ignores retained/wrong-client receipts and settles pending execution on close/unmount
+
+Checking: bulk execution receipts and resume
+PASS: real portal + MQTT hook: mixed batch receipts, stop with unknown outcome, exact remaining-recipient resume and fully confirmed success
+
+Checking: interactive SDK and history
+PASS: complete-turn bounds, byte bounds, tool pairing, truthful uncertainty, immutable evidence, idempotence, oversized-turn recovery
+PASS: real SDK + SSE: 100 turns, 10 actions exactly once, bounded history, interrupted tool recovery, split marker detection, missing terminal detection, body timeout, no automatic replay
+
+Checking: provider route and serialization
+PASS: actual route + TanStack adapter + OpenRouter SDK returns one streamed error after one HTTP 504, without retrying or exposing credentials
+PASS: managed AI checks assigned server permissions before contacting the provider
+PASS: recovery offers only scoped chat actions; post-action continuation never forces a second send
+PASS: actual provider wire repairs missing tool results, bounds 100-turn interactive history, rejects oversized/invalid requests before provider calls
+PASS: provider wire retains persistent task and newest private question; oversized task rejects without model spend
+
+Checking: interactive errors in React
+PASS: real AI hook/SSE preserves failed prompt, hides empty bubbles, recognizes timeout and nested upstream 429, and allows explicit recovery in both panels
+
+Checking: long conversations in React
+PASS: actual React assistant: 50 turns, bounded history, failure recovery, stop/restart including late execution receipt, local sends, clear/restart, no page exceptions
+
+Checking: recipient and operation scope
+PASS: actual MessageCenter AI tools reject stale recipient/filter/lock scopes and stopped requests; current scope still sends
+
+Checking: managed SDK recovery
+Checking: recover
+Checking: no-action
+Checking: provider-error
+Checking: send-failure
+Checking: send
+Checking: group
+Checking: cancel-send
+Checking: cancel-recovery
+PASS: real ChatClient + SSE: bounded no-action recovery, fixed scope, no raw-text sends, provider/receipt failure preservation, cancellation, no post-action model calls, content-free diagnostics
+
+Checking: managed task isolation
+PASS: stopped task isolation, paused exact-text retry, blank broadcast rejection and valid queue recovery
+
+Checking: managed scheduler
+PASS: continuous rounds, isolated histories, reply priority, duplicate tool suppression, stale answer suppression, pause/resume, network recovery, confirmed-ban pause, exact-text resend, rate-limit backoff, bounded group queue, cancelled loading
+
+Checking: managed reply latency
+PASS: 500ms reply coalescing; no single-role presence queries; obsolete AI cancelled; receipts protected; cooldown from receipt; reply during 180s scan; rate-limit backoff retained
+
+Checking: managed presence
+PASS: automatic discovery, batches, fresh cache, offline exclusion, rejoin, pre-send freshness, backoff, cancellation and ban
+PASS: in-flight expiry/offline defers only the affected role; swallowed errors preserved; other roles continue; recheck/rejoin; proactive identity; real query backoff retained
+
+Checking: game chat blocking
+PASS: exact game ban detection, nested/HTTP/escaped payloads, timezone, stale receipt rejection, generic 403/chat content isolation, synchronous notification, reload persistence and cross-tab extension
+
+16/16 checks passed. Report: artifacts/ai-test-report.json

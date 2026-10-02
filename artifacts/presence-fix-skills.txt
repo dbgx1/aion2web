@@ -1,0 +1,135 @@
+
+10 intent-enabled packages, 43 skills
+
+PACKAGE                          SOURCE  VERSION   SKILLS  
+───────────────────────────────────────────────────────────
+@tanstack/ai                     local   0.52.3    12      
+@tanstack/devtools-vite          local   0.8.5     1       
+@tanstack/react-start            local   1.168.49  3       
+@tanstack/devtools-event-client  local   0.5.0     3       
+@tanstack/router-core            local   1.171.27  10      
+@tanstack/start-client-core      local   1.170.27  7       
+@tanstack/virtual-file-routes    local   1.162.0   1       
+@tanstack/router-plugin          local   1.168.35  1       
+@tanstack/start-server-core      local   1.169.31  1       
+@tanstack/devtools               local   0.14.2    4       
+
+Version conflicts:
+
+  @tanstack/devtools-event-client -> using 0.5.0
+    chosen: E:\project\aion2web\node_modules\.pnpm\@tanstack+devtools-event-client@0.5.0\node_modules\@tanstack\devtools-event-client
+    also found: 0.4.4 at E:\project\aion2web\node_modules\.pnpm\@tanstack+devtools-event-client@0.4.4\node_modules\@tanstack\devtools-event-client
+
+
+Skills:
+
+  @tanstack/ai
+    ai-core                       [core]        Entry point for TanStack AI skills. Routes to chat-experience, tool-calling, media-generation, structured-outputs, adapter-configuration, ag-ui-protocol, middleware, locks, custom-backend-integration, and debug-logging, plus the skills shipped by companion packages (@tanstack/ai-persistence, @tanstack/ai-code-mode). Use chat() not streamText(), openaiText() not createOpenAI(), toServerSentEventsResponse() not manual SSE, middleware hooks not onEnd callbacks.
+      Load: pnpm exec intent load @tanstack/ai#ai-core
+      adapter-configuration       [sub-skill]   Provider adapter selection and configuration: openaiText, anthropicText, geminiText, ollamaText, grokText, groqText, openRouterText, bedrockText, byteplusText, openaiCompatible. Per-model type safety with modelOptions, reasoning/thinking configuration, runtime adapter switching, extendAdapter() for custom models, createModel(). Generic OpenAI-compatible providers (DeepSeek, Together, Fireworks, etc.) via openaiCompatible({ baseURL, apiKey, models }) from @tanstack/ai-openai/compatible. API key env vars: OPENAI_API_KEY, ANTHROPIC_API_KEY, GOOGLE_API_KEY/GEMINI_API_KEY, XAI_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY, OLLAMA_HOST, BEDROCK_API_KEY (or AWS_BEARER_TOKEN_BEDROCK). BytePlus needs TWO keys: ARK_API_KEY (ModelArk — chat/video/image) and BYTEPLUS_VOICE_API_KEY (Seed Speech — TTS/transcription); neither is a fallback for the other.
+        Load: pnpm exec intent load @tanstack/ai#ai-core/adapter-configuration
+      ag-ui-protocol              [sub-skill]   Server-side AG-UI streaming protocol implementation: StreamChunk event types (RUN_STARTED, TEXT_MESSAGE_START/CONTENT/END, TOOL_CALL_START/ARGS/END, RUN_FINISHED, RUN_ERROR, STEP_STARTED/STEP_FINISHED, STATE_SNAPSHOT/DELTA, CUSTOM), toServerSentEventsStream() for SSE format, toHttpStream() for NDJSON format. For backends serving AG-UI events without client packages.
+        Load: pnpm exec intent load @tanstack/ai#ai-core/ag-ui-protocol
+      chat-experience             [sub-skill]   End-to-end chat implementation: server endpoint with chat() and toServerSentEventsResponse(), client-side useChat hook with fetchServerSentEvents(), message rendering with UIMessage parts, multimodal content, thinking/reasoning display. Covers streaming states, connection adapters, and message format conversions. NOT Vercel AI SDK — uses chat() not streamText().
+        Load: pnpm exec intent load @tanstack/ai#ai-core/chat-experience
+      client-persistence          [sub-skill]   Browser chat persistence on useChat / ChatClient: localStoragePersistence, sessionStoragePersistence, indexedDBPersistence. Client-authoritative (adapter, full transcript) vs server-authoritative (persistence: true, no client cache). Reload restore, pending interrupts, mid-stream rejoin with delivery durability. Use for SPA reload durability — NOT server history alone. Also covers generation hooks (useGenerateImage etc.), which take only the server-driven mode: persistence: true hydrates the last generation for the (REQUIRED) threadId from the server on mount and repaints status/result/error, nothing is cached in the browser. No extra package: the adapters ship in the framework packages.
+        Load: pnpm exec intent load @tanstack/ai#ai-core/client-persistence
+      custom-backend-integration  [composition] Connect useChat to a non-TanStack-AI backend through custom connection adapters. ConnectConnectionAdapter (single async iterable) vs SubscribeConnectionAdapter (separate subscribe/send). Customize fetchServerSentEvents() and fetchHttpStream() with auth headers, custom URLs, and request options. Import from framework package, not @tanstack/ai-client.
+        Load: pnpm exec intent load @tanstack/ai#ai-core/custom-backend-integration
+      debug-logging               [sub-skill]   Pluggable, category-toggleable debug logging for TanStack AI activities. Toggle with `debug: true | false | DebugConfig` on chat(), summarize(), generateImage(), generateSpeech(), generateTranscription(), generateVideo(). Categories: request, provider, output, middleware, tools, agentLoop, config, errors. Pipe into pino/winston/etc via `debug: { logger }`. Errors log by default even when `debug` is omitted; silence with `debug: false`.
+        Load: pnpm exec intent load @tanstack/ai#ai-core/debug-logging
+      locks                       [sub-skill]   LockStore, InMemoryLockStore, LocksCapability and withLocks for multi-instance coordination in TanStack AI. Ships in @tanstack/ai — NOT in @tanstack/ai-persistence. Separate from AIPersistence state stores — not a stores key, not composable. InMemoryLockStore vs a distributed (e.g. Cloudflare Durable Object) lock, lease recovery, AbortSignal in critical sections. Use when sandbox or other middleware needs cross-worker mutual exclusion — NOT for storing messages/runs (use withPersistence).
+        Load: pnpm exec intent load @tanstack/ai#ai-core/locks
+      media-generation            [sub-skill]   Image, audio, video, speech (TTS), and transcription generation using activity-specific adapters: generateImage() with openaiImage/geminiImage/byteplusImage, generateAudio() with geminiAudio/falAudio, generateVideo() with async polling (openaiVideo/geminiVideo/grokVideo/falVideo/byteplusVideo/openRouterVideo, per-model typed durations), generateSpeech() with openaiSpeech/byteplusSpeech, generateTranscription() with openaiTranscription/byteplusTranscription. React hooks: useGenerateImage, useGenerateAudio, useGenerateSpeech, useTranscription, useGenerateVideo. TanStack Start server function integration with toServerSentEventsResponse.
+        Load: pnpm exec intent load @tanstack/ai#ai-core/media-generation
+      middleware                  [sub-skill]   Chat lifecycle middleware hooks: onConfig, onStart, onChunk, onBeforeToolCall, onAfterToolCall, onUsage, onFinish, onAbort, onError. Use for analytics, event firing, tool caching (toolCacheMiddleware), logging, and tracing. Middleware array in chat() config, left-to-right execution order. NOT onEnd/onFinish callbacks on chat() — use middleware.
+        Load: pnpm exec intent load @tanstack/ai#ai-core/middleware
+      structured-outputs          [sub-skill]   Type-safe JSON schema responses from LLMs using outputSchema on chat() and useChat(). Supports Zod, ArkType, and Valibot schemas. The adapter handles provider-specific strategies transparently — never configure structured output at the provider level. Pass stream:true alongside outputSchema for incremental JSON deltas + a completed typed object via the `structured-output.complete` event. Each successfully completed structured-output run adds a typed `StructuredOutputPart` to message history. partial/final derive from the most recent structured-output part after the latest user message. convertSchemaToJsonSchema() for manual schema conversion.
+        Load: pnpm exec intent load @tanstack/ai#ai-core/structured-outputs
+      tool-calling                [sub-skill]   Isomorphic tool system: toolDefinition() with Zod schemas, .server() and .client() implementations, passing tools to both chat() on server and useChat/clientTools on client, tool approval flows with needsApproval and bound interrupts (resolveInterrupt), generic middleware interrupts with defineInterrupt(), lazy tool discovery with lazy:true, rendering ToolCallPart and ToolResultPart in UI.
+        Load: pnpm exec intent load @tanstack/ai#ai-core/tool-calling
+
+  @tanstack/devtools-vite
+    devtools-vite-plugin          [core]        Configure @tanstack/devtools-vite for source inspection (data-tsd-source, inspectHotkey, ignore patterns), console piping (client-to-server, server-to-client, levels), enhanced logging, server event bus (port, host, HTTPS), production stripping (removeDevtoolsOnBuild), editor integration (launch-editor, custom editor.open). Must be FIRST plugin in Vite config. Vite ^6 || ^7 only.
+      Load: pnpm exec intent load @tanstack/devtools-vite#devtools-vite-plugin
+
+  @tanstack/react-start
+    react-start                   [framework]   React bindings for TanStack Start: createStart, StartClient, StartServer, React-specific imports, re-exports from @tanstack/react-router, full project setup with React, useServerFn hook.
+      Load: pnpm exec intent load @tanstack/react-start#react-start
+      server-components           [sub-skill]   Implement, review, debug, and refactor TanStack Start React Server Components in React 19 apps. Use when tasks mention @tanstack/react-start/rsc, renderServerComponent, createCompositeComponent, CompositeComponent, renderToReadableStream, createFromReadableStream, createFromFetch, Composite Components, React Flight streams, loader or query owned RSC caching, router.invalidate, structuralSharing: false, selective SSR, stale names like renderRsc or .validator, or migration from Next App Router RSC patterns. Do not use for generic SSR or non-TanStack RSC frameworks except brief comparison.
+        Load: pnpm exec intent load @tanstack/react-start#react-start/server-components
+    lifecycle/migrate-from-nextjs  [lifecycle]   Step-by-step migration from Next.js App Router to TanStack Start: route definition conversion, API mapping, server function conversion from Server Actions, middleware conversion, data fetching pattern changes.
+      Load: pnpm exec intent load @tanstack/react-start#lifecycle/migrate-from-nextjs
+
+  @tanstack/devtools-event-client
+    devtools-bidirectional        [core]        Two-way event patterns between devtools panel and application. App-to-devtools observation, devtools-to-app commands, time-travel debugging with snapshots and revert. structuredClone for snapshot safety, distinct event suffixes for observation vs commands, serializable payloads only.
+      Load: pnpm exec intent load @tanstack/devtools-event-client#devtools-bidirectional
+    devtools-event-client         [core]        Create typed EventClient for a library. Define event maps with typed payloads, pluginId auto-prepend namespacing, emit()/on()/onAll()/onAllPluginEvents() API. Connection lifecycle (5 retries, 300ms), event queuing, enabled/disabled state, SSR fallbacks, singleton pattern. Unique pluginId requirement to avoid event collisions.
+      Load: pnpm exec intent load @tanstack/devtools-event-client#devtools-event-client
+    devtools-instrumentation      [core]        Analyze library codebase for critical architecture and debugging points, add strategic event emissions. Identify middleware boundaries, state transitions, lifecycle hooks. Consolidate events (1 not 15), debounce high-frequency updates, DRY shared payload fields, guard emit() for production. Transparent server/client event bridging.
+      Load: pnpm exec intent load @tanstack/devtools-event-client#devtools-instrumentation
+
+  @tanstack/router-core
+    router-core                   [core]        Framework-agnostic core concepts for TanStack Router: route trees, createRouter, createRoute, createRootRoute, createRootRouteWithContext, addChildren, Register type declaration, route matching, route sorting, file naming conventions. Entry point for all router skills.
+      Load: pnpm exec intent load @tanstack/router-core#router-core
+      auth-and-guards             [sub-skill]   Route protection with beforeLoad, redirect()/throw redirect(), isRedirect helper, authenticated layout routes (_authenticated), non-redirect auth (inline login), RBAC with roles and permissions, auth provider integration (Auth0, Clerk, Supabase), router context for auth state.
+        Load: pnpm exec intent load @tanstack/router-core#router-core/auth-and-guards
+      code-splitting              [sub-skill]   Automatic code splitting (autoCodeSplitting), .lazy.tsx convention, createLazyFileRoute, createLazyRoute, lazyRouteComponent, getRouteApi for typed hooks in split files, codeSplitGroupings per-route override, splitBehavior programmatic config, critical vs non-critical properties.
+        Load: pnpm exec intent load @tanstack/router-core#router-core/code-splitting
+      data-loading                [sub-skill]   Route loader option, loaderDeps for cache keys, staleTime/gcTime/ defaultPreloadStaleTime SWR caching, pendingComponent/pendingMs/ pendingMinMs, errorComponent/onError/onCatch, beforeLoad, router context and createRootRouteWithContext DI pattern, router.invalidate, Await component, deferred data loading with unawaited promises.
+        Load: pnpm exec intent load @tanstack/router-core#router-core/data-loading
+      navigation                  [sub-skill]   Link component, useNavigate, Navigate component, router.navigate, ToOptions/NavigateOptions/LinkOptions, from/to relative navigation, activeOptions/activeProps, preloading (intent/viewport/render), preloadDelay, navigation blocking (useBlocker, Block), createLink, linkOptions helper, scroll restoration, MatchRoute.
+        Load: pnpm exec intent load @tanstack/router-core#router-core/navigation
+      not-found-and-errors        [sub-skill]   notFound() function, notFoundComponent, defaultNotFoundComponent, notFoundMode (fuzzy/root), errorComponent, CatchBoundary, CatchNotFound, isNotFound, NotFoundRoute (deprecated), route masking (mask option, createRouteMask, unmaskOnReload).
+        Load: pnpm exec intent load @tanstack/router-core#router-core/not-found-and-errors
+      path-params                 [sub-skill]   Dynamic path segments ($paramName), splat routes ($ / _splat), optional params ({-$paramName}), prefix/suffix patterns ({$param}.ext), useParams, params.parse/stringify, pathParamsAllowedCharacters, i18n locale patterns.
+        Load: pnpm exec intent load @tanstack/router-core#router-core/path-params
+      search-params               [sub-skill]   validateSearch, search param validation with Zod/Valibot/ArkType adapters, fallback(), search middlewares (retainSearchParams, stripSearchParams), custom serialization (parseSearch, stringifySearch), search param inheritance, loaderDeps for cache keys, reading and writing search params.
+        Load: pnpm exec intent load @tanstack/router-core#router-core/search-params
+      ssr                         [sub-skill]   Non-streaming and streaming SSR, RouterClient/RouterServer, renderRouterToString/renderRouterToStream, createRequestHandler, defaultRenderHandler/defaultStreamHandler, HeadContent/Scripts components, head route option (meta/links/styles/scripts), ScriptOnce, automatic loader dehydration/hydration, memory history on server, data serialization, document head management.
+        Load: pnpm exec intent load @tanstack/router-core#router-core/ssr
+      type-safety                 [sub-skill]   Full type inference philosophy (never cast, never annotate inferred values), Register module declaration, from narrowing on hooks and Link, strict:false for shared components, getRouteApi for code-split typed access, addChildren with object syntax for TS perf, LinkProps and ValidateLinkOptions type utilities, as const satisfies pattern.
+        Load: pnpm exec intent load @tanstack/router-core#router-core/type-safety
+
+  @tanstack/start-client-core
+    start-core                    [core]        Core overview for TanStack Start: tanstackStart() Vite plugin, getRouter() factory, root route document shell (HeadContent, Scripts, Outlet), client/server entry points, routeTree.gen.ts, tsconfig configuration. Entry point for all Start skills.
+      Load: pnpm exec intent load @tanstack/start-client-core#start-core
+      auth-server-primitives      [sub-skill]   Server-side authentication primitives for TanStack Start: session cookies (HttpOnly, Secure, SameSite, __Host- prefix), session read/issue/destroy via createServerFn and middleware, OAuth authorization-code flow with state and PKCE, password-reset enumeration defense, CSRF for non-GET RPCs, rate limiting auth endpoints, session rotation on privilege change. Pairs with router-core/auth-and-guards for the routing side.
+        Load: pnpm exec intent load @tanstack/start-client-core#start-core/auth-server-primitives
+      deployment                  [sub-skill]   Deploy to Cloudflare Workers, Netlify, Vercel, Node.js/Docker, Bun, Railway. Selective SSR (ssr option per route), SPA mode, static prerendering, ISR with Cache-Control headers, SEO and head management.
+        Load: pnpm exec intent load @tanstack/start-client-core#start-core/deployment
+      execution-model             [sub-skill]   Isomorphic-by-default principle, environment boundary functions (createServerFn, createServerOnlyFn, createClientOnlyFn, createIsomorphicFn), ClientOnly component, useHydrated hook, import protection, dead code elimination, environment variable safety (VITE_ prefix, process.env).
+        Load: pnpm exec intent load @tanstack/start-client-core#start-core/execution-model
+      middleware                  [sub-skill]   createMiddleware, request middleware (.server only), server function middleware (.client + .server), context passing via next({ context }), sendContext for client-server transfer, global middleware via createStart in src/start.ts, middleware factories, method order enforcement, fetch override precedence.
+        Load: pnpm exec intent load @tanstack/start-client-core#start-core/middleware
+      server-functions            [sub-skill]   createServerFn (GET/POST), validator (Zod or function), useServerFn hook, server context utilities (getRequest, getRequestHeader, setResponseHeader, setResponseStatus), error handling (throw errors, redirect, notFound), streaming, FormData handling, file organization (.functions.ts, .server.ts).
+        Load: pnpm exec intent load @tanstack/start-client-core#start-core/server-functions
+      server-routes               [sub-skill]   Server-side API endpoints using the server property on createFileRoute, HTTP method handlers (GET, POST, PUT, DELETE), createHandlers for per-handler middleware, handler context (request, params, context), request body parsing, response helpers, file naming for API routes.
+        Load: pnpm exec intent load @tanstack/start-client-core#start-core/server-routes
+
+  @tanstack/virtual-file-routes
+    virtual-file-routes           [core]        Programmatic route tree building as an alternative to filesystem conventions: rootRoute, index, route, layout, physical, defineVirtualSubtreeConfig. Use with TanStack Router plugin's virtualRouteConfig option.
+      Load: pnpm exec intent load @tanstack/virtual-file-routes#virtual-file-routes
+
+  @tanstack/router-plugin
+    router-plugin                 [core]        TanStack Router bundler plugin for route generation and automatic code splitting. Supports Vite, Webpack, Rspack, and esbuild. Configures autoCodeSplitting, routesDirectory, target framework, and code split groupings.
+      Load: pnpm exec intent load @tanstack/router-plugin#router-plugin
+
+  @tanstack/start-server-core
+    start-server-core             [core]        Server-side runtime for TanStack Start: createStartHandler, request/response utilities (getRequest, setResponseHeader, setCookie, getCookie, useSession), three-phase request handling, AsyncLocalStorage context.
+      Load: pnpm exec intent load @tanstack/start-server-core#start-server-core
+
+  @tanstack/devtools
+    devtools-app-setup            [core]        Install TanStack Devtools, pick framework adapter (React/Vue/Solid/Preact), register plugins via plugins prop, configure shell (position, hotkeys, theme, hideUntilHover, requireUrlFlag, eventBusConfig). TanStackDevtools component, defaultOpen, localStorage persistence.
+      Load: pnpm exec intent load @tanstack/devtools#devtools-app-setup
+    devtools-marketplace          [lifecycle]   Publish plugin to npm and submit to TanStack Devtools Marketplace. PluginMetadata registry format, plugin-registry.ts, pluginImport (importName, type), requires (packageName, minVersion), framework tagging, multi-framework submissions, featured plugins.
+      Load: pnpm exec intent load @tanstack/devtools#devtools-marketplace
+    devtools-plugin-panel         [core]        Build devtools panel components that display emitted event data. Listen via EventClient.on(), handle theme (light/dark), use @tanstack/devtools-ui components. Plugin registration (name, render, id, defaultOpen), lifecycle (mount, activate, destroy), max 3 active plugins. Two paths: Solid.js core with devtools-ui for multi-framework support, or framework-specific panels.
+      Load: pnpm exec intent load @tanstack/devtools#devtools-plugin-panel
+    devtools-production           [lifecycle]   Handle devtools in production vs development. removeDevtoolsOnBuild, devDependency vs regular dependency, conditional imports, NoOp plugin variants for tree-shaking, non-Vite production exclusion patterns.
+      Load: pnpm exec intent load @tanstack/devtools#devtools-production
+
+Warnings:
+  ⚠ Found 2 installed variants of @tanstack/devtools-event-client across 2 versions (0.4.4 at E:\project\aion2web\node_modules\.pnpm\@tanstack+devtools-event-client@0.4.4\node_modules\@tanstack\devtools-event-client, 0.5.0 at E:\project\aion2web\node_modules\.pnpm\@tanstack+devtools-event-client@0.5.0\node_modules\@tanstack\devtools-event-client). Using 0.5.0 from E:\project\aion2web\node_modules\.pnpm\@tanstack+devtools-event-client@0.5.0\node_modules\@tanstack\devtools-event-client.
+Notices:
+  ℹ intent.skills is not set — all discovered skill sources are surfaced. A future version will require an explicit intent.skills allowlist; add one to opt in to specific sources.

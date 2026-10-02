@@ -1,0 +1,57 @@
+import { useChat } from "../use-chat.js";
+import { createChatUI } from "./create-ui.js";
+import { useMemo, useRef } from "react";
+import { jsx } from "react/jsx-runtime";
+//#region src/chat-ui/create-chat-hook.tsx
+/**
+* Bind chat options and UI widgets once at module scope.
+*
+* This matches Form `createFormHook` and Table `createTableHook`. The
+* returned `useAppChat` creates a chat instance. `chat.AppChat` renders it.
+* `useChatContext` reads that instance. Part and interrupt widgets take
+* `part` / `interrupt` as props. Do not read those from context.
+*
+* Pass instance overrides such as `threadId` into `useAppChat()`.
+*
+* @example
+* ```tsx
+* const { useAppChat, useChatContext } = createChatHook({
+*   options: chatOptions,
+*   components: { layout: ChatLayout, message: ChatMessage },
+*   partsComponents: { fallback: FallbackPart },
+*   toolsComponents: { getWeather: WeatherTool, purchaseItem: PurchaseTool },
+*   interruptsComponents: { generic: { choosePlan: ChoosePlan } },
+* })
+*
+* function Support() {
+*   const chat = useAppChat({ threadId: 'support-1' })
+*   return <chat.AppChat />
+* }
+* ```
+*/
+function createChatHook({ options, ...chatComponents }) {
+	const ui = createChatUI(options, chatComponents);
+	function useAppChat(overrides) {
+		const chat = overrides ? useChat({
+			...options,
+			...overrides
+		}) : useChat(options);
+		const chatRef = useRef(chat);
+		chatRef.current = chat;
+		const AppChat = useMemo(() => {
+			function AppChatImpl() {
+				return /* @__PURE__ */ jsx(ui.Chat, { chat: chatRef.current });
+			}
+			return AppChatImpl;
+		}, []);
+		return Object.assign(chat, { AppChat });
+	}
+	return {
+		useAppChat,
+		useChatContext: ui.useChatContext
+	};
+}
+//#endregion
+export { createChatHook };
+
+//# sourceMappingURL=create-chat-hook.js.map

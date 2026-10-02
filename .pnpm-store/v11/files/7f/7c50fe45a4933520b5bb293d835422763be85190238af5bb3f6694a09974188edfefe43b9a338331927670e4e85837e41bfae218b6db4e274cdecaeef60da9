@@ -1,0 +1,11 @@
+import { UIMessage } from '../types.js';
+import { ChatUIInterrupt, ChatUIPartKey, ChatUISelectInput, ChatUISelectedMessage, ChatUISelectedPart, ChatUISelection } from './types.js';
+export declare function partTypeToKey(type: string): ChatUIPartKey | string;
+export declare function collectInlineToolNames(toolInterrupts?: Record<string, unknown>, mappedToolNames?: ReadonlyArray<string>): Array<string>;
+export declare function resolveInterruptComponent(interrupt: ChatUIInterrupt, interruptsMap: {
+    tools?: Record<string, unknown>;
+    generic?: Record<string, unknown>;
+} | undefined): unknown;
+export declare function selectChatUI(input: ChatUISelectInput): ChatUISelection;
+export declare function automaticPartsForMessage(selected: ChatUISelectedMessage): Array<ChatUISelectedPart>;
+export declare function selectMessageUI(message: UIMessage, input: Omit<ChatUISelectInput, 'messages'>): ChatUISelectedMessage;

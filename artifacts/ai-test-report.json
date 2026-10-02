@@ -1,0 +1,120 @@
+{
+  "startedAt": "2026-09-16T03:06:16.843Z",
+  "scope": "Offline model/game fixtures; no production sends",
+  "checks": [
+    {
+      "name": "types",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 6619
+    },
+    {
+      "name": "context and durable task instructions",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 165
+    },
+    {
+      "name": "action lifetime and execution receipts",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 190
+    },
+    {
+      "name": "execution receipts in MQTT hook",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 1335
+    },
+    {
+      "name": "bulk execution receipts and resume",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 5807
+    },
+    {
+      "name": "interactive SDK and history",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 8754
+    },
+    {
+      "name": "provider route and serialization",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 3027
+    },
+    {
+      "name": "interactive errors in React",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 2077
+    },
+    {
+      "name": "long conversations in React",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 5684
+    },
+    {
+      "name": "recipient and operation scope",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 2101
+    },
+    {
+      "name": "managed SDK recovery",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 947
+    },
+    {
+      "name": "managed task isolation",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 171
+    },
+    {
+      "name": "managed scheduler",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 175
+    },
+    {
+      "name": "managed reply latency",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 172
+    },
+    {
+      "name": "managed presence",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 185
+    },
+    {
+      "name": "game chat blocking",
+      "passed": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMs": 414
+    }
+  ],
+  "completedAt": "2026-09-16T03:06:54.668Z",
+  "passed": true
+}

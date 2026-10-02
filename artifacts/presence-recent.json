@@ -1,0 +1,114 @@
+[
+  {
+    "results": [
+      {
+        "server_id": "1305",
+        "character_id": "367324844607564597",
+        "status": "unknown",
+        "checked": "2026-10-01 05:27:04"
+      },
+      {
+        "server_id": "1305",
+        "character_id": "367324844607577320",
+        "status": "unknown",
+        "checked": "2026-10-01 05:23:58"
+      },
+      {
+        "server_id": "1305",
+        "character_id": "367324844607578688",
+        "status": "unknown",
+        "checked": "2026-10-01 05:23:58"
+      },
+      {
+        "server_id": "1305",
+        "character_id": "367324844607573512",
+        "status": "unknown",
+        "checked": "2026-10-01 05:23:58"
+      },
+      {
+        "server_id": "1305",
+        "character_id": "367324844607564597",
+        "status": "unknown",
+        "checked": "2026-10-01 05:23:58"
+      },
+      {
+        "server_id": "1305",
+        "character_id": "367324844607578743",
+        "status": "unknown",
+        "checked": "2026-10-01 05:23:58"
+      },
+      {
+        "server_id": "1305",
+        "character_id": "367324844607579542",
+        "status": "unknown",
+        "checked": "2026-10-01 05:23:58"
+      },
+      {
+        "server_id": "1305",
+        "character_id": "367324844607580217",
+        "status": "unknown",
+        "checked": "2026-10-01 05:23:58"
+      },
+      {
+        "server_id": "1305",
+        "character_id": "367324844607579086",
+        "status": "unknown",
+        "checked": "2026-10-01 05:23:58"
+      },
+      {
+        "server_id": "1305",
+        "character_id": "367324844607580162",
+        "status": "unknown",
+        "checked": "2026-10-01 05:23:58"
+      },
+      {
+        "server_id": "1305",
+        "character_id": "367324844607580018",
+        "status": "unknown",
+        "checked": "2026-10-01 05:23:58"
+      },
+      {
+        "server_id": "1305",
+        "character_id": "367324844607579561",
+        "status": "unknown",
+        "checked": "2026-10-01 05:23:58"
+      },
+      {
+        "server_id": "1305",
+        "character_id": "367324844607580221",
+        "status": "unknown",
+        "checked": "2026-10-01 05:23:58"
+      },
+      {
+        "server_id": "1305",
+        "character_id": "367324844607580156",
+        "status": "unknown",
+        "checked": "2026-10-01 05:23:58"
+      },
+      {
+        "server_id": "1305",
+        "character_id": "367324844607574758",
+        "status": "unknown",
+        "checked": "2026-10-01 05:23:58"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.2986
+      },
+      "duration": 0.2986,
+      "changes": 0,
+      "last_row_id": 1136297,
+      "changed_db": false,
+      "size_after": 66097152,
+      "rows_read": 178,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

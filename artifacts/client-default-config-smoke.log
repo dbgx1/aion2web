@@ -1,0 +1,11 @@
+[AION2] automatic certificate installation is disabled.
+[AION2] build=2026-09-02.0100-auto-cert
+[AION2] tool=mitmweb mode=regular addon=E:\project\aion2web\artifacts\client-release\default-config-20260914\aion2-client\_internal\mitm_ws_message_monitor.py
+[AION2] proxy=http://127.0.0.1:0
+[14:13:28.918] Loading script E:\project\aion2web\artifacts\client-release\default-config-20260914\aion2-client\_internal\mitm_ws_message_monitor.py
+[ADDON] build=2026-09-14.precise-topics.2 file=E:\project\aion2web\artifacts\client-release\default-config-20260914\aion2-client\_internal\mitm_ws_message_monitor.py
+[14:13:28.939] HTTP(S) proxy listening at 127.0.0.1:52394.
+[14:13:28.944] Web server listening at http://127.0.0.1:52386/
+[WS POLLER] started: scanning mitmweb flow store
+[RELAY] agent=package-test room=isolated mqtt=127.0.0.1:52385
+[RELAY] MQTT connected, ready for console commands

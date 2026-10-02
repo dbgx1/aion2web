@@ -1,0 +1,169 @@
+[
+  {
+    "results": [
+      {
+        "server_id": "1101",
+        "uploaded_name": null,
+        "characters": 12119
+      },
+      {
+        "server_id": "1102",
+        "uploaded_name": null,
+        "characters": 9682
+      },
+      {
+        "server_id": "1201",
+        "uploaded_name": null,
+        "characters": 9883
+      },
+      {
+        "server_id": "1301",
+        "uploaded_name": null,
+        "characters": 6595
+      },
+      {
+        "server_id": "1302",
+        "uploaded_name": null,
+        "characters": 7495
+      },
+      {
+        "server_id": "1303",
+        "uploaded_name": null,
+        "characters": 1754
+      },
+      {
+        "server_id": "1304",
+        "uploaded_name": null,
+        "characters": 7793
+      },
+      {
+        "server_id": "1305",
+        "uploaded_name": null,
+        "characters": 5499
+      },
+      {
+        "server_id": "1306",
+        "uploaded_name": null,
+        "characters": 4079
+      },
+      {
+        "server_id": "1307",
+        "uploaded_name": null,
+        "characters": 5621
+      },
+      {
+        "server_id": "1401",
+        "uploaded_name": null,
+        "characters": 3244
+      },
+      {
+        "server_id": "1402",
+        "uploaded_name": null,
+        "characters": 2622
+      },
+      {
+        "server_id": "1501",
+        "uploaded_name": null,
+        "characters": 4779
+      },
+      {
+        "server_id": "1502",
+        "uploaded_name": null,
+        "characters": 4423
+      },
+      {
+        "server_id": "1503",
+        "uploaded_name": null,
+        "characters": 1722
+      },
+      {
+        "server_id": "2101",
+        "uploaded_name": null,
+        "characters": 10962
+      },
+      {
+        "server_id": "2102",
+        "uploaded_name": null,
+        "characters": 10316
+      },
+      {
+        "server_id": "2201",
+        "uploaded_name": null,
+        "characters": 14095
+      },
+      {
+        "server_id": "2301",
+        "uploaded_name": null,
+        "characters": 9432
+      },
+      {
+        "server_id": "2302",
+        "uploaded_name": null,
+        "characters": 9494
+      },
+      {
+        "server_id": "2305",
+        "uploaded_name": null,
+        "characters": 11633
+      },
+      {
+        "server_id": "2306",
+        "uploaded_name": null,
+        "characters": 11033
+      },
+      {
+        "server_id": "2307",
+        "uploaded_name": null,
+        "characters": 7253
+      },
+      {
+        "server_id": "2308",
+        "uploaded_name": null,
+        "characters": 19
+      },
+      {
+        "server_id": "2401",
+        "uploaded_name": null,
+        "characters": 4454
+      },
+      {
+        "server_id": "2402",
+        "uploaded_name": null,
+        "characters": 3616
+      },
+      {
+        "server_id": "2501",
+        "uploaded_name": null,
+        "characters": 7763
+      },
+      {
+        "server_id": "2502",
+        "uploaded_name": null,
+        "characters": 6729
+      },
+      {
+        "server_id": "2503",
+        "uploaded_name": null,
+        "characters": 2819
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 240.8627
+      },
+      "duration": 240.8627,
+      "changes": 0,
+      "last_row_id": 1146921,
+      "changed_db": false,
+      "size_after": 66650112,
+      "rows_read": 196957,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

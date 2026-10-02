@@ -1,0 +1,12 @@
+✔ message bursts are preserved across group, request and UTF-8 byte limits (60.4606ms)
+✔ oversize raw is isolated without losing neighbouring messages or retrying an impossible body (3.676ms)
+✔ exact byte boundary accounts for envelope, JSON escapes and non-ASCII identifiers (6.4958ms)
+✔ message API cancels an oversize stream without Content-Length before any database access (54.7152ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 129.8731

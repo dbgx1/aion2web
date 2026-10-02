@@ -1,0 +1,15 @@
+[
+  {
+    "path": "/docs",
+    "status": 200,
+    "cacheControl": null,
+    "pageLoads": true
+  },
+  {
+    "path": "/api/admin/upload-token",
+    "status": 401,
+    "cacheControl": "private, no-store",
+    "ok": false,
+    "hasToken": false
+  }
+]

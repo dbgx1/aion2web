@@ -6,6 +6,7 @@ import {
   verifyAdminCredentials,
 } from '#/server/admin-auth.server'
 import { jsonError } from '#/server/api-auth.server'
+import { allowedServerIds } from '#/server/server-access.server'
 
 export const Route = createFileRoute('/api/auth')({
   server: {
@@ -13,7 +14,8 @@ export const Route = createFileRoute('/api/auth')({
       GET: async ({ request }) => {
         const principal = await currentAdminPrincipal(request)
         if (!principal) return jsonError('未登录', 401)
-        return Response.json({ ok: true, authenticated: true, user: principal }, {
+        const scope = await allowedServerIds(principal)
+        return Response.json({ ok: true, authenticated: true, user: { ...principal, scopeKey: JSON.stringify(scope) } }, {
           headers: { 'Cache-Control': 'no-store' },
         })
       },

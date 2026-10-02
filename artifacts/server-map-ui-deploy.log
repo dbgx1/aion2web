@@ -1,0 +1,154 @@
+
+> deploy
+> npm run build && node scripts/prepare-deploy.mjs && wrangler deploy
+
+
+> build
+> npm run docs:export && vite build
+
+
+> docs:export
+> node scripts/export-api-docs.mjs
+
+Exported AI reference: 21 HTTP routes, 10 MQTT sections; credentials excluded
+vite v8.2.2 building client environment for production...
+transforming...
+
+[@tanstack/devtools-vite] Removed devtools code from: /src/routes/__root.tsx
+
+✓ 2270 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/.assetsignore                      0.02 kB
+dist/client/assets/index-Cfj9jsil.css          4.68 kB │ gzip:   1.46 kB
+dist/client/assets/styles-CVN2QwCG.css        93.98 kB │ gzip:  18.56 kB
+dist/client/assets/intelligence-DJ7LAi8J.js    0.03 kB │ gzip:   0.05 kB
+dist/client/assets/reception-DJ7LAi8J.js       0.03 kB │ gzip:   0.05 kB
+dist/client/assets/usage-DJ7LAi8J.js           0.03 kB │ gzip:   0.05 kB
+dist/client/assets/characters-CAIeH5mq.js      0.04 kB │ gzip:   0.06 kB
+dist/client/assets/clients-CAIeH5mq.js         0.04 kB │ gzip:   0.06 kB
+dist/client/assets/console-CAIeH5mq.js         0.04 kB │ gzip:   0.06 kB
+dist/client/assets/docs-CAIeH5mq.js            0.04 kB │ gzip:   0.06 kB
+dist/client/assets/messages-CAIeH5mq.js        0.04 kB │ gzip:   0.06 kB
+dist/client/assets/settings-CAIeH5mq.js        0.04 kB │ gzip:   0.06 kB
+dist/client/assets/_portal-a0Ju6X_s.js         0.29 kB │ gzip:   0.22 kB
+dist/client/assets/routes-D_Pkm93o.js        132.67 kB │ gzip:  35.55 kB
+dist/client/assets/mqtt.esm-DJxwHEmv.js      357.42 kB │ gzip: 104.47 kB
+dist/client/assets/index-Bn2laFri.js         975.94 kB │ gzip: 292.62 kB
+
+✓ built in 2.63s
+vite v8.2.2 building ssr environment for production...
+transforming...
+
+[@tanstack/devtools-vite] Removed devtools code from: /src/routes/__root.tsx
+
+✓ 3195 modules transformed.
+rendering chunks...
+Using secrets defined in process.env
+computing gzip size...
+dist/server/wrangler.json                                      1.61 kB │ gzip:   0.87 kB
+dist/server/.vite/manifest.json                                7.02 kB │ gzip:   1.15 kB
+dist/server/assets/reception-panel-Cfj9jsil.css                4.68 kB │ gzip:   1.46 kB
+dist/server/assets/styles-CVN2QwCG.css                        93.98 kB │ gzip:  18.56 kB
+dist/server/assets/server-access.server-DUfJFqrI.js            0.08 kB │ gzip:   0.08 kB
+dist/server/assets/usage-FcqKVyYO.js                           0.14 kB │ gzip:   0.12 kB
+dist/server/assets/reception-B4nm14bB.js                       0.14 kB │ gzip:   0.13 kB
+dist/server/assets/intelligence-DaWblOqe.js                    0.15 kB │ gzip:   0.13 kB
+dist/server/assets/docs-udQ07jdn.js                            0.15 kB │ gzip:   0.13 kB
+dist/server/assets/clients-BkuPDu-3.js                         0.16 kB │ gzip:   0.14 kB
+dist/server/assets/console-DrC6GPKE.js                         0.16 kB │ gzip:   0.14 kB
+dist/server/assets/messages-KxJa7rm8.js                        0.16 kB │ gzip:   0.14 kB
+dist/server/assets/settings-D3kn_OXY.js                        0.16 kB │ gzip:   0.14 kB
+dist/server/assets/characters-BPjinb6N.js                      0.16 kB │ gzip:   0.14 kB
+dist/server/assets/start-DxgovzEb.js                           0.22 kB │ gzip:   0.17 kB
+dist/server/assets/empty-plugin-adapters-D7mxBbir.js           0.28 kB │ gzip:   0.18 kB
+dist/server/assets/_portal-CRr7D1dK.js                         1.46 kB │ gzip:   0.75 kB
+dist/server/assets/matchContext-BJuTIfvk.js                    2.70 kB │ gzip:   1.13 kB
+dist/server/assets/_tanstack-start-manifest_v-fF_W6pGP.js      2.86 kB │ gzip:   0.69 kB
+dist/server/assets/react-dom-DFz6zqDu.js                      74.30 kB │ gzip:  20.00 kB
+dist/server/assets/manifest-BDLu45U3.js                       93.75 kB │ gzip:  22.25 kB
+dist/server/assets/routes-CLqAI-Kv.js                        256.85 kB │ gzip:  48.40 kB
+dist/server/assets/mqtt.esm-D_637COy.js                      471.54 kB │ gzip: 124.36 kB
+dist/server/index.js                                         669.73 kB │ gzip: 137.47 kB
+dist/server/assets/reception-panel-9utfQ_vd.js             1,014.72 kB │ gzip: 247.62 kB
+dist/server/assets/router-D060Obb9.js                      2,091.34 kB │ gzip: 328.73 kB
+
+✓ built in 2.77s
+
+ ⛅️ wrangler 4.129.0 (update available 4.145.0)
+───────────────────────────────────────────────
+Using redirected Wrangler configuration.
+ - Configuration being used: "dist\server\wrangler.json"
+ - Original user's configuration: "wrangler.jsonc"
+ - Deploy configuration file: ".wrangler\deploy\config.json"
+Attaching additional modules:
+┌───────────────────────────────────────────────┬──────┬─────────────┐
+│ Name                                          │ Type │ Size        │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/characters-BPjinb6N.js                 │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/clients-BkuPDu-3.js                    │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/console-DrC6GPKE.js                    │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/docs-udQ07jdn.js                       │ esm  │ 0.15 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/empty-plugin-adapters-D7mxBbir.js      │ esm  │ 0.28 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/intelligence-DaWblOqe.js               │ esm  │ 0.15 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/manifest-BDLu45U3.js                   │ esm  │ 91.56 KiB   │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/matchContext-BJuTIfvk.js               │ esm  │ 2.65 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/messages-KxJa7rm8.js                   │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/mqtt.esm-D_637COy.js                   │ esm  │ 460.49 KiB  │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/react-dom-DFz6zqDu.js                  │ esm  │ 72.57 KiB   │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/reception-B4nm14bB.js                  │ esm  │ 0.15 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/reception-panel-9utfQ_vd.js            │ esm  │ 990.94 KiB  │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/router-D060Obb9.js                     │ esm  │ 2042.33 KiB │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/routes-CLqAI-Kv.js                     │ esm  │ 250.83 KiB  │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/server-access.server-DUfJFqrI.js       │ esm  │ 0.09 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/settings-D3kn_OXY.js                   │ esm  │ 0.16 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/start-DxgovzEb.js                      │ esm  │ 0.22 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/usage-FcqKVyYO.js                      │ esm  │ 0.14 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/_portal-CRr7D1dK.js                    │ esm  │ 1.43 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/_tanstack-start-manifest_v-fF_W6pGP.js │ esm  │ 2.79 KiB    │
+├───────────────────────────────────────────────┼──────┼─────────────┤
+│ Total (21 modules)                            │      │ 3917.55 KiB │
+└───────────────────────────────────────────────┴──────┴─────────────┘
+🌀 Building list of assets...
+✨ Read 19 files from the assets directory E:\project\aion2web\dist\client
+🌀 Starting asset upload...
+🌀 Found 3 new or modified static assets to upload. Proceeding with upload...
++ /assets/_portal-a0Ju6X_s.js
++ /assets/routes-D_Pkm93o.js
++ /assets/index-Bn2laFri.js
+Uploaded 1 of 3 assets
+Uploaded 2 of 3 assets
+Uploaded 3 of 3 assets
+✨ Success! Uploaded 3 files (14 already uploaded) (1.81 sec)
+
+Total Upload: 4571.58 KiB / gzip: 901.56 KiB
+Worker Startup Time: 12 ms
+Your Worker has access to the following bindings:
+Binding                                                             Resource                  
+env.DB (aion2web-db)                                                D1 Database               
+env.CLOUDFLARE_ACCOUNT_ID ("eb1e201a3afb3d17f33285240edd595e")      Environment Variable      
+
+Uploaded aion2web (7.38 sec)
+Deployed aion2web triggers (1.82 sec)
+  mmorpgchat.com (custom domain)
+Current Version ID: 7913b789-6f1a-452b-8cb0-943f05815764

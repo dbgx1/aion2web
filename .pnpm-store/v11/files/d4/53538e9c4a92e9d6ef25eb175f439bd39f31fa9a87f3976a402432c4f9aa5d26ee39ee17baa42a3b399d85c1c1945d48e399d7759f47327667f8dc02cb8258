@@ -1,0 +1,23 @@
+import { StreamChunk } from '@tanstack/ai/client';
+import { UIMessage } from './types.js';
+/** Tracks stream chunks that must be ignored after the owning chat is cleared. */
+export declare class ClearedStreamTracker {
+    private readonly clearedMessageIds;
+    private readonly clearedRunIds;
+    private readonly ignoredActiveRunIds;
+    private readonly clearedToolCallIds;
+    private currentRunlessRunId;
+    snapshotClear(context: {
+        messages: Array<UIMessage>;
+        activeRunIds: Set<string>;
+        currentRunId: string | null;
+    }): void;
+    shouldIgnoreChunk(chunk: StreamChunk): boolean;
+    onRunStarted(runId: string): void;
+    onRunSettled(runId: string): void;
+    onSessionRunError(): void;
+    resetActiveRuns(): void;
+    takeRunlessRunId(): string | null;
+    private markIgnoredChunkIds;
+    private isRunlessChunkFromIgnoredRun;
+}

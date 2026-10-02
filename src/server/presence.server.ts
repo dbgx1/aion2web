@@ -4,6 +4,7 @@ import { PRESENCE_TIMEOUT_MS, presenceCharacterKey, type PresenceCharacter, type
 
 const DEFAULT_STALE_MS = 180_000
 const MAX_STATUS_LOOKUP = 500
+const REQUEST_RETENTION_MS = 7 * 24 * 60 * 60 * 1000
 export type PresenceStatus = 'online' | 'offline' | 'stale' | 'unknown'
 export type PresenceStatusLookup = { serverId: string; characterId: string }
 type PresenceStatusRow = {
@@ -29,6 +30,12 @@ export async function createPresenceRequest(characters: PresenceCharacter[], pri
   const now = Date.now()
   const expiresAt = now + PRESENCE_TIMEOUT_MS
   const unique = [...new Map(characters.map(character => [presenceCharacterKey(character), character])).values()]
+  // Cleanup is driven by real requests, without permanent timers or idle polling.
+  // Each admission removes a bounded batch; FK cascades remove old proof/receipt
+  // rows while the latest character presence remains independently available.
+  await database().prepare(`DELETE FROM presence_requests WHERE id IN (
+    SELECT id FROM presence_requests WHERE expires_at < ? ORDER BY expires_at LIMIT 100
+  )`).bind(now - REQUEST_RETENTION_MS).run()
   // The conditional insert enforces service-wide and per-operator capacity atomically.
   const inserted = await database().prepare(`
     INSERT INTO presence_requests (id, user_key, service_id, characters_json, created_at, expires_at)
@@ -65,7 +72,21 @@ export async function storeMqttPresenceResults(envelope: PresenceEnvelope, princ
       throw new PresenceRequestError('查询时间超出本次请求范围', 400)
     }
   }
-  const statements = envelope.results.flatMap(result => [
+  const verifiedRows = await database().prepare(
+    'SELECT server_id,character_id,status,checked_at FROM presence_verified_results WHERE request_id=?'
+  ).bind(request.id).all<{server_id:string;character_id:string;status:string;checked_at:number}>()
+  const verified = new Map(verifiedRows.results.map(row => [`${row.server_id}\u0000${row.character_id}`,row]))
+  const confirmedResults = envelope.results.filter(result => {
+    const proof=verified.get(`${result.serverId}\u0000${result.characterId}`)
+    // Browser-side timeouts are display-only, never authoritative observations.
+    if (!proof && result.status==='unknown') return false
+    if (!proof || proof.status!==result.status || proof.checked_at!==result.checkedAt) {
+      throw new PresenceRequestError('查询结果尚未由调度器确认，或与实际结果不符', 409)
+    }
+    return true
+  })
+  if (!confirmedResults.length) return 0
+  const statements = confirmedResults.flatMap(result => [
     database().prepare(`
       INSERT INTO character_presence (server_id, character_id, character_name, is_online, checked_at, updated_at, source_id)
       SELECT ?, ?, ?, ?, ?, ?, ?
@@ -76,6 +97,7 @@ export async function storeMqttPresenceResults(envelope: PresenceEnvelope, princ
         character_name = excluded.character_name, is_online = excluded.is_online,
         checked_at = excluded.checked_at, updated_at = excluded.updated_at, source_id = excluded.source_id
       WHERE excluded.checked_at > character_presence.checked_at
+        AND (excluded.is_online != -1 OR character_presence.is_online = -1)
     `).bind(result.serverId, result.characterId, targets.get(presenceCharacterKey(result))?.name || result.characterId,
       result.status === 'unknown' ? -1 : result.status === 'online' ? 1 : 0, result.checkedAt, now, request.service_id,
       request.id, result.serverId, result.characterId),
@@ -87,7 +109,7 @@ export async function storeMqttPresenceResults(envelope: PresenceEnvelope, princ
       AND (SELECT COUNT(*) FROM presence_request_results WHERE request_id = ?) >= json_array_length(characters_json)
   `).bind(request.id, request.id))
   const saved = await database().batch(statements)
-  return saved.reduce((count, result, index) => count + (index < envelope.results.length * 2 && index % 2 === 0 ? result.meta.changes || 0 : 0), 0)
+  return saved.reduce((count, result, index) => count + (index < confirmedResults.length * 2 && index % 2 === 0 ? result.meta.changes || 0 : 0), 0)
 }
 
 export async function listPresenceStatus(items: PresenceStatusLookup[], maxAgeMs = DEFAULT_STALE_MS) {
@@ -123,8 +145,8 @@ export async function listPresenceStatus(items: PresenceStatusLookup[], maxAgeMs
       name: row.character_name,
       online: row.is_online === -1 ? null : row.is_online === 1,
       status: row.is_online === -1 ? 'unknown' as PresenceStatus
-        : row.is_online === 0 ? 'offline' as PresenceStatus
-          : now - row.checked_at > maxAgeMs ? 'stale' as PresenceStatus : 'online' as PresenceStatus,
+        : now - row.checked_at > maxAgeMs ? 'stale' as PresenceStatus
+          : row.is_online === 0 ? 'offline' as PresenceStatus : 'online' as PresenceStatus,
       checkedAt: row.checked_at,
       updatedAt: row.updated_at,
       sourceId: row.source_id || '',

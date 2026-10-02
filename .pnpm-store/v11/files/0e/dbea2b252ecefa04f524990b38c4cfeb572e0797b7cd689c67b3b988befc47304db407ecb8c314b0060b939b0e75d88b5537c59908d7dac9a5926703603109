@@ -1,0 +1,83 @@
+import { AnyClientTool, BatchInterruptError, Interrupt, InterruptDefinition, RunAgentResumeItem } from '@tanstack/ai/client';
+import { BoundInterrupts, ChatInterruptState, ResolvableChatInterrupt } from './types.js';
+export interface InterruptManagerHydration {
+    threadId: string;
+    interruptedRunId: string;
+    generation: number;
+    interrupts: ReadonlyArray<Interrupt>;
+}
+export interface InterruptManagerSubmission {
+    threadId: string;
+    interruptedRunId: string;
+    generation: number;
+    resolutions: ReadonlyArray<RunAgentResumeItem>;
+    canonicalResolutions: string;
+    fingerprint: string;
+}
+export type InterruptManagerChangeSource = 'hydrate' | 'live';
+export interface InterruptManagerOptions<TTools extends ReadonlyArray<AnyClientTool>, TInterrupts extends ReadonlyArray<InterruptDefinition<any, any, any, any>> = readonly []> {
+    tools?: TTools;
+    interrupts?: TInterrupts;
+    submit: (submission: InterruptManagerSubmission) => Promise<void>;
+    onChange?: (source: InterruptManagerChangeSource) => void;
+}
+export declare class InterruptManager<TTools extends ReadonlyArray<AnyClientTool> = ReadonlyArray<AnyClientTool>, TInterrupts extends ReadonlyArray<InterruptDefinition<any, any, any, any>> = readonly []> {
+    private readonly options;
+    private hydration;
+    private items;
+    private snapshot;
+    private rootErrors;
+    private submissionRootErrors;
+    private state;
+    private activeTransaction;
+    private activeSubmissionOperation;
+    private retrySubmission;
+    private resuming;
+    private tools;
+    private readonly interruptDefinitions;
+    constructor(options: InterruptManagerOptions<TTools, TInterrupts>);
+    updateTools(tools: TTools): void;
+    hydrate(hydration: InterruptManagerHydration, source?: InterruptManagerChangeSource): void;
+    getInterrupts(): BoundInterrupts<TTools, TInterrupts>;
+    getState(): ChatInterruptState<TTools, TInterrupts>;
+    getDescriptors(): ReadonlyArray<Interrupt>;
+    hasValidatedFirstPartyGenericBatch(): boolean;
+    reset(options?: {
+        preserveRootErrors?: boolean;
+        source?: InterruptManagerChangeSource;
+    }): void;
+    getInterruptErrors(): ReadonlyArray<BatchInterruptError>;
+    getResuming(): boolean;
+    resolve(approved: boolean): void;
+    resolve(resolver: (interrupt: ResolvableChatInterrupt<TTools, TInterrupts>) => undefined): void;
+    cancel(): void;
+    retry(): void;
+    resolveClientToolOutput(toolCallId: string, output: unknown): boolean;
+    resolveToolApprovalDecision(interruptId: string, approved: boolean): boolean;
+    private hydrateInterrupt;
+    private buildSnapshot;
+    private publish;
+    private resolveItem;
+    private cancelItem;
+    private clearItem;
+    private maybeSubmit;
+    private applyValidation;
+    private validateCandidate;
+    private validateApprovalCandidate;
+    private validateApprovalPayload;
+    private approvalBranchSchema;
+    private validationCode;
+    private resolveBooleanBulk;
+    private resolveTransaction;
+    private restoreCheckpoints;
+    private assertItemMutable;
+    private assertRootMutable;
+    private invalidateRetry;
+    private submitBatch;
+    private performSubmission;
+    private handleSubmissionFailure;
+    private addRootError;
+    private findItem;
+    private requireHydration;
+    private itemError;
+}

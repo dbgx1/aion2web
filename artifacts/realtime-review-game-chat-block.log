@@ -1,0 +1,1 @@
+PASS: exact game ban detection, nested/HTTP/escaped payloads, timezone, stale receipt rejection, generic 403/chat content isolation, synchronous notification, reload persistence and cross-tab extension

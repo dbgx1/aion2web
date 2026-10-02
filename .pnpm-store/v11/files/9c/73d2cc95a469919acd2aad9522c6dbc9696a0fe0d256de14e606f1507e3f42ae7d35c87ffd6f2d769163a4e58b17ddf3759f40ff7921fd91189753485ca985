@@ -1,0 +1,10 @@
+//#region src/sse-utils.ts
+function parseSseDataLine(line) {
+	if (!line.startsWith("data:")) return line;
+	const data = line.slice(5);
+	return data.startsWith(" ") ? data.slice(1) : data;
+}
+//#endregion
+export { parseSseDataLine };
+
+//# sourceMappingURL=sse-utils.js.map

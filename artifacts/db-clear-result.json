@@ -1,0 +1,443 @@
+[
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 171.7459
+      },
+      "duration": 171.7459,
+      "changes": 22021,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 179748864,
+      "rows_read": 44042,
+      "rows_written": 22021,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 9.914
+      },
+      "duration": 9.914,
+      "changes": 3649,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 178843648,
+      "rows_read": 7298,
+      "rows_written": 3649,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.1455
+      },
+      "duration": 0.1455,
+      "changes": 15,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 178843648,
+      "rows_read": 30,
+      "rows_written": 15,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0671
+      },
+      "duration": 0.0671,
+      "changes": 1,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 178843648,
+      "rows_read": 0,
+      "rows_written": 1,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 134.7155
+      },
+      "duration": 134.7155,
+      "changes": 75141,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 167329792,
+      "rows_read": 150282,
+      "rows_written": 75141,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 15.718
+      },
+      "duration": 15.718,
+      "changes": 1632,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 160792576,
+      "rows_read": 3264,
+      "rows_written": 1632,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 7.9983
+      },
+      "duration": 7.9983,
+      "changes": 1539,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 160149504,
+      "rows_read": 3078,
+      "rows_written": 1539,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.2315
+      },
+      "duration": 0.2315,
+      "changes": 2,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 160149504,
+      "rows_read": 4,
+      "rows_written": 2,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.1507
+      },
+      "duration": 0.1507,
+      "changes": 13,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 160149504,
+      "rows_read": 26,
+      "rows_written": 13,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0867
+      },
+      "duration": 0.0867,
+      "changes": 32,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 160149504,
+      "rows_read": 0,
+      "rows_written": 32,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0791
+      },
+      "duration": 0.0791,
+      "changes": 1,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 160149504,
+      "rows_read": 0,
+      "rows_written": 1,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.1185
+      },
+      "duration": 0.1185,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 160149504,
+      "rows_read": 0,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0693
+      },
+      "duration": 0.0693,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 160149504,
+      "rows_read": 0,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0911
+      },
+      "duration": 0.0911,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 160149504,
+      "rows_read": 0,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0838
+      },
+      "duration": 0.0838,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 160149504,
+      "rows_read": 0,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0628
+      },
+      "duration": 0.0628,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 160149504,
+      "rows_read": 0,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 7.0699
+      },
+      "duration": 7.0699,
+      "changes": 36681,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 154087424,
+      "rows_read": 0,
+      "rows_written": 36681,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.1521
+      },
+      "duration": 0.1521,
+      "changes": 1,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 154087424,
+      "rows_read": 0,
+      "rows_written": 1,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0981
+      },
+      "duration": 0.0981,
+      "changes": 3,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 154087424,
+      "rows_read": 0,
+      "rows_written": 3,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 2504.8414
+      },
+      "duration": 2504.8414,
+      "changes": 125379,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 626688,
+      "rows_read": 501516,
+      "rows_written": 125379,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.2145
+      },
+      "duration": 0.2145,
+      "changes": 14,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 626688,
+      "rows_read": 28,
+      "rows_written": 14,
+      "total_attempts": 1
+    }
+  }
+]

@@ -1,0 +1,1 @@
+PASS: actual directory hook persists on remount/reload, isolates accounts and pages, restores before fetching, keeps same-selection dependents, saves reset/no-legion, handles corrupt/disabled storage

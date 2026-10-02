@@ -1,0 +1,5 @@
+import { memoryStorage } from "./byok/storage.js";
+import { ByokClient, EMPTY_BYOK_SNAPSHOT, defineByok } from "./byok/client.js";
+import { decryptKeyring, defaultByokStorage, deriveAesKey, encryptKeyring, isPasskeyStorageSupported, passkeyStorage } from "./byok/passkey.js";
+import { defineByokProvider } from "@tanstack/ai/byok";
+export { ByokClient, EMPTY_BYOK_SNAPSHOT, decryptKeyring, defaultByokStorage, defineByok, defineByokProvider, deriveAesKey, encryptKeyring, isPasskeyStorageSupported, memoryStorage, passkeyStorage };

@@ -3,6 +3,7 @@ import type { ChatMessageUpload } from '#/lib/chat-storage'
 import type { AdminPrincipal } from '#/server/admin-users.server'
 import { isPrivateChatPayload, privateChatPeerFromPayload } from '#/lib/chat-channel'
 import { gameMessageIdFromRaw } from '#/lib/chat-timeline'
+import { canAccessServer } from './server-access.server'
 
 type MessageRow = {
   id: number
@@ -46,6 +47,17 @@ type ConversationOwner = {
   username: string
 }
 
+function storedMessageStatus(row: MessageRow): MessageRow['status'] {
+  const receiptStatus = correlatedReceipt(row).status
+  if (receiptStatus) return receiptStatus
+  // Older uploads stored unconfirmed execution as failed. Preserve the original
+  // receipt's meaning without modifying historical rows.
+  try {
+    if (row.message_type === 'control_result' && JSON.parse(row.raw_json || 'null')?.status === 'unknown') return 'pending'
+  } catch { /* Invalid historical payload: use the stored status. */ }
+  return row.status
+}
+
 async function findCharacter(serverId: string, characterId: string) {
   return database().prepare(`
     SELECT id FROM game_characters WHERE server_id = ? AND character_id = ?
@@ -77,6 +89,7 @@ export async function storeMessages(input: {
   messages: ChatMessageUpload[]
   operator: AdminPrincipal
 }) {
+  if (!await canAccessServer(input.operator, input.serverId)) return null
   let messages = input.messages.filter((message) => message.messageType !== 'chat_message' || isPrivateChatPayload(message.raw))
   if (messages.length === 0) return { inserted: 0, ignored: input.messages.length }
   const now = Date.now()
@@ -172,21 +185,17 @@ export async function storeMessages(input: {
 export async function listMessages(input: {
   serverId: string
   characterId: string
-  owner: ConversationOwner
+  owner: AdminPrincipal
   beforeId: number
   limit: number
 }) {
+  if (!await canAccessServer(input.owner, input.serverId)) return null
   const character = await findCharacter(input.serverId, input.characterId)
   if (!character) return null
-  const conversation = await database().prepare(`
-    SELECT id FROM chat_conversations WHERE character_ref = ? AND owner_user_key = ?
-  `).bind(character.id, input.owner.userKey).first<{ id: number }>()
-  if (!conversation) return { messages: [], nextCursor: null }
-
   const beforeFilter = input.beforeId > 0 ? 'AND id < ?' : ''
   const bindings = input.beforeId > 0
-    ? [conversation.id, input.beforeId, input.limit + 1]
-    : [conversation.id, input.limit + 1]
+    ? [character.id, input.beforeId, input.limit + 1]
+    : [character.id, input.limit + 1]
   // Resolve commands through the indexed conversation/request lookup even when
   // their receipts lie outside this history page. Never expose raw request data.
   const result = await database().prepare(`
@@ -196,7 +205,8 @@ export async function listMessages(input: {
       CASE WHEN message_type = 'control_sent' AND request_id IS NOT NULL THEN (
         SELECT json_object(
           'gameMessageId', json_extract(CASE WHEN json_valid(receipt.raw_json) THEN receipt.raw_json ELSE '{}' END, '$.result.response.guid'),
-          'status', receipt.status,
+          'status', CASE WHEN json_extract(CASE WHEN json_valid(receipt.raw_json) THEN receipt.raw_json ELSE '{}' END, '$.status') = 'unknown'
+            THEN 'pending' ELSE receipt.status END,
           'errorMessage', receipt.error_message
         )
         FROM chat_messages AS receipt
@@ -207,7 +217,7 @@ export async function listMessages(input: {
         ORDER BY receipt.id DESC LIMIT 1
       ) END AS correlated_receipt
     FROM chat_messages
-    WHERE conversation_id = ? ${beforeFilter}
+    WHERE conversation_id IN (SELECT id FROM chat_conversations WHERE character_ref = ?) ${beforeFilter}
     ORDER BY id DESC
     LIMIT ?
   `).bind(...bindings).all<MessageRow>()
@@ -231,7 +241,7 @@ export async function listMessages(input: {
       messageType: row.message_type,
       senderName: row.sender_name_snapshot || '',
       content: row.content,
-      status: correlatedReceipt(row).status || row.status,
+      status: storedMessageStatus(row),
       errorMessage: correlatedReceipt(row).errorMessage || row.error_message || '',
       operatorUserKey: row.operator_user_key || '',
       operatorUsername: row.operator_username || '',

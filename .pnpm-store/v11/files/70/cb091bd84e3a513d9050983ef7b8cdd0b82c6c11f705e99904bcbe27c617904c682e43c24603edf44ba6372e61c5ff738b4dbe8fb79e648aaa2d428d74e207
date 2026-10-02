@@ -1,0 +1,4 @@
+import { AnyClientTool, InterruptDefinition, SchemaInput } from '@tanstack/ai/client';
+import { InferredClientContext } from '@tanstack/ai-client';
+import { UseChatOptions, UseChatReturn } from './types.js';
+export declare function useChat<const TTools extends ReadonlyArray<AnyClientTool> = any, TSchema extends SchemaInput | undefined = undefined, TContext = InferredClientContext<TTools>, const TInterrupts extends ReadonlyArray<InterruptDefinition<any, any, any, any>> = readonly []>(options: UseChatOptions<TTools, TSchema, TContext, TInterrupts>): UseChatReturn<TTools, TSchema, TInterrupts>;

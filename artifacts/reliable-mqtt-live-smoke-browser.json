@@ -1,0 +1,7 @@
+{
+  "at": "2026-09-10T04:15:47.415Z",
+  "url": "https://aion2web.cc328496536.workers.dev",
+  "method": "Edge browser",
+  "error": "TimeoutError: page.goto: Timeout 25000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"https://aion2web.cc328496536.workers.dev/\", waiting until \"domcontentloaded\"\u001b[22m\n",
+  "verified": false
+}

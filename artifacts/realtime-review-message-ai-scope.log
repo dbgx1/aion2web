@@ -1,0 +1,1 @@
+PASS: actual MessageCenter AI tools reject stale recipient/filter/lock scopes and stopped requests; current scope still sends

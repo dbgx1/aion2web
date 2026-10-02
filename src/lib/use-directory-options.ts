@@ -25,7 +25,7 @@ export function useDirectoryOptions(servers: CharacterDirectoryServer[], selecte
     const serverOptions: SelectOption[] = [{ value: ALL_SERVERS_KEY, label: '全部区服' }]
     for (const race of [1, 2, 0]) {
       for (const server of servers.filter(item => item.raceId === race)) serverOptions.push({
-        value: server.serverId, label: server.serverName,
+        value: server.serverId, label: `${server.serverName} · ${server.serverId}`,
         group: race === 1 ? '天族区服' : race === 2 ? '魔族区服' : '其他区服',
       })
     }

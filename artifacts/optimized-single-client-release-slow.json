@@ -1,0 +1,102 @@
+{
+  "at": "2026-09-10T04:06:47.146Z",
+  "clientSource": "E:/project/aion2/client/mitm_ws_message_monitor.py",
+  "clientSha256": "4be70c24b3b44a691265e38b344b458602cacf4424e83ef598f04482e5046df2",
+  "consoleSha256": "27391468664a9933b77c5aa7defa59781ae8f5b14157580cbcaba0463850a4ed",
+  "gameDelayMs": 500,
+  "machine": {
+    "cpu": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "ramGB": 32
+  },
+  "scope": "Loopback Aedes broker + real Python MQTT relay/Paho + real browser useAionConsole. Game HTTP replaced with fixed-delay success (gameDelayMs); mitmproxy host stubbed. No game, public broker, production API/DB, AI, account authorization, or full console page load.",
+  "stages": [
+    {
+      "clients": 1,
+      "consoles": 20,
+      "messagesPerClientPerSecond": 10,
+      "trafficSeconds": 60,
+      "elapsedSeconds": 63.569,
+      "generated": 600,
+      "brokerReceivedChat": 600,
+      "expectedDeliveries": 12000,
+      "receivedDeliveries": 12000,
+      "drained": true,
+      "chatLatencyMs": {
+        "count": 12000,
+        "p50": 10.9,
+        "p95": 32.3,
+        "p99": 49.9,
+        "max": 110.8
+      },
+      "commandLatencyMs": {
+        "count": 2930,
+        "p50": 1762.2,
+        "p95": 2087.9,
+        "p99": 2190.8,
+        "max": 2615
+      },
+      "commandStatuses": {
+        "confirmed": 2930
+      },
+      "clientStats": {
+        "executed": 2930,
+        "active": 0,
+        "maxActiveGameCalls": 24,
+        "gameDelayMs": 500,
+        "ready": 1,
+        "outbox": 0
+      },
+      "longTasks": {
+        "count": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "browserHeapMB": [
+        20,
+        17,
+        18,
+        18,
+        17,
+        19,
+        19,
+        17,
+        17,
+        19,
+        17,
+        17,
+        17,
+        19,
+        19,
+        17,
+        19,
+        18,
+        17,
+        17
+      ],
+      "offlineQueueProbe": {
+        "offlineSubmitted": 600,
+        "offlineRetained": 600
+      },
+      "duplicateExecutions": 1,
+      "errors": [],
+      "eventReplayProbe": {
+        "chatSubmissions": 1,
+        "chatPublishes": 1,
+        "webrtcPending": 0
+      },
+      "overloadProbe": {
+        "submitted": 200,
+        "statuses": {
+          "confirmed": 128,
+          "not_sent": 72
+        },
+        "executed": 128,
+        "activeAfter": 0,
+        "maxActiveGameCalls": 24
+      }
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+//#region src/mcp-app-bridge.ts
+function isToolCallResponse(value) {
+	return value !== null && typeof value === "object" && "ok" in value && typeof value.ok === "boolean";
+}
+var SAFE_LINK_SCHEMES = /* @__PURE__ */ new Set([
+	"http:",
+	"https:",
+	"mailto:"
+]);
+function isSafeLink(url) {
+	try {
+		return SAFE_LINK_SCHEMES.has(new URL(url).protocol);
+	} catch {
+		return false;
+	}
+}
+function createMcpAppBridge(options) {
+	const { threadId, callEndpoint, chat, fetchImpl, onLink } = options;
+	const doFetch = fetchImpl ?? fetch;
+	return {
+		async callTool(input) {
+			const response = await doFetch(callEndpoint, {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({
+					threadId,
+					serverId: input.serverId,
+					toolName: input.toolName,
+					args: input.args,
+					messageId: input.messageId
+				})
+			});
+			if (!response.ok) throw new Error(`MCP app tool call failed: HTTP ${response.status}`);
+			const raw = await response.json();
+			if (!isToolCallResponse(raw)) throw new Error("MCP app tool call failed");
+			if (!raw.ok) throw new Error(raw.error ?? "MCP app tool call failed");
+			return raw.result;
+		},
+		async sendPrompt(text) {
+			await chat.sendMessage(text);
+		},
+		openLink(url) {
+			if (!isSafeLink(url)) {
+				console.warn("[mcp-app-bridge] openLink rejected: unsupported URL scheme", url);
+				return { isError: true };
+			}
+			if (onLink) try {
+				onLink(url);
+				return { isError: false };
+			} catch (err) {
+				console.warn("[mcp-app-bridge] openLink: onLink handler threw", err);
+				return { isError: true };
+			}
+			console.warn("[mcp-app-bridge] openLink ignored: no onLink handler configured");
+			return { isError: true };
+		}
+	};
+}
+//#endregion
+export { createMcpAppBridge };
+
+//# sourceMappingURL=mcp-app-bridge.js.map

@@ -1,0 +1,102 @@
+Long-running stability review — 2026-09-30
+Scope: E:/project/Aion2Pipe and E:/project/aion2web. Preserve existing changes and no-query-delay requirement.
+Status: IN PROGRESS; not a long-duration production acceptance.
+
+Confirmed issues and current fixes:
+1. Native proxy lifetime 32-session admission limit: separate live admission (32) from retained routes (256), retain closed routes for 120 seconds and join retired session threads outside locks. Real local 40-connection lifecycle test running.
+2. Browser presence queries skipped unsubscribe during disconnect: now release MQTT.js reconnect subscription state even offline. 200 repeated cancellation/timeout/reconnect iterations pass with no leftover listeners or subscriptions.
+3. Native live world models continued growing after archive cap on reconnect: retain 16 unselected closed proxy worlds plus selected/active worlds; discard associated non-archived metadata. UI integration regression uses 119 closed worlds and verifies active updates.
+
+Audit still required:
+- Native MQTT lifetime/cancellation/reconnect storm handling and dedup capacity after removal of fixed delay.
+- Native reporter persistence, disk-full behavior, upload retries and journal/queue bounds.
+- Native diagnostic history across application restarts and bounded logging cost.
+- Web MQTT message queues, managed-chat timers and component unmount/reconnect handling.
+- Web upload/database error paths, dedup/caches and retention.
+- CF scheduler failure/restart behavior, outbox retry/fairness, device registry and budget bounds.
+- Build/regression all affected modules, review final changes, prepare updated native package; deploy web changes only after validation.
+- Production smoke and measured longer-running resource/reconnection checks; distinguish real runs from simulated load tests.
+
+Prior baseline: one-client real online/offline roundtrip passed. Fixed query delay removed. World-entry gate newly built but not yet production-accepted. Multiple machine game-load acceptance remains unverified.
+Verified this pass:
+- Native real local socket test: 40 consecutive connections forwarded, then 120-second route grace elapsed and all closed route/session threads reclaimed (exit 0).
+- Native 11 CTest suites pass, including UI live-history regression for 119 closed connections after archive cap.
+- Web presence tests: 6 pass; 200 repeated offline cancel/timeout cycles leave no topics/listeners and never resend completed requests.
+- Web production build in progress. No deployment performed in this review pass yet.
+Deployment / package this pass:
+- Web production build passed; deployed aion2web version 06c0e787-f0c7-4553-a454-8be0d7bcf91b. Site HTTP 200 and application shell verified.
+- Native package E:/project/Aion2Pipe/dist-stability-review/Aion2Pipe.exe and Aion2Pipe-stability-review-win64.zip. Executable SHA256 05ED91C0BCDD8D098F2ADE0A47F697BC69316709B133A18204496EBF7F15397E.
+- Existing running game/client not interrupted. Next pass: continue remaining audit checklist; do not mark full goal complete from this pass.
+
+Review pass 2 verified:
+- Revalidated prior build session 95166: terminal exit 0, all 11 CTest suites passed. Short MQTT connection flaps no longer reset reconnect backoff; healthy 30-second connections reset it, with bounded jitter. Query dispatch remains without a fixed rate delay.
+- Character reporter polling now uses a partial reports_pending(target,blocked,due) index WHERE hash!=acked, applied automatically to existing databases on open.
+- Regression creates 99,000 acknowledged historical rows, removes index to emulate old database, reopens store, verifies pending/ack behavior and SQLite VM steps <500/no sort for both polling queries. This tests actual work rather than a wall-clock threshold.
+- Build and all 11 CTest suites passed, total 2.28 seconds. Build log: E:/project/Aion2Pipe/artifacts/stability-store-build.log.
+- Package: E:/project/Aion2Pipe/dist-stability-review-2/Aion2Pipe.exe; zip Aion2Pipe-stability-review-2-win64.zip. SHA256 81BD492C1D2A1B9887554065AFCBD013B45BC8515DD50A63602579258A8D4711. Running client/game untouched; no web deployment this pass.
+- Confirmed next issue still open: query_worker.cpp history cap 256 retains expired records for 180 seconds; sustained fast queries can exhaust it and silently reject tasks as generic invalid/conflicting. Need bounded dedup/backpressure preserving expiry and result delivery semantics, with regression coverage.
+- Full stability objective remains IN PROGRESS. Remaining audit checklist above still applies; no long-duration production acceptance claimed.
+
+Review pass 3 verified:
+- Native task history replaces 256-entry/expiry+180s retention with a bounded 4096-entry history, pruned every loop after expiry+10s result-delivery grace. Active receipts are never pruned.
+- Advertises not-ready at 4095 entries (one in-transit reserve); full-cap tasks receive explicit client_busy rejection without executing game request. Overflow event publish happens outside validation catch so transport failures reconnect before task PUBACK.
+- No fixed query rate delay added. Expired duplicates remain non-executable via existing expiresAt admission check; live duplicates retain original identity/event handling.
+- Regression simulates 10,000 tasks at 10/sec with 30s validity: <=401 retained records. Also covers grace boundary, active preservation, capacity reserve and recovery after expiry. This is a policy simulation, not a real multi-client/game soak.
+- All 11 CTest suites passed after final changes (2.20 seconds). Package E:/project/Aion2Pipe/dist-stability-review-3/Aion2Pipe.exe; zip Aion2Pipe-stability-review-3-win64.zip; SHA256 0D23ADD409E692D628001054A5099FB6D0351CC9AB6CDDE06FE7FCC9484A57D5. No running client/game interrupted.
+- Next confirmed web issue: character upload route reads request.text() unbounded before checking size, and checks UTF-16 length instead of incoming bytes. src/routes/api/messages.ts already has a stream-bounded reader; inspect/reuse before changing upload and persona routes. Web AGENTS requires intent skill check; CF/TanStack skills apply.
+- Overall review remains IN PROGRESS; original remaining checklist still requires audit and measured long-run acceptance.
+
+Review pass 4 verified:
+- Character upload and AI persona routes now stream-read with byte limits via src/server/request-body.server.ts; oversized unknown-length and multibyte bodies stop consumption immediately, read failures return 400, cancellation failures do not mask 413. Authentication still precedes body reading/database mutations.
+- Existing messages route already uses bounded streaming; left unchanged to preserve its behavior.
+- Five new request-body tests pass, including split UTF-8/exact boundary, rejected cancellation, stream errors/unlock, authenticated oversized upload/persona, malformed JSON, unauthenticated untouched body and ordinary success. Existing equipment/gender upload + SQLite migration/validation integration regression passes.
+- Production build passed; deployment df5c08d6-4fc7-4497-9000-5de3d7a882a7 to mmorpgchat.com. Logs artifacts/stability-body-build.log and stability-body-deploy.log. No database migration or client replacement.
+- Remaining native diagnostic review confirmed per-run rotation only: unique log names grow across repeated restarts, and rotation failure after stream close leaves logging disabled. Next investigate bounded historical retention/recovery with protection for other active processes and exported/user files.
+- Objective remains IN PROGRESS; unit/synthetic tests do not constitute long-duration production acceptance.
+
+Review pass 5 verified:
+- Native diagnostics now retries a failed stream/rotation at most once per second, reopens in append mode, recalculates size and clears current error only after successful write. Initial entirely unwritable initialization remains visible and requires reinitialization; failure-time entries are not buffered.
+- Startup prunes generated regular log files from confirmed exited PIDs to newest 20 sessions (up to 3 segments each). Exact generated filename pattern only, no recursion; active/inaccessible/unknown PID and symlink/non-regular files excluded. Failed removals do not prevent startup. Retention applies within each log directory; retained active/unknown or undeletable files may exceed the historical target.
+- Real Windows sharing-violation regression forces rotation failure by opening .2 without delete sharing, releases handle, waits 1.1s and confirms recovered JSON record/error clearance. Retention fixture verifies 25 exited-process sessions reduce to 20 including parts, live PID and user export/custom names retained.
+- All 11 CTest suites pass, 3.51 seconds. Build log E:/project/Aion2Pipe/artifacts/stability-logs-build.log.
+- Package E:/project/Aion2Pipe/dist-stability-review-4/Aion2Pipe.exe; archive Aion2Pipe-stability-review-4-win64.zip; SHA256 10564A6005CE8BB500DC8708ECA9A13BAF99743273B89205C09574466A02083D. Running game and old client untouched.
+- Remaining audit: web managed-chat/MQTT lifecycle and bounded queues; reporter disk-error and retry behavior; CF scheduler persistence/outbox/fairness/budget review; final integrated fault/soak verification. Prior tests are evidence per subsystem, not proof of long-duration deployment acceptance. Objective remains IN PROGRESS.
+
+Review pass 6 verified:
+- Reviewed ManagedChatRunner/useManagedChat/managed-ai-turn/ManagedPresence lifecycle: per-turn SDK disposal and timer/abort cleanup, generation fencing, finite recipient maps, 20k receipt dedup and 1k history cache. Existing managed-chat, task-isolation, managed-online, managed-ai-recovery (real ChatClient/SSE fixtures), and 6 presence-MQTT regressions all passed. No new web behavior changes this pass.
+- Native reporter previously treated cache reaching 100000 rows as fatal, stopping all upload work. Added typed ReportCapacityError caught per observation: new rows refused/counted in separate cacheFull status, pending work and known-player updates continue. UI distinguishes cache capacity from input queue overflow. Other storage failures still stop visibly rather than falsely acknowledging/dropping persistent data.
+- SQLite regression fills exactly to 100000, confirms typed new-player rejection and rollback, preserves pending record, acknowledges it and updates an existing player into the queue. All 11 native suites passed (3.49s).
+- Query dispatcher core/adapter regressions passed: fairness, restart, generation fencing, limits, outbox, auth, expiry; synthetic 1000 clients/8 operators/400 targets passed. Runtime fixture initially used existing bundle, so rebuilt current worker with explicit --config wrangler.jsonc --dry-run and reran workerd/SQLite DO/D1 fixture successfully. Broker publish is mocked in runtime test; not a real multi-machine game soak.
+- Native package E:/project/Aion2Pipe/dist-stability-review-5/Aion2Pipe.exe; archive Aion2Pipe-stability-review-5-win64.zip; SHA256 46CBDF9DF2454F1BD42D4E5FE1999841462B8597C83C2C345ABE653DE8AF0534. No production deploy, no running client interruption.
+- Remaining: integrated sustained fault/reconnect/resource measurements, reporter full-disk/locked-DB persistence/recovery review, final requirement/evidence audit across both projects. Goal IN PROGRESS; do not imply real fleet/long-duration acceptance from these tests.
+
+Review pass 7 verified:
+- Reporter observation persistence now retains its current bounded batch on store write exceptions and retries every 5 seconds (stop interrupts wait). Separate inbox remains capped at 10000/coalesced; current in-progress batch also <=10000. No network upload of uncommitted observations. Changing destination while a batch is being persisted is rejected.
+- status.storageBlocked and UI explicitly explain uncommitted data remains in memory and is lost if the process closes before storage recovers. Existing committed rows are unchanged. Stop can abandon uncommitted data when storage remains unavailable; no false durability claim.
+- Store rollback now preserves original exceptions when SQLite has automatically rolled back (FULL/IOERR); no masking with a second ROLLBACK error.
+- New reporter_storage_tests uses a real SQLite BEGIN IMMEDIATE writer lock, waits for busy timeout, verifies enabled worker and destination protection, queues newer data, releases lock and verifies both pending records plus newest level persisted. No production HTTP/game requests. Passed in 7.73s; all 12 CTest suites pass (11.25s total).
+- Package E:/project/Aion2Pipe/dist-stability-review-6/Aion2Pipe.exe; archive Aion2Pipe-stability-review-6-win64.zip; SHA256 17DEC15505A286FC0B934D6D3E0D97BBE26D7FD5672EA8606798230054E4DA3B. Running game/client unchanged; no web deploy.
+- Further storage scope: initialization errors and errors in count/retry/ack/fail paths can still stop worker visibly. Observation retry verified for busy lock, not actual SQLITE_FULL/IOERR yet. Continue targeted fault injection plus sustained proxy/resource measurements and final audit; objective IN PROGRESS.
+
+Review pass 8 verified / live continuation:
+- Added tests/sqlite_write_fault.hpp, a test-process-only VFS shim that returns SQLITE_FULL or SQLITE_IOERR_WRITE from actual SQLite xWrite while delegating normal native VFS operations. Production store/worker unchanged this pass.
+- reporter_storage_tests now injects both write faults during real observation commits, confirms worker remains enabled with storageBlocked, clears injected fault, verifies pending count recovery and PRAGMA integrity_check=ok. This is write-layer fault injection, not physically filling the real disk. All 12 CTest suites pass, 21.74 seconds (storage test 18.30s); artifacts/stability-write-fault-tests.log.
+- Extended local proxy lifecycle harness with count/interval options and periodic resource output (handles/private bytes/retained sessions). After cleanup asserts handles <= startup+8. No real game connection involved: python.exe on one ephemeral localhost port only.
+- ACTIVE soak command exec session 11593, launched Python test_proxy_lifecycle.py --count 400 --interval 0.65; log artifacts/stability-proxy-soak.log. Last confirmed native probe PID 38556 running; 100/400 connections forwarded, 183 handles / 1,781,760 private bytes at latest sample. This is NOT final resource evidence. Poll SAME session 11593 until terminal; don't restart from missing progress output. Target duration ~6.5 minutes including 120-second closed-route grace. Full native regression session 9217 already finished exit 0.
+- Native production package remains dist-stability-review-6; no new release required for test-only changes. Next: finish measured soak; then review storage count/retry/ack/fail and initialization failures which can still terminate reporter visibly. Final full-scope completion audit still pending; goal remains IN PROGRESS.
+
+Review pass 9 verified / soak still running:
+- Unified native reporter storage retry helper now covers store construction, observe, retry, counts, pending reads, acknowledgements and failure scheduling. SQLite failures retain the current operation/batch and retry at 5s; stop interrupts waits. ReportCapacityError remains separately rejected. Database operations no longer execute inside status mutex blocks, avoiding deadlock with retry status updates.
+- After HTTP success, local acknowledgement failures now retry locally while holding that response instead of entering network-failure/resend logic.
+- New local HTTP integration scripts/test_reporter_storage_http.py invokes real reporter with VFS fault shim: four pending records, server confirms once, injected SQLITE_FULL prevents local ACK, fault clears, four records acknowledged. Exactly one HTTP request observed. No production endpoint used. Exec session 86328 finished exit 0.
+- All 12 CTest suites pass after refactor (21.66 seconds); log artifacts/stability-ack-tests.log. Exec session 49987 terminal exit 0.
+- Package E:/project/Aion2Pipe/dist-stability-review-7/Aion2Pipe.exe; archive Aion2Pipe-stability-review-7-win64.zip; SHA256 8DFDAE16C3DF875C446F4F0E47DE19518A8D063D897FB1F650BC358372CC44D6. Existing game/client left running.
+- Soak session 11593 remains LIVE (same process as pass 8); progress last read 350/400 forwarded. Continue polling SAME handle, then inspect full artifacts/stability-proxy-soak.log and resource trend before claiming success. Native probe PID 38556 earlier confirmed. Initial/ending resource samples will appear after child output is collected.
+- Remaining audit should consolidate all original checklist evidence, review final changes for new regressions and verify final deploy/package identities. Multiple-machine real game soak not performed; distinguish that limitation from local synthetic tests. No claim of permanent/fault-free operation. Goal IN PROGRESS.
+
+Final review evidence — pass 10:
+- Soak session 11593 terminal exit 0: 400 connections, all views reclaimed; handles 70->73; peak private bytes 2752512, last 2387968. ~6.5 min real local socket test, not multi-machine real game soak.
+- Fresh full proxy integration passed (current compiled probe, local OpenSSL peers): handshake, RC4 insertion sync, response isolation, half close, login forwarding, session replay; artifacts/stability-final-proxy.log.
+- Browser message-reliability and unread-retention, console-subscriptions and message-sync all pass. Initial Playwright missing-module failure resolved with bundled runtime PLAYWRIGHT_MODULE_PATH; no dependency/source changes necessary.
+- Web deployment revalidated as df5c08d6-4fc7-4497-9000-5de3d7a882a7 at 100%; homepage 200. Native release-7 SHA rechecked.
+- Consolidated requirement/evidence and limitation report: artifacts/stability-delivery-20260930.txt. All identified code-review fixes and scoped automated acceptance now complete. No test process remains pending; production client not replaced, real fleet/day-long game acceptance not claimed.

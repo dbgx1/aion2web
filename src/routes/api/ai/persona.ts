@@ -3,6 +3,7 @@ import type { AiPersonaPayload } from '#/lib/ai-persona'
 import { currentAdminPrincipal } from '#/server/admin-auth.server'
 import { jsonError } from '#/server/api-auth.server'
 import { getAiPersona, saveAiPersona } from '#/server/ai-persona.server'
+import { readLimitedBody } from '#/server/request-body.server'
 
 const MAX_BODY_BYTES = 32 * 1024
 
@@ -39,13 +40,13 @@ export const Route = createFileRoute('/api/ai/persona')({
         const contentLength = Number(request.headers.get('content-length') || 0)
         if (contentLength > MAX_BODY_BYTES) return jsonError('请求体过大', 413)
 
-        let rawBody = ''
+        let rawBody: string | null
         try {
-          rawBody = await request.text()
+          rawBody = await readLimitedBody(request, MAX_BODY_BYTES)
         } catch {
           return jsonError('无法读取请求体', 400)
         }
-        if (new TextEncoder().encode(rawBody).byteLength > MAX_BODY_BYTES) return jsonError('请求体过大', 413)
+        if (rawBody === null) return jsonError('请求体过大', 413)
 
         let body: unknown
         try {

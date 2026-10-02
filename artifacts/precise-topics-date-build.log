@@ -1,0 +1,75 @@
+
+> build
+> vite build
+
+vite v8.2.2 building client environment for production...
+transforming...
+
+[@tanstack/devtools-vite] Removed devtools code from: /src/routes/__root.tsx
+
+✓ 2253 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/.assetsignore                    0.02 kB
+dist/client/assets/index-BvXROlNY.css        3.78 kB │ gzip:   1.25 kB
+dist/client/assets/styles-nM8Iffg2.css      82.31 kB │ gzip:  16.50 kB
+dist/client/assets/usage-DJ7LAi8J.js         0.03 kB │ gzip:   0.05 kB
+dist/client/assets/ai-persona-CAIeH5mq.js    0.04 kB │ gzip:   0.06 kB
+dist/client/assets/characters-CAIeH5mq.js    0.04 kB │ gzip:   0.06 kB
+dist/client/assets/clients-CAIeH5mq.js       0.04 kB │ gzip:   0.06 kB
+dist/client/assets/console-CAIeH5mq.js       0.04 kB │ gzip:   0.06 kB
+dist/client/assets/docs-CAIeH5mq.js          0.04 kB │ gzip:   0.06 kB
+dist/client/assets/messages-CAIeH5mq.js      0.04 kB │ gzip:   0.06 kB
+dist/client/assets/settings-CAIeH5mq.js      0.04 kB │ gzip:   0.06 kB
+dist/client/assets/_portal-BLdHzZwo.js       0.29 kB │ gzip:   0.22 kB
+dist/client/assets/routes-BfKb1HbC.js      118.08 kB │ gzip:  31.46 kB
+dist/client/assets/mqtt.esm-DJxwHEmv.js    357.42 kB │ gzip: 104.47 kB
+dist/client/assets/index-DC0NWrgm.js       825.43 kB │ gzip: 246.00 kB
+
+✓ built in 2.41s
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+vite v8.2.2 building ssr environment for production...
+transforming...
+
+[@tanstack/devtools-vite] Removed devtools code from: /src/routes/__root.tsx
+
+✓ 3167 modules transformed.
+rendering chunks...
+Using secrets defined in process.env
+▲ [WARNING] Missing required secrets: UPLOAD_API_TOKEN, OPENROUTER_API_KEY. Add them to .dev.vars, .env, or set as environment variables.
+
+
+computing gzip size...
+dist/server/wrangler.json                                      1.55 kB │ gzip:   0.84 kB
+dist/server/.vite/manifest.json                                6.77 kB │ gzip:   1.13 kB
+dist/server/assets/managed-chat-controls-BvXROlNY.css          3.78 kB │ gzip:   1.25 kB
+dist/server/assets/styles-nM8Iffg2.css                        82.31 kB │ gzip:  16.50 kB
+dist/server/assets/server-access.server-B0SGCkkp.js            0.08 kB │ gzip:   0.08 kB
+dist/server/assets/usage-FcqKVyYO.js                           0.14 kB │ gzip:   0.12 kB
+dist/server/assets/docs-udQ07jdn.js                            0.15 kB │ gzip:   0.13 kB
+dist/server/assets/clients-BkuPDu-3.js                         0.16 kB │ gzip:   0.14 kB
+dist/server/assets/console-DrC6GPKE.js                         0.16 kB │ gzip:   0.14 kB
+dist/server/assets/messages-KxJa7rm8.js                        0.16 kB │ gzip:   0.14 kB
+dist/server/assets/settings-D3kn_OXY.js                        0.16 kB │ gzip:   0.14 kB
+dist/server/assets/ai-persona-BE75u9bf.js                      0.16 kB │ gzip:   0.14 kB
+dist/server/assets/characters-BPjinb6N.js                      0.16 kB │ gzip:   0.14 kB
+dist/server/assets/start-DxgovzEb.js                           0.22 kB │ gzip:   0.17 kB
+dist/server/assets/empty-plugin-adapters-D7mxBbir.js           0.28 kB │ gzip:   0.18 kB
+dist/server/assets/_portal-BmBedu5l.js                         1.46 kB │ gzip:   0.75 kB
+dist/server/assets/_tanstack-start-manifest_v-CUx5PwK3.js      2.53 kB │ gzip:   0.64 kB
+dist/server/assets/matchContext-BJuTIfvk.js                    2.70 kB │ gzip:   1.13 kB
+dist/server/assets/react-dom-DFz6zqDu.js                      74.30 kB │ gzip:  20.00 kB
+dist/server/assets/manifest-BDLu45U3.js                       93.75 kB │ gzip:  22.25 kB
+dist/server/assets/routes-bE1hCl4K.js                        231.40 kB │ gzip:  43.65 kB
+dist/server/assets/mqtt.esm-D_637COy.js                      471.54 kB │ gzip: 124.36 kB
+dist/server/index.js                                         669.73 kB │ gzip: 137.48 kB
+dist/server/assets/managed-chat-controls-DxlSaHQI.js         821.65 kB │ gzip: 195.85 kB
+dist/server/assets/router-B9J9lvPM.js                      2,023.82 kB │ gzip: 313.59 kB
+
+[INEFFECTIVE_DYNAMIC_IMPORT] src/server/server-access.server.ts is dynamically imported by src/routes/api/ai/chat.ts but also statically imported by src/routes/api/auth.ts, src/routes/api/character-tracking.ts, src/routes/api/characters.ts, src/routes/api/characters/profile.ts, src/routes/api/messages.ts, ..., dynamic import will not move module into another chunk.
+
+✓ built in 2.26s

@@ -1,0 +1,210 @@
+[
+  {
+    "results": [
+      {
+        "type": "table",
+        "name": "_cf_KV",
+        "tbl_name": "_cf_KV",
+        "sql": "CREATE TABLE _cf_KV (\n        key TEXT PRIMARY KEY,\n        value BLOB\n      ) WITHOUT ROWID"
+      },
+      {
+        "type": "table",
+        "name": "admin_users",
+        "tbl_name": "admin_users",
+        "sql": "CREATE TABLE admin_users (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  username TEXT NOT NULL,\n  username_normalized TEXT NOT NULL UNIQUE,\n  password_hash TEXT NOT NULL,\n  password_salt TEXT NOT NULL,\n  password_iterations INTEGER NOT NULL,\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL,\n  last_login_at INTEGER\n, role TEXT NOT NULL DEFAULT 'agent'\n  CHECK (role IN ('admin', 'agent')), display_name TEXT, status TEXT NOT NULL DEFAULT 'active'\n  CHECK (status IN ('active', 'disabled')))"
+      },
+      {
+        "type": "table",
+        "name": "ai_personas",
+        "tbl_name": "ai_personas",
+        "sql": "CREATE TABLE ai_personas (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  owner_user_key TEXT NOT NULL UNIQUE,\n  owner_username TEXT NOT NULL,\n  name TEXT NOT NULL,\n  system_prompt TEXT NOT NULL,\n  style_prompt TEXT NOT NULL,\n  goal_prompt TEXT NOT NULL,\n  forbidden_prompt TEXT NOT NULL,\n  example_prompt TEXT NOT NULL,\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL\n)"
+      },
+      {
+        "type": "table",
+        "name": "character_presence",
+        "tbl_name": "character_presence",
+        "sql": "CREATE TABLE character_presence (\n  server_id TEXT NOT NULL,\n  character_id TEXT NOT NULL,\n  character_name TEXT NOT NULL,\n  is_online INTEGER NOT NULL DEFAULT 0,\n  checked_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL,\n  source_id TEXT,\n  PRIMARY KEY (server_id, character_id)\n)"
+      },
+      {
+        "type": "table",
+        "name": "character_tracking",
+        "tbl_name": "character_tracking",
+        "sql": "CREATE TABLE character_tracking (owner_user_key TEXT NOT NULL, character_db_id INTEGER NOT NULL REFERENCES game_characters(id) ON DELETE CASCADE, priority TEXT NOT NULL DEFAULT 'medium' CHECK(priority IN ('high','medium','low')), status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','contacting','waiting','closed')), notes TEXT NOT NULL DEFAULT '', next_follow_up INTEGER, active INTEGER NOT NULL DEFAULT 1 CHECK(active IN (0,1)), created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, PRIMARY KEY(owner_user_key, character_db_id))"
+      },
+      {
+        "type": "table",
+        "name": "character_tracking_conflict_archive",
+        "tbl_name": "character_tracking_conflict_archive",
+        "sql": "CREATE TABLE character_tracking_conflict_archive(\n  owner_user_key TEXT,\n  character_db_id INT,\n  priority TEXT,\n  status TEXT,\n  notes TEXT,\n  next_follow_up INT,\n  active INT,\n  created_at INT,\n  updated_at INT,\n  resolved_at\n)"
+      },
+      {
+        "type": "table",
+        "name": "chat_conversations",
+        "tbl_name": "chat_conversations",
+        "sql": "CREATE TABLE chat_conversations (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  character_ref INTEGER NOT NULL,\n  owner_user_key TEXT NOT NULL,\n  owner_username TEXT NOT NULL,\n  last_agent_id TEXT,\n  last_message_preview TEXT,\n  last_message_at INTEGER,\n  unread_count INTEGER NOT NULL DEFAULT 0 CHECK (unread_count >= 0),\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL,\n  FOREIGN KEY (character_ref) REFERENCES game_characters(id) ON DELETE CASCADE,\n  UNIQUE (character_ref, owner_user_key)\n)"
+      },
+      {
+        "type": "table",
+        "name": "chat_messages",
+        "tbl_name": "chat_messages",
+        "sql": "CREATE TABLE chat_messages (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  conversation_id INTEGER NOT NULL,\n  source_message_id TEXT,\n  request_id TEXT,\n  agent_id TEXT,\n  direction TEXT NOT NULL CHECK (direction IN ('incoming', 'outgoing', 'system')),\n  message_type TEXT NOT NULL DEFAULT 'text',\n  sender_name_snapshot TEXT,\n  content TEXT NOT NULL,\n  status TEXT NOT NULL DEFAULT 'received'\n    CHECK (status IN ('pending', 'sent', 'delivered', 'received', 'failed')),\n  error_message TEXT,\n  raw_json TEXT,\n  operator_user_key TEXT,\n  operator_username TEXT,\n  sent_at INTEGER NOT NULL,\n  created_at INTEGER NOT NULL,\n  FOREIGN KEY (conversation_id) REFERENCES chat_conversations(id) ON DELETE CASCADE\n)"
+      },
+      {
+        "type": "table",
+        "name": "client_locks",
+        "tbl_name": "client_locks",
+        "sql": "CREATE TABLE client_locks (\n  agent_id TEXT PRIMARY KEY,\n  user_key TEXT NOT NULL,\n  username TEXT NOT NULL,\n  acquired_at INTEGER NOT NULL,\n  expires_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL\n)"
+      },
+      {
+        "type": "table",
+        "name": "d1_migrations",
+        "tbl_name": "d1_migrations",
+        "sql": "CREATE TABLE \"d1_migrations\"(\n\t\tid         INTEGER PRIMARY KEY AUTOINCREMENT,\n\t\tname       TEXT UNIQUE,\n\t\tapplied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL\n)"
+      },
+      {
+        "type": "table",
+        "name": "game_characters",
+        "tbl_name": "game_characters",
+        "sql": "CREATE TABLE game_characters (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  character_name TEXT NOT NULL,\n  character_id TEXT NOT NULL,\n  server_id TEXT NOT NULL,\n  server_name TEXT,\n  legion_name TEXT,\n  level INTEGER NOT NULL DEFAULT 0 CHECK (level >= 0),\n  class_name TEXT,\n  faction TEXT,\n  avatar_url TEXT,\n  metadata_json TEXT,\n  first_seen_at INTEGER NOT NULL,\n  last_seen_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL, combat_power INTEGER CHECK (combat_power IS NULL OR (combat_power >= 0 AND combat_power <= 9007199254740991)), legion_position INTEGER\n  CHECK (legion_position IS NULL OR legion_position IN (0, 1, 2, 3)),\n  UNIQUE (server_id, character_id)\n)"
+      },
+      {
+        "type": "table",
+        "name": "guild_tracking",
+        "tbl_name": "guild_tracking",
+        "sql": "CREATE TABLE guild_tracking (\n  server_id TEXT NOT NULL,\n  legion_name TEXT NOT NULL CHECK(length(trim(legion_name)) > 0),\n  owner_user_key TEXT,\n  version INTEGER NOT NULL DEFAULT 1,\n  updated_by TEXT NOT NULL,\n  updated_at INTEGER NOT NULL,\n  PRIMARY KEY (server_id, legion_name)\n)"
+      },
+      {
+        "type": "table",
+        "name": "guild_tracking_events",
+        "tbl_name": "guild_tracking_events",
+        "sql": "CREATE TABLE guild_tracking_events (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  server_id TEXT NOT NULL,\n  legion_name TEXT NOT NULL,\n  previous_owner TEXT,\n  next_owner TEXT,\n  actor TEXT NOT NULL,\n  version INTEGER NOT NULL,\n  created_at INTEGER NOT NULL\n)"
+      },
+      {
+        "type": "table",
+        "name": "presence_jobs",
+        "tbl_name": "presence_jobs",
+        "sql": "CREATE TABLE presence_jobs (\n  id TEXT PRIMARY KEY,\n  created_by_user_key TEXT NOT NULL,\n  created_by_username TEXT NOT NULL,\n  server_id TEXT,\n  legion_name TEXT,\n  without_legion INTEGER NOT NULL DEFAULT 0,\n  search TEXT,\n  filter_json TEXT NOT NULL,\n  total_count INTEGER NOT NULL DEFAULT 0,\n  queued_count INTEGER NOT NULL DEFAULT 0,\n  skipped_count INTEGER NOT NULL DEFAULT 0,\n  done_count INTEGER NOT NULL DEFAULT 0,\n  failed_count INTEGER NOT NULL DEFAULT 0,\n  status TEXT NOT NULL DEFAULT 'queued',\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL\n)"
+      },
+      {
+        "type": "table",
+        "name": "presence_request_results",
+        "tbl_name": "presence_request_results",
+        "sql": "CREATE TABLE presence_request_results (\n  request_id TEXT NOT NULL REFERENCES presence_requests(id) ON DELETE CASCADE,\n  server_id TEXT NOT NULL,\n  character_id TEXT NOT NULL,\n  PRIMARY KEY (request_id, server_id, character_id)\n)"
+      },
+      {
+        "type": "table",
+        "name": "presence_requests",
+        "tbl_name": "presence_requests",
+        "sql": "CREATE TABLE presence_requests (\n  id TEXT PRIMARY KEY,\n  user_key TEXT NOT NULL,\n  service_id TEXT NOT NULL,\n  characters_json TEXT NOT NULL,\n  created_at INTEGER NOT NULL,\n  expires_at INTEGER NOT NULL,\n  finished INTEGER NOT NULL DEFAULT 0\n)"
+      },
+      {
+        "type": "table",
+        "name": "presence_tasks",
+        "tbl_name": "presence_tasks",
+        "sql": "CREATE TABLE presence_tasks (\n  id TEXT PRIMARY KEY,\n  job_id TEXT NOT NULL,\n  server_id TEXT NOT NULL,\n  character_id TEXT NOT NULL,\n  character_name TEXT NOT NULL,\n  status TEXT NOT NULL DEFAULT 'pending',\n  priority INTEGER NOT NULL DEFAULT 0,\n  attempts INTEGER NOT NULL DEFAULT 0,\n  leased_by TEXT,\n  leased_until INTEGER,\n  result_online INTEGER,\n  error_message TEXT,\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL,\n  completed_at INTEGER,\n  FOREIGN KEY (job_id) REFERENCES presence_jobs(id) ON DELETE CASCADE\n)"
+      },
+      {
+        "type": "table",
+        "name": "reception_profiles",
+        "tbl_name": "reception_profiles",
+        "sql": "CREATE TABLE reception_profiles (\n  server_id TEXT NOT NULL, character_id TEXT NOT NULL, character_name TEXT NOT NULL,\n  status TEXT NOT NULL DEFAULT 'ai' CHECK(status IN ('ai','waiting','human','closed')),\n  version INTEGER NOT NULL DEFAULT 0, memory TEXT NOT NULL DEFAULT '',\n  discord_declined INTEGER NOT NULL DEFAULT 0, paid_declined INTEGER NOT NULL DEFAULT 0,\n  discord_sent INTEGER NOT NULL DEFAULT 0, sent_guides TEXT NOT NULL DEFAULT '[]',\n  decision_json TEXT, assigned_to TEXT NOT NULL DEFAULT '', updated_at INTEGER NOT NULL,\n  PRIMARY KEY(server_id, character_id)\n)"
+      },
+      {
+        "type": "table",
+        "name": "reception_settings",
+        "tbl_name": "reception_settings",
+        "sql": "CREATE TABLE reception_settings (\n  owner_user_key TEXT PRIMARY KEY, settings_json TEXT NOT NULL, updated_at INTEGER NOT NULL\n)"
+      },
+      {
+        "type": "table",
+        "name": "reception_turns",
+        "tbl_name": "reception_turns",
+        "sql": "CREATE TABLE reception_turns (\n  id TEXT PRIMARY KEY, owner_user_key TEXT NOT NULL, server_id TEXT NOT NULL, character_id TEXT NOT NULL,\n  message_id TEXT NOT NULL, profile_version INTEGER NOT NULL,\n  status TEXT NOT NULL CHECK(status IN ('generating','ready','sending','sent','skipped','uncertain','failed')),\n  decision_json TEXT, issues_json TEXT NOT NULL DEFAULT '[]', history_json TEXT NOT NULL,\n  created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL,\n  UNIQUE(server_id, character_id, message_id)\n)"
+      },
+      {
+        "type": "table",
+        "name": "server_assignment_audit",
+        "tbl_name": "server_assignment_audit",
+        "sql": "CREATE TABLE server_assignment_audit (\n  id INTEGER PRIMARY KEY,\n  server_id TEXT NOT NULL,\n  previous_user_id INTEGER,\n  user_id INTEGER,\n  version INTEGER NOT NULL,\n  operator_user_key TEXT NOT NULL,\n  created_at INTEGER NOT NULL\n)"
+      },
+      {
+        "type": "table",
+        "name": "server_assignment_membership_audit",
+        "tbl_name": "server_assignment_membership_audit",
+        "sql": "CREATE TABLE server_assignment_membership_audit (\n  id INTEGER PRIMARY KEY,\n  server_id TEXT NOT NULL,\n  previous_user_ids TEXT NOT NULL,\n  user_ids TEXT NOT NULL,\n  version INTEGER NOT NULL,\n  operator_user_key TEXT NOT NULL,\n  created_at INTEGER NOT NULL\n)"
+      },
+      {
+        "type": "table",
+        "name": "server_assignments",
+        "tbl_name": "server_assignments",
+        "sql": "CREATE TABLE server_assignments (\n  server_id TEXT PRIMARY KEY,\n  user_id INTEGER REFERENCES admin_users(id),\n  version INTEGER NOT NULL DEFAULT 1,\n  updated_by TEXT NOT NULL,\n  updated_at INTEGER NOT NULL\n, user_ids TEXT NOT NULL DEFAULT '[]'\n  CHECK (json_valid(user_ids) AND json_type(user_ids) = 'array'))"
+      },
+      {
+        "type": "trigger",
+        "name": "guild_tracking_changed",
+        "tbl_name": "guild_tracking",
+        "sql": "CREATE TRIGGER guild_tracking_changed AFTER UPDATE ON guild_tracking\nWHEN OLD.owner_user_key IS NOT NEW.owner_user_key BEGIN\n  INSERT INTO guild_tracking_events(server_id,legion_name,previous_owner,next_owner,actor,version,created_at)\n  VALUES(NEW.server_id,NEW.legion_name,OLD.owner_user_key,NEW.owner_user_key,NEW.updated_by,NEW.version,NEW.updated_at);\nEND"
+      },
+      {
+        "type": "trigger",
+        "name": "guild_tracking_created",
+        "tbl_name": "guild_tracking",
+        "sql": "CREATE TRIGGER guild_tracking_created AFTER INSERT ON guild_tracking BEGIN\n  INSERT INTO guild_tracking_events(server_id,legion_name,previous_owner,next_owner,actor,version,created_at)\n  VALUES(NEW.server_id,NEW.legion_name,NULL,NEW.owner_user_key,NEW.updated_by,NEW.version,NEW.updated_at);\nEND"
+      },
+      {
+        "type": "trigger",
+        "name": "legacy_assignment_insert",
+        "tbl_name": "server_assignments",
+        "sql": "CREATE TRIGGER legacy_assignment_insert AFTER INSERT ON server_assignments\nWHEN NEW.user_id IS NOT NULL AND NEW.user_ids = '[]' BEGIN\n  UPDATE server_assignments SET user_ids = json_array(NEW.user_id) WHERE server_id = NEW.server_id;\nEND"
+      },
+      {
+        "type": "trigger",
+        "name": "legacy_assignment_update",
+        "tbl_name": "server_assignments",
+        "sql": "CREATE TRIGGER legacy_assignment_update AFTER UPDATE OF user_id ON server_assignments\nWHEN NEW.user_id IS NOT OLD.user_id AND NEW.user_ids = OLD.user_ids BEGIN\n  UPDATE server_assignments SET user_ids = CASE WHEN NEW.user_id IS NULL THEN '[]' ELSE json_array(NEW.user_id) END\n  WHERE server_id = NEW.server_id;\nEND"
+      },
+      {
+        "type": "trigger",
+        "name": "server_assignment_insert",
+        "tbl_name": "server_assignments",
+        "sql": "CREATE TRIGGER server_assignment_insert AFTER INSERT ON server_assignments BEGIN\n  INSERT INTO server_assignment_audit(server_id, previous_user_id, user_id, version, operator_user_key, created_at)\n  VALUES(NEW.server_id, NULL, NEW.user_id, NEW.version, NEW.updated_by, NEW.updated_at);\nEND"
+      },
+      {
+        "type": "trigger",
+        "name": "server_assignment_update",
+        "tbl_name": "server_assignments",
+        "sql": "CREATE TRIGGER server_assignment_update AFTER UPDATE ON server_assignments BEGIN\n  INSERT INTO server_assignment_audit(server_id, previous_user_id, user_id, version, operator_user_key, created_at)\n  VALUES(NEW.server_id, OLD.user_id, NEW.user_id, NEW.version, NEW.updated_by, NEW.updated_at);\nEND"
+      },
+      {
+        "type": "trigger",
+        "name": "shared_assignment_insert",
+        "tbl_name": "server_assignments",
+        "sql": "CREATE TRIGGER shared_assignment_insert AFTER INSERT ON server_assignments BEGIN\n  INSERT INTO server_assignment_membership_audit(server_id, previous_user_ids, user_ids, version, operator_user_key, created_at)\n  VALUES(NEW.server_id, '[]', NEW.user_ids, NEW.version, NEW.updated_by, NEW.updated_at);\nEND"
+      },
+      {
+        "type": "trigger",
+        "name": "shared_assignment_update",
+        "tbl_name": "server_assignments",
+        "sql": "CREATE TRIGGER shared_assignment_update AFTER UPDATE OF user_ids ON server_assignments\nWHEN NEW.user_ids != OLD.user_ids BEGIN\n  INSERT INTO server_assignment_membership_audit(server_id, previous_user_ids, user_ids, version, operator_user_key, created_at)\n  VALUES(NEW.server_id, OLD.user_ids, NEW.user_ids, NEW.version, NEW.updated_by, NEW.updated_at);\nEND"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.6027
+      },
+      "duration": 0.6027,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 231497728,
+      "rows_read": 116,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

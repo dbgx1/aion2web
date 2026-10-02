@@ -1,0 +1,15 @@
+import { Options as ReactMarkdownOptions } from 'react-markdown';
+export type PluggableList = NonNullable<ReactMarkdownOptions['remarkPlugins']>;
+export declare const DEFAULT_REMARK_PLUGINS: PluggableList;
+export declare const DEFAULT_REHYPE_PLUGINS_BEFORE_USER: PluggableList;
+export declare const DEFAULT_REHYPE_PLUGINS_AFTER_USER: PluggableList;
+export interface ResolveMarkdownPluginsOptions {
+    remarkPlugins?: PluggableList;
+    rehypePlugins?: PluggableList;
+    disableDefaultPlugins?: boolean;
+}
+export interface ResolvedMarkdownPlugins {
+    remarkPlugins: PluggableList;
+    rehypePlugins: PluggableList;
+}
+export declare function resolveMarkdownPlugins(options: ResolveMarkdownPluginsOptions): ResolvedMarkdownPlugins;

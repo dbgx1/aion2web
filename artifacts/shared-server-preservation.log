@@ -1,0 +1,38 @@
+
+ ⛅️ wrangler 4.129.0 (update available 4.132.0)
+───────────────────────────────────────────────
+Resource location: remote 
+
+🌀 Executing on remote database aion2web-db (506fb168-4216-41e0-a9a5-0fc957fb9c8c):
+🌀 To execute on your local development database, remove the --remote flag from your wrangler command.
+🚣 Executed 1 command in 0.27ms
+[
+  {
+    "results": [
+      {
+        "assignments": 13,
+        "assigned": 5,
+        "versions": 26,
+        "migration_mismatches": 0
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.2682
+      },
+      "duration": 0.2682,
+      "changes": 0,
+      "last_row_id": 17,
+      "changed_db": false,
+      "size_after": 224575488,
+      "rows_read": 13,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

@@ -1,0 +1,44 @@
+import { useChatContext } from "./chat.js";
+import { ChatMessage } from "./chat-message.js";
+import { useEffect, useRef } from "react";
+import { Fragment, jsx } from "react/jsx-runtime";
+//#region src/chat-ui/chat-messages.tsx
+/**
+* @deprecated Use `createChatUI()` Messages instead. Deprecated in 0.9.0. Removed in 1.0.0.
+*
+* Messages container - renders all messages in the conversation
+*
+* @example
+* ```tsx
+* <Chat.Messages>
+*   {(message) => <Chat.Message message={message} />}
+* </Chat.Messages>
+* ```
+*/
+function ChatMessages({ children, className, emptyState, loadingState, errorState, autoScroll = true }) {
+	const { messages, isLoading, error, reload } = useChatContext();
+	const containerRef = useRef(null);
+	useEffect(() => {
+		if (autoScroll && containerRef.current) containerRef.current.scrollTop = containerRef.current.scrollHeight;
+	}, [messages, autoScroll]);
+	if (error && errorState) return /* @__PURE__ */ jsx(Fragment, { children: errorState({
+		error,
+		reload
+	}) });
+	if (isLoading && messages.length === 0 && loadingState) return /* @__PURE__ */ jsx(Fragment, { children: loadingState });
+	if (messages.length === 0 && emptyState) return /* @__PURE__ */ jsx(Fragment, { children: emptyState });
+	return /* @__PURE__ */ jsx("div", {
+		ref: containerRef,
+		className,
+		"data-chat-messages": true,
+		"data-message-count": messages.length,
+		children: messages.map((message, index) => children ? /* @__PURE__ */ jsx("div", {
+			"data-message-id": message.id,
+			children: children(message, index)
+		}, message.id) : /* @__PURE__ */ jsx(ChatMessage, { message }, message.id))
+	});
+}
+//#endregion
+export { ChatMessages };
+
+//# sourceMappingURL=chat-messages.js.map

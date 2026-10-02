@@ -1,0 +1,52 @@
+import { useGeneration } from "./use-generation.js";
+import { reconstructImageResult } from "@tanstack/ai-client";
+//#region src/use-generate-image.ts
+/**
+* React hook for generating images using AI models.
+*
+* Supports two transport modes:
+* - **ConnectConnectionAdapter** — Streaming transport (SSE, HTTP stream, custom)
+* - **Fetcher** — Direct async function call
+*
+* @example
+* ```tsx
+* import { useGenerateImage } from '@tanstack/ai-react'
+* import { fetchServerSentEvents } from '@tanstack/ai-client'
+*
+* function ImageGenerator() {
+*   const { generate, result, isLoading, error, reset } = useGenerateImage({
+*     connection: fetchServerSentEvents('/api/generate/image'),
+*   })
+*
+*   return (
+*     <div>
+*       <button onClick={() => generate({ prompt: 'A sunset over mountains' })}>
+*         Generate
+*       </button>
+*       {isLoading && <p>Generating...</p>}
+*       {error && <p>Error: {error.message}</p>}
+*       {result?.images.map((img, i) => (
+*         <img key={i} src={img.url || `data:image/png;base64,${img.b64Json}`} />
+*       ))}
+*     </div>
+*   )
+* }
+* ```
+*/
+function useGenerateImage(options) {
+	const devtools = {
+		...options.devtools,
+		framework: "react",
+		hookName: "useGenerateImage",
+		outputKind: "image"
+	};
+	return useGeneration({
+		...options,
+		devtools,
+		reconstructResult: reconstructImageResult
+	});
+}
+//#endregion
+export { useGenerateImage };
+
+//# sourceMappingURL=use-generate-image.js.map

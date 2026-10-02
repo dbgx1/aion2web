@@ -1,3 +1,4 @@
+import { canAccessServer, canAccessServers } from '#/server/server-access.server'
 import { createFileRoute } from '@tanstack/react-router'
 import type { ChatMessageUpload } from '#/lib/chat-storage'
 import { currentAdminPrincipal } from '#/server/admin-auth.server'
@@ -94,6 +95,7 @@ export const Route = createFileRoute('/api/messages')({
         const serverId = text(url.searchParams.get('serverId'), 100)
         const characterId = text(url.searchParams.get('characterId'), 200)
         if (!serverId || !characterId) return jsonError('serverId 和 characterId 不能为空', 400)
+        if (!await canAccessServer(principal, serverId)) return jsonError('无权访问该区服', 403)
         const beforeId = Math.max(0, Number.parseInt(url.searchParams.get('before') || '0', 10) || 0)
         const limit = Math.min(100, Math.max(1, Number.parseInt(url.searchParams.get('limit') || '50', 10) || 50))
         const result = await listMessages({ serverId, characterId, owner: principal, beforeId, limit })
@@ -136,6 +138,7 @@ export const Route = createFileRoute('/api/messages')({
           const received = conversations.reduce((total, conversation) => total + conversation.messages.length, 0)
           if (received > MAX_BATCH_MESSAGES) return jsonError(`每次最多上传 ${MAX_BATCH_MESSAGES} 条消息`, 400)
 
+          if (!await canAccessServers(principal, conversations.map(item => item.serverId))) return jsonError('无权访问该区服', 403)
           const results = []
           for (const conversation of conversations) {
             const result = await storeMessages({ ...conversation, operator: principal })
@@ -174,6 +177,7 @@ export const Route = createFileRoute('/api/messages')({
           } catch (cause) {
             return jsonError(cause instanceof Error ? cause.message : '消息格式无效', 400)
           }
+          if (!await canAccessServer(principal, serverId)) return jsonError('无权访问该区服', 403)
           const result = await storeMessages({ serverId, characterId, messages, operator: principal })
           if (!result) return jsonError('角色不存在，请先上传角色信息', 404)
           return Response.json({ ok: true, received: messages.length, ...result })

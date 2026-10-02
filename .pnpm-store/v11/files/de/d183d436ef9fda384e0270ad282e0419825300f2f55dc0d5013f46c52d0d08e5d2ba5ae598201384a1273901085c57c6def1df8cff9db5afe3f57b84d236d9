@@ -1,0 +1,2 @@
+export type { MCPAppResourceProps } from './mcp-app-resource.js';
+export { MCPAppResource } from './mcp-app-resource.js';

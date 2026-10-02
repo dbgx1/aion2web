@@ -1,0 +1,164 @@
+[
+  {
+    "id": "1491db4c-c648-47b0-955f-9f969648cb0e",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "45c31a47-9da5-43ff-85e7-1f37db669f71",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-16T20:33:51.37884Z"
+  },
+  {
+    "id": "e863d37e-028f-4957-8945-4836fb1bb628",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "5ecdebcd-2e3c-4de8-ba64-2edc8a39a9c5",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-17T15:37:02.076395Z"
+  },
+  {
+    "id": "fc9d5d51-3fd3-47f3-bfeb-1819e1924557",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "c6d329e7-92ef-4eaf-a886-d7518bc2ff70",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-18T09:29:05.668596Z"
+  },
+  {
+    "id": "fbef5214-9f19-4c80-9c85-a50e00573f50",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "631de633-7898-474e-a5f6-bac4f4fd9ada",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-21T03:57:30.944963Z"
+  },
+  {
+    "id": "4f308895-5db4-495b-8443-20a52369c597",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "6e1df7fc-4fc6-4f78-bac8-96f026fb0e66",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-21T06:41:24.489228Z"
+  },
+  {
+    "id": "19067d12-75fa-48f6-86f3-1fe9d3040d9f",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "13a239e8-362c-4074-97ff-c612c9adbfd0",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-21T07:07:24.778246Z"
+  },
+  {
+    "id": "1e1a3c06-d032-4168-9f5b-6c9586daec8f",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/message": "Store raw legion position values 0-3",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "a995809e-3971-47f2-a223-df449020b5e4",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-22T01:17:08.885511Z"
+  },
+  {
+    "id": "6c58dee1-e125-4f35-aa55-5cb656d340fa",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/message": "Update API docs to match character and presence endpoints",
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "45134cfe-c7b5-46e1-85af-94b8124da819",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-22T01:25:49.564159Z"
+  },
+  {
+    "id": "6a440e86-2c73-4b6a-b901-a6d8cbd636c0",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "4d3456c5-7219-429d-aaa8-9f02d2a4ca28",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-24T08:05:36.422504Z"
+  },
+  {
+    "id": "d2033880-520a-481e-9654-7ce9d15db504",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "cc328496536@gmail.com",
+    "annotations": {
+      "workers/triggered_by": "deployment"
+    },
+    "versions": [
+      {
+        "version_id": "31acf627-92a1-436f-a15b-2d732f8edc11",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-09-30T09:32:52.238813Z"
+  }
+]

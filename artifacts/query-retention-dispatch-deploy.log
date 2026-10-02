@@ -1,0 +1,17 @@
+
+ ⛅️ wrangler 4.144.0
+────────────────────
+Total Upload: 757.14 KiB / gzip: 118.09 KiB
+Worker Startup Time: 20 ms
+Your Worker has access to the following bindings:
+Binding                                  Resource                  
+env.POOL (QueryPool)                     Durable Object            
+env.DB (aion2web-db)                     D1 Database               
+env.SERVICE_ID ("aion2web")              Environment Variable      
+env.DAILY_QUERY_LIMIT ("20000")          Environment Variable      
+
+Uploaded aion2-query-dispatch (3.89 sec)
+Deployed aion2-query-dispatch triggers (1.86 sec)
+  https://aion2-query-dispatch.cc328496536.workers.dev
+  query.mmorpgchat.com (custom domain)
+Current Version ID: eb81a65d-fb28-409d-afef-2c08f24196e4

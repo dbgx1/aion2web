@@ -1,0 +1,20 @@
+{
+  "at": "2026-09-14T03:19:47.018Z",
+  "exe": "E:\\project\\aion2web\\artifacts\\client-release\\precise-topics-20260914\\aion2-client\\aion2-client.exe",
+  "testMode": "real frozen mitmweb, loopback broker, expired command only; no game traffic or trusted certificate installation",
+  "build": "2026-09-14.precise-topics.1",
+  "characterNameHeartbeat": true,
+  "mitmweb": {
+    "pageStatus": 200,
+    "assetStatus": 200
+  },
+  "receiptTopicSeparation": true,
+  "addonMatchesSource": true,
+  "expiredCommandResults": [
+    "not_sent",
+    "not_sent"
+  ],
+  "persistedCommandCount": 1,
+  "pendingEvents": 0,
+  "passed": true
+}

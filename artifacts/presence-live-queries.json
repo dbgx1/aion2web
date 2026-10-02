@@ -1,0 +1,124 @@
+[
+  {
+    "results": [
+      {
+        "id": "787305b3-16f3-4191-b637-eb98b07958c8",
+        "service_id": "aion2web",
+        "targets": 50,
+        "created_at": 1790832058674,
+        "expires_at": 1790832238674,
+        "finished": 0
+      },
+      {
+        "id": "21167a1f-ed09-4ffe-bb9c-04394348087c",
+        "service_id": "aion2web",
+        "targets": 1,
+        "created_at": 1790831983196,
+        "expires_at": 1790832163196,
+        "finished": 1
+      },
+      {
+        "id": "fcca9e2b-5aa0-49d1-ac22-fef12ec1cfbb",
+        "service_id": "aion2web",
+        "targets": 1,
+        "created_at": 1790831714922,
+        "expires_at": 1790831894922,
+        "finished": 1
+      },
+      {
+        "id": "84938296-b9ce-4700-b24d-212b332fb6c3",
+        "service_id": "aion2web",
+        "targets": 1,
+        "created_at": 1790831689451,
+        "expires_at": 1790831869451,
+        "finished": 1
+      },
+      {
+        "id": "25739645-e6f1-4edc-95dd-5d347504d6a4",
+        "service_id": "aion2web",
+        "targets": 1,
+        "created_at": 1790831630449,
+        "expires_at": 1790831810449,
+        "finished": 1
+      },
+      {
+        "id": "d9200ff5-d55d-4681-85bb-97265d2a377d",
+        "service_id": "aion2web",
+        "targets": 1,
+        "created_at": 1790831568383,
+        "expires_at": 1790831748383,
+        "finished": 1
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.4342
+      },
+      "duration": 0.4342,
+      "changes": 0,
+      "last_row_id": 1133273,
+      "changed_db": false,
+      "size_after": 65945600,
+      "rows_read": 46,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "total": 72,
+        "latest": 1790832163196
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.1141
+      },
+      "duration": 0.1141,
+      "changes": 0,
+      "last_row_id": 1133273,
+      "changed_db": false,
+      "size_after": 65945600,
+      "rows_read": 72,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  {
+    "results": [
+      {
+        "total": 25,
+        "latest": 1790832163196
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "HKG",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.0877
+      },
+      "duration": 0.0877,
+      "changes": 0,
+      "last_row_id": 1133273,
+      "changed_db": false,
+      "size_after": 65945600,
+      "rows_read": 25,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

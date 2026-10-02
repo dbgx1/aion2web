@@ -1,0 +1,60 @@
+
+--- 2026-09-14T05:59:28.762Z debug
+🪵  Writing logs to "E:\project\aion2web\artifacts\deploy-20260914\wrangler-2026-09-14_05-59-28_621.log"
+---
+
+--- 2026-09-14T05:59:28.762Z debug
+.env file not found at "E:\project\aion2web\.env". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-09-14T05:59:28.763Z debug
+.env file not found at "E:\project\aion2web\.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-09-14T05:59:28.793Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/eb1e201a3afb3d17f33285240edd595e/workers/scripts/aion2web/deployments
+---
+
+--- 2026-09-14T05:59:28.793Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-14T05:59:28.793Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-14T05:59:28.793Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-14T05:59:28.793Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-09-14T05:59:29.352Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-09-14T05:59:29.353Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-14T05:59:29.353Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-09-14T05:59:29.353Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-09-14T05:59:29.405Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"wrangler command started","timestamp":1789365569405,"properties":{"amplitude_session_id":1789365568770,"amplitude_event_id":0,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"isFirstUsage":false,"configFileType":"jsonc","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"codex","argsUsed":["json"],"argsCombination":"json","sanitizedCommand":"deployments list","sanitizedArgs":{"json":true},"currentAgentSkillsInstalled":false}}
+---
+
+--- 2026-09-14T05:59:29.407Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"list versioned deployments","timestamp":1789365569407,"properties":{"amplitude_session_id":1789365568789,"amplitude_event_id":0,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"codex","category":"Workers","os":"win32:x64","json":true,"currentAgentSkillsInstalled":false}}
+---
+
+--- 2026-09-14T05:59:29.407Z debug
+Metrics dispatcher: Posting data {"deviceId":"09e2dc0c-5a0f-4506-b266-8fdae930faa5","event":"wrangler command completed","timestamp":1789365569407,"properties":{"amplitude_session_id":1789365568770,"amplitude_event_id":1,"wranglerVersion":"4.129.0","wranglerMajorVersion":4,"wranglerMinorVersion":129,"wranglerPatchVersion":0,"osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":24,"isFirstUsage":false,"configFileType":"jsonc","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"codex","argsUsed":["json"],"argsCombination":"json","sanitizedCommand":"deployments list","sanitizedArgs":{"json":true},"durationMs":591,"currentAgentSkillsInstalled":false}}
+---

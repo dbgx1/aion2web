@@ -34,6 +34,7 @@ export type QueryPresence = (
   characters: PresenceCharacter[],
   onResults: (envelope: PresenceEnvelope) => void,
   signal: AbortSignal,
+  onProgress?: (message: string, warning?: boolean) => void,
 ) => Promise<void>
 
 export function presenceCharacterKey(character: { serverId: string; characterId: string }) {
@@ -45,8 +46,9 @@ export function queryPresenceMqtt(
   query: PresenceQuery,
   onResults: (envelope: PresenceEnvelope) => void,
   signal: AbortSignal,
+  onProgress?: (message: string, warning?: boolean) => void,
 ): Promise<void> {
-  if (!client.connected) return Promise.reject(new Error('MQTT 未连接'))
+  if (client.disconnecting) return Promise.reject(new Error('MQTT 已断开，请重新连接后查询'))
   if (signal.aborted) return Promise.reject(new Error('在线查询已停止'))
   const parsed = presenceQuerySchema.safeParse(query)
   if (!parsed.success) return Promise.reject(new Error('在线查询角色格式错误'))
@@ -56,15 +58,24 @@ export function queryPresenceMqtt(
 
   return new Promise((resolve, reject) => {
     let finished = false
-    const timer = setTimeout(() => finish(new Error('在线查询超时，未返回的角色状态未知'), true), expiresAt - Date.now())
+    let attempt = 0
+    const slowTimer = setTimeout(() => {
+      if (!finished && pending.size) onProgress?.(`查询较慢：还有 ${pending.size} 个角色未返回，可能正在排队或等待客户端响应。请检查对应区服的查询客户端；最多再等待 ${Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000))} 秒。`, true)
+    }, 15_000)
+    const timer = setTimeout(() => finish(new Error('在线查询超时，未返回的角色状态未知。请检查对应区服的查询客户端是否在线、游戏是否可查询，再重试。'), true), expiresAt - Date.now())
     function finish(error?: Error, reportMissing = false) {
       if (finished) return
       finished = true
       clearTimeout(timer)
+      clearTimeout(slowTimer)
       client.removeListener('message', receive)
       client.removeListener('close', disconnected)
+      client.removeListener('connect', subscribeAndQuery)
+      client.removeListener('end', ended)
       signal.removeEventListener('abort', aborted)
-      if (client.connected) client.unsubscribe(replyTopic)
+      // MQTT.js removes its reconnect subscription cache even while offline.
+      // Skipping this on disconnect leaks every canceled/expired result topic.
+      if (!client.disconnecting) client.unsubscribe(replyTopic)
       if (reportMissing && pending.size) {
         onResults({ type: 'presence_result', requestId, results: [...pending.values()].map((character) => ({
           ...character, status: 'unknown', checkedAt: Math.min(Date.now(), expiresAt), error: error!.message,
@@ -73,7 +84,11 @@ export function queryPresenceMqtt(
       if (error) reject(error)
       else resolve()
     }
-    function disconnected() { finish(new Error('MQTT 连接中断，未返回的角色状态未知'), true) }
+    function disconnected() {
+      ++attempt // Ignore callbacks belonging to the closed connection.
+      onProgress?.('查询连接已中断，正在等待重连。请检查网络；超过本次查询时限后会显示超时。', true)
+    }
+    function ended() { finish(new Error('MQTT 已断开，请重新连接后查询'), true) }
     function aborted() { finish(new Error('在线查询已停止')) }
     function receive(topic: string, buffer: Uint8Array) {
       if (finished || topic !== replyTopic) return
@@ -96,20 +111,34 @@ export function queryPresenceMqtt(
     }
     client.on('message', receive)
     client.on('close', disconnected)
+    client.on('connect', subscribeAndQuery)
+    client.on('end', ended)
     signal.addEventListener('abort', aborted, { once: true })
-    // Wait for SUBACK so a fast query result cannot arrive before subscription.
-    client.subscribe(replyTopic, { qos: 1 }, (error, grants) => {
-      if (finished) return
-      if (error || !grants?.length || grants.some((grant) => grant.qos === 128)) {
-        finish(error || new Error('MQTT 查询结果订阅失败'))
+    if (client.connected) subscribeAndQuery()
+    else disconnected()
+    function subscribeAndQuery() {
+      if (finished || !client.connected) return
+      if (Date.now() >= expiresAt) {
+        finish(new Error('在线查询超时，未返回的角色状态未知'), true)
         return
       }
-      client.publish(query.requestTopic, JSON.stringify({
-        type: 'presence_query', requestId, serviceId: query.serviceId, replyTopic, expiresAt,
-        characters: [...pending.values()],
-      }), { qos: 1, retain: false }, (publishError) => {
-        if (publishError) finish(publishError)
+      const currentAttempt = ++attempt
+      onProgress?.(`正在查询剩余 ${pending.size} 个角色…`)
+      // Wait for SUBACK so a fast query result cannot arrive before subscription.
+      client.subscribe(replyTopic, { qos: 1 }, (error, grants) => {
+        if (finished || currentAttempt !== attempt || !client.connected) return
+        if (error || !grants?.length || grants.some((grant) => grant.qos === 128)) {
+          finish(error || new Error('MQTT 查询结果订阅失败'))
+          return
+        }
+        client.publish(query.requestTopic, JSON.stringify({
+          type: 'presence_query', requestId, serviceId: query.serviceId, replyTopic, expiresAt,
+          characters: [...pending.values()],
+        }), { qos: 1, retain: false }, (publishError) => {
+          if (finished || currentAttempt !== attempt || !client.connected) return
+          if (publishError) finish(publishError)
+        })
       })
-    })
+    }
   })
 }

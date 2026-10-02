@@ -1,5 +1,6 @@
+import { canAccessServers } from '#/server/server-access.server'
 import { createFileRoute } from '@tanstack/react-router'
-import { isAdminRequest } from '#/server/admin-auth.server'
+import { currentAdminPrincipal } from '#/server/admin-auth.server'
 import { jsonError } from '#/server/api-auth.server'
 import { listPresenceStatus } from '#/server/presence.server'
 
@@ -7,7 +8,8 @@ export const Route = createFileRoute('/api/presence/status')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        if (!await isAdminRequest(request)) return jsonError('未登录', 401)
+        const principal = await currentAdminPrincipal(request)
+        if (!principal) return jsonError('未登录', 401)
         let body: unknown
         try {
           body = await request.json()
@@ -17,6 +19,7 @@ export const Route = createFileRoute('/api/presence/status')({
         const record = typeof body === 'object' && body !== null ? body as Record<string, unknown> : {}
         if (!Array.isArray(record.characters)) return jsonError('characters 必须是数组', 400)
         if (record.characters.length > 500) return jsonError('每次最多查询 500 个角色在线状态', 400)
+        if (!await canAccessServers(principal, record.characters.map((item: any) => String(item?.serverId || '')))) return jsonError('无权访问该区服', 403)
         const maxAgeMs = typeof record.maxAgeMs === 'number' ? record.maxAgeMs : undefined
         try {
           const statuses = await listPresenceStatus(record.characters as Array<{ serverId: string; characterId: string }>, maxAgeMs)

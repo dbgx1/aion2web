@@ -11,12 +11,19 @@ import { runManagedAiTurn } from './managed-ai-turn'
 import { queryManagedPresence } from './query-managed-presence'
 
 type Props = {
-  userKey: string; settings: ConnectionSettings; connectionState: string; agents: OnlineAgent[]
-  locks: { agentId: string; userKey: string; acquiredAt: number }[]
+  settings: ConnectionSettings; connectionState: string; agents: OnlineAgent[]
+  allowedServerIds: string[] | null
   messages: ConsoleMessage[]; chatGuard?: GameChatGuard; bulkSending: boolean
   sendCommand: (agent: string, command: Record<string, unknown>) => boolean
   queryPresence: QueryPresence; controlDraft: (command: Record<string, unknown>) => void
   resolve: (message: ConsoleMessage) => { characterId: string; serverKey: string; direction: 'incoming' | 'outgoing' | 'system' } | null
+}
+
+async function verifyServerAccess(serverId: string, signal?: AbortSignal) {
+  const response = await fetch(`/api/server-access?serverId=${encodeURIComponent(serverId)}`, {
+    cache: 'no-store', signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15000)]) : AbortSignal.timeout(15000),
+  })
+  if (!response.ok) throw new Error(response.status === 401 ? '未登录，请重新登录' : response.status === 403 ? '当前账号没有该区服权限' : '读取区服权限失败，请稍后重试')
 }
 
 export function useManagedChat(props: Props) {
@@ -36,8 +43,9 @@ export function useManagedChat(props: Props) {
     guard: config => {
       const value = latest.current
       if (value.settings.room !== config.room) return { message: '房间已改变，托管已暂停', permanent: true }
-      const lock = value.locks.find(item => item.agentId === config.agentId)
-      if (!lock || lock.userKey !== value.userKey || lock.acquiredAt !== config.acquiredAt) return { message: '客户端占用已改变，托管已暂停', permanent: true }
+      if (value.allowedServerIds !== null && !value.allowedServerIds.includes(config.serverId)) return { message: '区服权限已改变，托管已暂停', permanent: true }
+      const agent = value.agents.find(item => item.agentId === config.agentId)
+      if (agent && agent.serverId !== config.serverId) return { message: '客户端区服已改变，请重新开启托管', permanent: true }
       const block = value.chatGuard?.get(config.agentId)
       if (block) return { message: gameChatBlockMessage(block), permanent: true }
       if (!navigator.onLine || value.connectionState !== 'connected' || !value.agents.some(agent => agent.agentId === config.agentId && Date.now() - agent.lastSeenAt < 45000)) return { message: '等待客户端连接恢复', permanent: false }
@@ -45,17 +53,13 @@ export function useManagedChat(props: Props) {
       return null
     },
     verify: async (config, signal) => {
-      const response = await fetch('/api/client-locks', { signal: AbortSignal.any([signal, AbortSignal.timeout(15000)]) })
-      if (!response.ok) throw new Error(response.status === 401 ? '未登录' : '读取客户端占用失败')
-      const result = await response.json() as { locks?: Props['locks'] }
-      const lock = result.locks?.find(item => item.agentId === config.agentId)
-      if (!lock || lock.userKey !== latest.current.userKey || lock.acquiredAt !== config.acquiredAt) throw new Error('客户端占用已改变')
+      await verifyServerAccess(config.serverId, signal)
     },
     run: turn => runManagedAiTurn(turn, {
       history: async () => {
         // Live messages are already captured in turn.history. A single-role reply
         // must not wait for another database read before answering that message.
-        if (turn.config.scope === 'single' && turn.reason === 'reply') return []
+        if (!turn.config.reception && turn.config.scope === 'single' && turn.reason === 'reply') return []
         const params = new URLSearchParams({ serverId: turn.recipient.serverKey, characterId: turn.recipient.characterId, limit: '12' })
         const response = await fetch(`/api/messages?${params}`, { signal: AbortSignal.any([turn.signal, AbortSignal.timeout(15000)]) })
         if (!response.ok) throw new Error('读取托管会话历史失败')
@@ -151,20 +155,12 @@ export function useManagedChat(props: Props) {
     const config = runner.snapshot.config
     if (!config || runner.snapshot.status !== 'paused') return
     try {
-      const response = await fetch('/api/client-locks', { cache: 'no-store', signal: AbortSignal.timeout(15000) })
-      if (!response.ok) throw new Error(response.status === 401 ? '未登录，请重新登录后启动托管' : '读取占用状态失败，请稍后恢复')
-      const result = await response.json() as { locks?: Props['locks'] }
+      await verifyServerAccess(config.serverId)
       if (runner.snapshot.config !== config || runner.snapshot.status !== 'paused') return
-      const lock = result.locks?.find(item => item.agentId === config.agentId)
-      if (!lock || lock.userKey !== latest.current.userKey) throw new Error('当前账号未占用此客户端，请先重新占用再恢复托管')
-      const local = latest.current.locks.find(item => item.agentId === config.agentId)
-      if (local?.userKey !== lock.userKey || local.acquiredAt !== lock.acquiredAt) throw new Error('占用状态正在同步，请稍后点击恢复托管')
       if (latest.current.settings.room !== config.room) throw new Error('房间已改变，请停止旧任务后重新开启托管')
       const block = latest.current.chatGuard?.get(config.agentId)
       if (block) throw new Error(gameChatBlockMessage(block))
-      // Only an explicit user resume may adopt a new, server-verified generation.
-      // Automatic ticks and every AI/send request still check the exact generation.
-      runner.resume(lock.acquiredAt)
+      runner.resume()
     } catch (error) {
       if (runner.snapshot.config === config && runner.snapshot.status === 'paused') runner.pause(error instanceof Error ? error.message : '恢复失败')
     }

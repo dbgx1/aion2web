@@ -1,0 +1,19 @@
+{
+  "at": "2026-09-17T15:44:24.163Z",
+  "exe": "E:\\project\\aion2web\\artifacts\\client-release\\faction-20260917\\aion2-client\\aion2-client.exe",
+  "testMode": "real frozen mitmweb, loopback broker, expired command only; no game traffic or trusted certificate installation",
+  "build": "2026-09-17.faction.1",
+  "characterNameHeartbeat": true,
+  "mitmweb": {
+    "pageStatus": 200,
+    "assetStatus": 200
+  },
+  "addonMatchesSource": true,
+  "expiredCommandResults": [
+    "not_sent",
+    "not_sent"
+  ],
+  "persistedCommandCount": 1,
+  "pendingEvents": 0,
+  "passed": true
+}

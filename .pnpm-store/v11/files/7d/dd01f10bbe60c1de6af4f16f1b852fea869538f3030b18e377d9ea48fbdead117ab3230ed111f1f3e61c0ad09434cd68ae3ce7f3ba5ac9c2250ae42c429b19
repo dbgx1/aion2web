@@ -1,0 +1,36 @@
+import { createContext, useContext } from "react";
+//#region src/chat-ui/create-ui-contexts.tsx
+/**
+* Create a fresh set of chat UI contexts. This matches Form
+* `createFormHookContexts` and Table `createTableHookContexts`.
+*
+* Most apps can skip this. `createChatHook` uses shared module contexts by
+* default. The hooks on this object are the escape hatch for a widget file
+* that cannot import the `createChatHook` result (circular import), or for
+* nested chats that need isolated providers.
+*
+* Prefer the `useChatContext` hook returned from `createChatHook` when you
+* can import that result. That hook knows the `chatComponents` types. Part
+* and interrupt widgets take `part` / `interrupt` as props.
+*/
+function createChatHookContexts() {
+	const chatContext = createContext(null);
+	const partContext = createContext(null);
+	const interruptContext = createContext(null);
+	function useChatContext() {
+		const chat = useContext(chatContext);
+		if (!chat) throw new Error("`useChatContext` must be used within `UI.Provider` or `UI.Chat`.");
+		return chat;
+	}
+	return {
+		chatContext,
+		partContext,
+		interruptContext,
+		useChatContext
+	};
+}
+var defaultChatUIContexts = createChatHookContexts();
+//#endregion
+export { createChatHookContexts, defaultChatUIContexts };
+
+//# sourceMappingURL=create-ui-contexts.js.map

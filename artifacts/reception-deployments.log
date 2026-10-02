@@ -1,0 +1,21 @@
+
+ ⛅️ wrangler 4.129.0 (update available 4.131.2)
+───────────────────────────────────────────────
+
+▲ [WARNING] A fetch request failed, likely due to a connectivity issue.
+
+  
+  Common causes:
+    - No internet connection or network connectivity problems
+    - Firewall or VPN blocking the request
+    - Network proxy configuration issues
+  
+  Please check your network connection and try again.
+
+
+X [ERROR] fetch failed
+
+
+[32mIf you think this is a bug then please create an issue at https://github.com/cloudflare/workers-sdk/issues/new/choose[0m
+Note that there is a newer version of Wrangler available (4.131.2). Consider checking whether upgrading resolves this error.
+🪵  Logs were written to "E:\project\aion2web\.wrangler\logs\wrangler-2026-09-15_09-22-26_810.log"

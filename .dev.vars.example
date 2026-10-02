@@ -7,3 +7,6 @@ TANSTACK_AI_MODEL=deepseek/deepseek-chat
 # Optional: account-scoped Account Analytics Read token for the admin usage page.
 # Leave empty to show the setup state. Never use a VITE_ variable for this token.
 CLOUDFLARE_USAGE_API_TOKEN=
+# MQTT connection credentials only; never use the EMQX deployment App Secret here.
+MQTT_USERNAME=
+MQTT_PASSWORD=

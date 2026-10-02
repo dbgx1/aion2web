@@ -1,0 +1,53 @@
+import { ConnectionAdapter } from '@tanstack/ai-client';
+import { ReactNode } from 'react';
+import { UIMessage, UseChatReturn } from '../types.js';
+/**
+ * Hook to access chat context
+ * @throws Error if used outside of Chat component
+ */
+/** @deprecated Use `createChatUI().useChatContext()` instead. Deprecated in 0.9.0. Removed in 1.0.0. */
+export declare function useChatContext(): UseChatReturn;
+/** @deprecated Use `createChatUI()` Chat/Provider instead. Deprecated in 0.9.0. Removed in 1.0.0. */
+export interface ChatProps {
+    /** Child components (Chat.Messages, Chat.Input, etc.) */
+    children: ReactNode;
+    /** CSS class name for the root element */
+    className?: string;
+    /** Connection adapter for communicating with your API */
+    connection: ConnectionAdapter;
+    /** Initial messages to display */
+    initialMessages?: Array<UIMessage>;
+    /** Custom message ID generator */
+    id?: string;
+    /** Additional body data to send with requests */
+    body?: any;
+    /** Callback when a response is received */
+    onResponse?: (response?: Response) => void | Promise<void>;
+    /** Callback when each chunk arrives */
+    onChunk?: (chunk: any) => void;
+    /** Callback when a message is complete */
+    onFinish?: (message: UIMessage) => void;
+    /** Callback when an error occurs */
+    onError?: (error: Error) => void;
+    /** Custom tool components registry */
+    tools?: Record<string, React.ComponentType<{
+        input: any;
+        output?: any;
+    }>>;
+}
+/**
+ * @deprecated Since 0.9.0. Use `createChatHook()` from `@tanstack/ai-react/ui` instead.
+ * See https://tanstack.com/ai/latest/docs/ui/react
+ * Removed in 1.0.0.
+ *
+ * Root Chat component - provides context for all chat subcomponents
+ *
+ * @example
+ * ```tsx
+ * <Chat connection={fetchServerSentEvents("/api/chat")}>
+ *   <Chat.Messages />
+ *   <Chat.Input />
+ * </Chat>
+ * ```
+ */
+export declare function Chat({ children, className, connection, initialMessages, id, body, onResponse, onChunk, onFinish, onError, }: ChatProps): import("react/jsx-runtime").JSX.Element;
