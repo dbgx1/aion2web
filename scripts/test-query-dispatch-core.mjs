@@ -13,6 +13,22 @@ const node = (s,id,now=0,seq=1,serverId='1005') => s.stateUpdate({clientId:id,se
 const tasks = s => s.state.outbox.filter(d=>d.payload.type==='query_player_online')
 const done = (s,t,now=100,status='online',type='completed') => { const [,,,client,session] = ('x/'+t.topic).split('/'); return s.event(client,session,{...t.payload,type,status},now) }
 {
+ const s=make();node(s,'a');s.submit(req(901,[player(1),player(2)]),0);s.tick(0)
+ const inFlight=tasks(s)[0]
+ s.submit(req(902,[player(3)]),1)
+ assert.throws(()=>s.submit(req(903,[player(4)]),2),/queue full/)
+ s.cancel('r901');s.cancel('r902');s.submit(req(903,[player(4)]),3);s.tick(3)
+ assert.equal(tasks(s).length,1,'cancellation must not release an executing game query')
+ assert.equal(Object.keys(s.state.jobs).length,2,'unstarted cancelled players are removed')
+ done(s,inFlight,4);s.tick(4)
+ assert.equal(tasks(s).at(-1).payload.characterId,player(4).characterId,'new request runs after old response')
+ assert.equal(s.state.outbox.filter(d=>d.payload.requestId==='r901').length,0,'cancelled request gets no late result')
+ const shared=make();node(shared,'a');shared.submit(req(904),0);shared.submit(req(905,[player(1)],'u2'),0)
+ shared.cancel('r904');shared.tick(1);done(shared,tasks(shared)[0],2)
+ assert.ok(shared.state.requests.r905.results['1005:101'],'coalesced other user survives cancellation')
+ console.log('PASS: cancelled batches release admission slots, preserve in-flight fencing and other watchers')
+}
+{
  const s=make(), clientId=exports.sharedPortableClient
  const report=(sessionId,serverId,boot,seq=1)=>s.stateUpdate({clientId,sessionId,gameSessionId:`g-${sessionId}`,serverId,boot,seq,ready:true,cooldownMs:0},0)
  report('pc1','2201',30);report('pc2','2305',1)
@@ -153,4 +169,39 @@ console.log('PASS: idle distribution, cooldown, coalescing, cache, retries, fenc
 
 {
  const s=make();s.stateUpdate({clientId:'cooldown',sessionId:'boot1',gameSessionId:'game1',serverId:'1005',boot:1,seq:1,ready:true,cooldownMs:5000},0);s.submit(req(90),0);s.tick(4999);assert.equal(tasks(s).length,0,'honor client reported cooldown');s.tick(5000);assert.equal(tasks(s).length,1)
+}
+
+// Batch capable clients: one delivery, serial local work, one terminal report.
+{
+ const s=make();s.stateUpdate({clientId:'batch',sessionId:'boot1',gameSessionId:'game-1005',serverId:'1005',boot:1,seq:1,ready:true,cooldownMs:0,batchSize:50},0)
+ s.submit(req(950,Array.from({length:50},(_,i)=>player(i+1))),0);s.tick(0)
+ const t=s.state.outbox.find(d=>d.payload.type==='query_players_online').payload
+ assert.equal(t.tasks.length,50);assert.equal(t.expiresAt,100000)
+ s.tick(500);assert.equal(s.state.outbox.filter(d=>d.payload.type==='query_players_online').length,1)
+ assert.equal(s.state.outbox.filter(d=>d.payload.type==='presence_result').length,0)
+ const results=t.tasks.map((r,i)=>({taskId:r.taskId,attemptId:r.attemptId,gameSessionId:t.gameSessionId,type:i<49?'completed':'failed',status:i<49?'online':'unknown',...(i===49?{error:'batch_timeout'}:{}),checkedAt:i<49?1000:100000}))
+ assert.throws(()=>s.batchEvent('batch','boot1',{...t,results:results.slice(0,49)},5000),/Invalid batch/)
+ assert.equal(Object.keys(s.state.jobs).length,50)
+ assert.equal(s.event('batch','boot1',results[0],5000),false,'single result cannot release batch reservation')
+ assert.equal(s.batchEvent('batch','wrong',{...t,results},5000),false)
+ assert.equal(s.batchEvent('batch','boot1',{...t,results},100001),true,'delivery grace accepts report produced at 100 second deadline')
+ const replies=s.state.outbox.filter(d=>d.payload.type==='presence_result')
+ assert.equal(replies.length,1);assert.equal(replies[0].payload.results.length,50)
+ assert.equal(replies[0].payload.results[49].error,'batch_timeout');assert.equal(s.state.nodes.batch.attemptId,undefined)
+ assert.equal(s.batchEvent('batch','boot1',{...t,results},100002),false)
+ assert.equal(s.state.outbox.filter(d=>d.payload.type==='presence_result').length,1)
+ console.log('PASS: 50-player batch, atomic report validation, single return, 100s deadline, late delivery grace and duplicate fencing')
+}
+{
+ const s=make();s.stateUpdate({clientId:'batch',sessionId:'boot1',gameSessionId:'game-1005',serverId:'1005',boot:1,seq:1,ready:true,cooldownMs:0,batchSize:50},0)
+ s.submit(req(951,[player(1),player(2)]),0);s.submit(req(952,[player(1)],'another'),0);s.tick(0)
+ const t=s.state.outbox.find(d=>d.payload.type==='query_players_online').payload
+ s.cancel('r951')
+ const cancel=s.state.outbox.find(d=>d.payload.type==='cancel_query_tasks')
+ assert.equal(cancel.payload.attemptIds.length,1,'keep coalesced target needed by another user')
+ assert.ok(s.state.nodes.batch.attemptId,'cancellation must preserve physical connection reservation')
+ s.tick(110000)
+ assert.equal(s.state.requests.r952.results['1005:101'].error,'batch_timeout')
+ assert.equal(Object.keys(s.state.jobs).length,0);assert.equal(s.state.nodes.batch?.attemptId,undefined)
+ console.log('PASS: batch cancellation preserves shared watchers; missing entire report terminates at deadline plus transport grace')
 }

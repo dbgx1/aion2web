@@ -17,7 +17,7 @@ function load(file,deps){const exports={};runInNewContext(ts.transpileModule(rea
 const core=load('query-dispatch/core.ts',{});const worker=load('query-dispatch/worker.ts',{'cloudflare:workers':{DurableObject},zod:{z},'./core':core})
 const verified=[]
 const requestPrepare=env.DB.prepare.bind(env.DB)
-env.DB.prepare=sql=>!sql.startsWith('SELECT id,user_key')?{bind:(...args)=>({sql,args})}:requestPrepare(sql)
+env.DB.prepare=sql=>sql.startsWith('SELECT id FROM presence_requests WHERE finished=1')?{bind:()=>({all:async()=>({results:[]})})}:!sql.startsWith('SELECT id,user_key')?{bind:(...args)=>({sql,args})}:requestPrepare(sql)
 env.DB.batch=async statements=>{verified.push(...statements.filter(s=>s.sql.startsWith('INSERT OR IGNORE INTO presence_verified_results')).map(s=>s.args));return []}
 let pool=new worker.QueryPool(ctx,env);env.POOL={getByName(name){assert.equal(name,'unified-query-pool');return pool}}
 const send=body=>worker.default.fetch(new Request('https://dispatch.invalid/mqtt/events',{method:'POST',headers:{authorization:`Bearer ${env.WEBHOOK_TOKEN}`},body:JSON.stringify(body)}),env)
